@@ -66,6 +66,30 @@ export default function Band({
   const rot = useMemo(() => new THREE.Vector3(), []);
   const dir = useMemo(() => new THREE.Vector3(), []);
 
+  // Responsive card scale: on laptop screens (<1600px), use 1.8; on wide screens, use 2.15
+  const [cardScale, setCardScale] = useState(() => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth < 1200) return 1.65;
+      if (window.innerWidth < 1600) return 1.8;
+    }
+    return 2.15;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 1200) {
+        setCardScale(1.65);
+      } else if (w < 1600) {
+        setCardScale(1.8);
+      } else {
+        setCardScale(2.15);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
   const [hovered, hover] = useState(false);
 
@@ -287,10 +311,10 @@ export default function Band({
           {...segmentProps}
           type={dragged ? "kinematicPosition" : "dynamic"}
         >
-          <CuboidCollider args={[0.8, 1.125, 0.01]} />
+          <CuboidCollider args={[0.35 * cardScale, 0.5 * cardScale, 0.01]} />
           <group
-            scale={2.25}
-            position={[0, -1.25, -0.05]}
+            scale={cardScale}
+            position={[0, -cardScale * 0.555, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
             onPointerUp={(e) => {

@@ -25,7 +25,7 @@ const Landing = () => {
             <h2 className="landing-info-h2">
               <div className="landing-h2-1">{config.developer.taglines[0]}</div>
             </h2>
-            <h2>
+            <h2 className="landing-info-sub">
               <div className="landing-h2-info">
                 {config.developer.taglines.slice(1).join(" & ")}
               </div>
