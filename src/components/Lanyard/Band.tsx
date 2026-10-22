@@ -229,24 +229,44 @@ export default function Band({
     const scrollY = window.scrollY || window.pageYOffset || 0;
     const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
 
-    // Phase 1: Zoom in onto the photo during landing scroll (0 to 60% of landing)
-    const zoomProgress = Math.min(1, Math.max(0, scrollY / (vHeight * 0.60)));
-    const smoothZoom = zoomProgress * zoomProgress * (3 - 2 * zoomProgress);
+    // -------------------------------------------------------------
+    // Multi-Section Lanyard Positioning:
+    // 1. Landing: Normal size in Center (targetX = 0, targetZ = 13, targetY = 0)
+    // 2. About Me: Zoomed on Left (targetX = 0.88, targetZ = 5.6, targetY = 0.28)
+    // 3. What I Do: Normal size in Center (targetX = 0, targetZ = 13, targetY = 0)
+    // 4. Past What I Do: Flies upwards and exits cleanly
+    // -------------------------------------------------------------
+    const vHeight = window.innerHeight || 800;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
 
-    // Phase 2: Glide to the LEFT side as we scroll into About Me (from 0.25 * vHeight to 0.75 * vHeight)
-    const shiftProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.25) / (vHeight * 0.50)));
-    const smoothShift = shiftProgress * shiftProgress * (3 - 2 * shiftProgress);
+    const smoothstep = (min: number, max: number, val: number) => {
+      const p = Math.min(1, Math.max(0, (val - min) / (max - min)));
+      return p * p * (3 - 2 * p);
+    };
 
-    // Phase 3: Fly straight UPWARDS ("ke atas") as user leaves About Me towards What I Do
-    // Starts at 0.82 * vHeight and finishes completely by 1.15 * vHeight
-    const exitUpProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.82) / (vHeight * 0.32)));
-    const smoothExitUp = exitUpProgress * exitUpProgress * (3 - 2 * exitUpProgress);
+    // Transition from Landing into About Me (zoom in & glide left)
+    const toAboutProgress = smoothstep(vHeight * 0.25, vHeight * 0.75, scrollY);
 
-    // Fade out smoothly right as it clears the top edge
+    // Transition from About Me into What I Do (unzoom & return to center)
+    const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);
+
+    // Exit upwards after What I Do (scrollY from 2.40 * vHeight to 2.80 * vHeight)
+    const exitUpProgress = smoothstep(vHeight * 2.40, vHeight * 2.80, scrollY);
+
+    // In About Me, aboutFactor = 1; in Landing and What I Do, aboutFactor = 0.
+    const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
+
+    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, aboutFactor) : 0;
+    const baseTargetY = THREE.MathUtils.lerp(0, 0.28, aboutFactor);
+    const targetY = isDesktop ? baseTargetY - (exitUpProgress * 9.5) : baseTargetY;
+    const targetZ = THREE.MathUtils.lerp(13, 5.6, aboutFactor);
+
+    // Fade out after What I Do
     let opacity = 1;
     if (isDesktop) {
-      if (smoothExitUp > 0.4) {
-        opacity = Math.max(0, 1 - (smoothExitUp - 0.4) / 0.5);
+      if (exitUpProgress > 0.4) {
+        opacity = Math.max(0, 1 - (exitUpProgress - 0.4) / 0.5);
       }
     } else {
       if (scrollY > vHeight * 0.65) {
@@ -262,20 +282,8 @@ export default function Band({
       }
       wrapperRef.current.style.opacity = opacity.toFixed(3);
       wrapperRef.current.style.pointerEvents =
-        opacity > 0.05 && smoothExitUp < 0.5 ? "auto" : "none";
+        opacity > 0.05 && exitUpProgress < 0.5 ? "auto" : "none";
     }
-
-    // Camera target coordinates:
-    // In About Me, camera shifts to targetX = 0.88 so the card is perfectly framed in the left half
-    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, smoothShift) : 0;
-
-    // Moving camera Y downwards moves the entire 3D scene (card + lanyard band) UPWARDS on screen ("ke atas")!
-    // Stable world target for camera Y (no chasing oscillating physics body):
-    const baseTargetY = THREE.MathUtils.lerp(0, 0.28, smoothZoom);
-    const targetY = isDesktop ? baseTargetY - (smoothExitUp * 9.5) : baseTargetY;
-
-    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=5.6)
-    const targetZ = THREE.MathUtils.lerp(13, 5.6, smoothZoom);
 
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5.5, delta);
     state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 6.0, delta);
@@ -303,17 +311,17 @@ export default function Band({
       while (roll < -Math.PI) roll += Math.PI * 2;
 
       // Adjust dynamic damping in Rapier based on zoom level:
-      // Freely swings in hero (damping = 2.0), settles naturally when zoomed in (damping = 4.8)
-      card.current.setAngularDamping(2.0 + smoothZoom * 2.8);
-      card.current.setLinearDamping(2.0 + smoothZoom * 1.8);
+      // Freely swings in hero and What I Do (damping = 2.0), settles naturally when zoomed in About Me (damping = 4.8)
+      card.current.setAngularDamping(2.0 + aboutFactor * 2.8);
+      card.current.setLinearDamping(2.0 + aboutFactor * 1.8);
 
       // Target angular velocity to keep card stable and upright:
-      const targetAngX = -pitch * (2.2 * smoothZoom);
-      const targetAngY = -yaw * (0.6 + 3.2 * smoothZoom);
-      const targetAngZ = -roll * (2.2 * smoothZoom);
+      const targetAngX = -pitch * (2.2 * aboutFactor);
+      const targetAngY = -yaw * (0.6 + 3.2 * aboutFactor);
+      const targetAngZ = -roll * (2.2 * aboutFactor);
 
       const curAng = card.current.angvel() as any;
-      const dampSpeed = 3.5 + smoothZoom * 3.5;
+      const dampSpeed = 3.5 + aboutFactor * 3.5;
 
       card.current.setAngvel(
         {

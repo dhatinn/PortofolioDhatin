@@ -16,10 +16,52 @@ export function initialFX() {
   }, 400);
   document.getElementsByTagName("main")[0].classList.add("main-active");
   gsap.to("body", {
-    backgroundColor: "#0b080c",
+    backgroundColor: "#0c0a09",
     duration: 0.5,
-    delay: 1,
+    delay: 0.2,
   });
+
+  // Entrance from outer sides with zoom into place (Photo 3 design)
+  gsap.fromTo(
+    ".landing-intro",
+    { opacity: 0, x: -140, scale: 0.88, filter: "blur(6px)" },
+    {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      duration: 1.3,
+      ease: "power3.out",
+      delay: 0.1,
+    }
+  );
+
+  gsap.fromTo(
+    ".landing-info",
+    { opacity: 0, x: 140, scale: 0.88, filter: "blur(6px)" },
+    {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      duration: 1.3,
+      ease: "power3.out",
+      delay: 0.1,
+    }
+  );
+
+  gsap.fromTo(
+    ".lanyard-wrapper",
+    { opacity: 0, scale: 0.82, y: -50 },
+    {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      duration: 1.4,
+      ease: "power3.out",
+      delay: 0.15,
+    }
+  );
 
   const selectors = [".landing-info h3", ".landing-intro h2", ".landing-intro h1"];
   const elements = selectors.flatMap(selector => Array.from(document.querySelectorAll(selector)));

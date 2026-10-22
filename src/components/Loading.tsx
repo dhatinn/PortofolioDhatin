@@ -8,35 +8,54 @@ import { config } from "../config";
 const Loading = ({ percent }: { percent: number }) => {
   const { setIsLoading } = useLoading();
   const [loaded, setLoaded] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [clicked, setClicked] = useState(false);
+  const [stage, setStage] = useState<"counter" | "split" | "welcome" | "portfolio" | "exit">("counter");
 
   useEffect(() => {
-    if (percent >= 100 && !loaded) {
+    if (percent >= 100 && stage === "counter") {
       const t1 = setTimeout(() => {
         setLoaded(true);
-        setTimeout(() => {
-          setIsLoaded(true);
-        }, 250);
+        const t2 = setTimeout(() => {
+          setClicked(true);
+          // Stage 1: Line in center splits open
+          const t3 = setTimeout(() => {
+            setStage("split");
+            // Stage 2: Crimson stage opens, WELCOME text appears
+            const t4 = setTimeout(() => {
+              setStage("welcome");
+              // Stage 3: Background WELCOME dims, PortFOLIO. lockup emerges
+              const t5 = setTimeout(() => {
+                setStage("portfolio");
+                // Stage 4: Hold luxury motion, then trigger exit into main site
+                const t6 = setTimeout(() => {
+                  handleExit();
+                }, 1750);
+                return () => clearTimeout(t6);
+              }, 700);
+              return () => clearTimeout(t5);
+            }, 500);
+            return () => clearTimeout(t4);
+          }, 350);
+          return () => clearTimeout(t3);
+        }, 280);
+        return () => clearTimeout(t2);
       }, 150);
       return () => clearTimeout(t1);
     }
-  }, [percent, loaded]);
+  }, [percent, stage]);
 
-  useEffect(() => {
-    if (isLoaded) {
-      setClicked(true);
-      const timer = setTimeout(() => {
-        import("./utils/initialFX").then((module) => {
-          if (module.initialFX) {
-            module.initialFX();
-          }
-          setIsLoading(false);
-        });
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoaded, setIsLoading]);
+  const handleExit = () => {
+    if (stage === "exit") return;
+    setStage("exit");
+    import("./utils/initialFX").then((module) => {
+      if (module.initialFX) {
+        module.initialFX();
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 700);
+    });
+  };
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     const { currentTarget: target } = e;
@@ -49,7 +68,7 @@ const Loading = ({ percent }: { percent: number }) => {
 
   return (
     <>
-      <div className="loading-header">
+      <div className={`loading-header ${stage !== "counter" ? "loader-out" : ""}`}>
         <a href="/#" className="loader-title" data-cursor="disable">
           {config.developer.fullName.replace(/\s+/g, "")}
         </a>
@@ -64,7 +83,11 @@ const Loading = ({ percent }: { percent: number }) => {
           </div>
         </div>
       </div>
-      <div className="loading-screen">
+
+      <div
+        className={`loading-screen ${stage !== "counter" ? "screen-hidden" : ""}`}
+        style={stage !== "counter" ? { opacity: 0, pointerEvents: "none" } : undefined}
+      >
         <div className="loading-marquee">
           <Marquee>
             {[...config.developer.taglines, ...config.developer.taglines].map((t, i) => (
@@ -92,6 +115,53 @@ const Loading = ({ percent }: { percent: number }) => {
           </div>
         </div>
       </div>
+
+      {/* Center Slit Line Animation */}
+      <div
+        className={`loading-center-slit ${
+          stage === "split" ? "slit-active" : stage !== "counter" ? "slit-expand" : ""
+        }`}
+      />
+
+      {/* Split Curtain Doors */}
+      <div className={stage !== "counter" && stage !== "split" ? "loading-curtain-open" : ""}>
+        <div className="loading-curtain-door loading-curtain-left" />
+        <div className="loading-curtain-door loading-curtain-right" />
+      </div>
+
+      {/* Crimson Welcome Stage & PortFOLIO. Motion */}
+      {stage !== "counter" && (
+        <div
+          className={`welcome-stage ${stage === "exit" ? "stage-exit" : ""}`}
+          onClick={handleExit}
+          title="Click to skip into website"
+        >
+          <div className="welcome-vignette" />
+
+          {/* Giant Embossed Background WELCOME */}
+          <div
+            className={`welcome-bg-text ${
+              stage === "portfolio" || stage === "exit" ? "bg-dimmed" : ""
+            }`}
+          >
+            WELCOME
+          </div>
+
+          {/* Foreground PortFOLIO. Lockup */}
+          <div
+            className={`portfolio-lockup ${
+              stage === "portfolio" || stage === "exit" ? "lockup-visible" : ""
+            }`}
+          >
+            <div className="portfolio-lockup-inner">
+              <div className="script-port">Port</div>
+              <div className="bold-folio">
+                FOLIO<span className="red-dot">.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

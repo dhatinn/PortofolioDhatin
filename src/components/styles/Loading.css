@@ -361,3 +361,189 @@
     font-size: 18px;
   }
 }
+
+/* ============================================================
+   Cinematic Luxury Welcome Stage & Curtain Opening
+   ============================================================ */
+
+/* Center Slit Line Animation */
+.loading-center-slit {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: #ffffff;
+  box-shadow: 0 0 15px #ff2222, 0 0 35px #ff7a00;
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: center;
+  z-index: 1000000001;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  pointer-events: none;
+}
+.loading-center-slit.slit-active {
+  transform: translateX(-50%) scaleY(1);
+}
+.loading-center-slit.slit-expand {
+  transform: translateX(-50%) scaleX(30);
+  opacity: 0;
+}
+
+/* Split Curtain Doors */
+.loading-curtain-door {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 50vw;
+  background-color: #0c0a09;
+  z-index: 1000000000;
+  transition: transform 0.85s cubic-bezier(0.77, 0, 0.175, 1);
+  pointer-events: none;
+}
+.loading-curtain-left {
+  left: 0;
+  transform-origin: left;
+}
+.loading-curtain-right {
+  right: 0;
+  transform-origin: right;
+}
+.loading-curtain-open .loading-curtain-left {
+  transform: translateX(-101%);
+}
+.loading-curtain-open .loading-curtain-right {
+  transform: translateX(101%);
+}
+
+/* Crimson Stage */
+.welcome-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: 
+    radial-gradient(ellipse at center, rgba(165, 12, 18, 0.96) 0%, rgba(70, 4, 8, 0.98) 52%, #080102 100%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.38) 0px, rgba(0, 0, 0, 0.38) 18px, transparent 18px, transparent 36px);
+  background-blend-mode: multiply;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.welcome-stage.stage-exit {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+/* Vignette overlay */
+.welcome-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.88) 100%);
+  pointer-events: none;
+}
+
+/* Giant 3D Embossed WELCOME in background */
+.welcome-bg-text {
+  position: absolute;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: clamp(85px, 20vw, 290px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #7a060b;
+  text-shadow: 
+    0 1px 0 #4a0307,
+    0 2px 0 #3b0205,
+    0 3px 0 #2c0103,
+    0 5px 15px rgba(0, 0, 0, 0.95),
+    0 10px 45px rgba(230, 10, 20, 0.4);
+  text-transform: uppercase;
+  line-height: 1;
+  text-align: center;
+  transform: scale(1);
+  opacity: 1;
+  transition: opacity 0.75s ease-in-out, transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.welcome-bg-text.bg-dimmed {
+  opacity: 0.22;
+  transform: scale(0.96);
+}
+
+/* Foreground PortFOLIO. Lockup */
+.portfolio-lockup {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.portfolio-lockup.lockup-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.portfolio-lockup-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Signature Script "Port" in vibrant red */
+.script-port {
+  position: absolute;
+  top: -26%;
+  left: 2%;
+  z-index: 5;
+  font-family: 'Mr Dafoe', 'Caveat', cursive;
+  font-size: clamp(65px, 13vw, 175px);
+  color: #ff2228;
+  font-weight: 700;
+  transform: rotate(-13deg);
+  text-shadow: 
+    0 0 15px rgba(255, 34, 40, 0.8),
+    0 0 35px rgba(255, 10, 20, 0.6),
+    0 4px 10px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Bold Display "FOLIO." */
+.bold-folio {
+  font-family: 'Plus Jakarta Sans', 'Geist', sans-serif;
+  font-weight: 900;
+  font-size: clamp(70px, 15vw, 200px);
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.95),
+    0 2px 6px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: baseline;
+}
+
+.bold-folio .red-dot {
+  display: inline-block;
+  color: #ff1e27;
+  text-shadow: 
+    0 0 20px #ff1e27,
+    0 0 40px rgba(255, 30, 39, 0.95);
+  transform: scale(1.15);
+  margin-left: 2px;
+}
