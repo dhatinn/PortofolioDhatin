@@ -233,19 +233,24 @@ export default function Band({
     const scrollY = window.scrollY || window.pageYOffset || 0;
     const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
 
-    // Phase 1: Zoom in onto the photo during landing scroll (0 to 65% of landing)
-    const zoomProgress = Math.min(1, Math.max(0, scrollY / (vHeight * 0.65)));
+    // Phase 1: Zoom in onto the photo during landing scroll (0 to 60% of landing)
+    const zoomProgress = Math.min(1, Math.max(0, scrollY / (vHeight * 0.60)));
     const smoothZoom = zoomProgress * zoomProgress * (3 - 2 * zoomProgress);
 
-    // Phase 2: Glide to the LEFT side as we scroll into About Me (from 0.35 * vHeight to 1.0 * vHeight)
-    const shiftProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.35) / (vHeight * 0.65)));
+    // Phase 2: Glide to the LEFT side as we scroll into About Me (from 0.25 * vHeight to 0.75 * vHeight)
+    const shiftProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.25) / (vHeight * 0.50)));
     const smoothShift = shiftProgress * shiftProgress * (3 - 2 * shiftProgress);
 
-    // Phase 3: Fade out smoothly at the bottom of About Me so it never covers "WHAT I DO"
+    // Phase 3: Fly straight UPWARDS ("ke atas") as user leaves About Me towards What I Do
+    // Starts at 0.82 * vHeight and finishes completely by 1.15 * vHeight
+    const exitUpProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.82) / (vHeight * 0.32)));
+    const smoothExitUp = exitUpProgress * exitUpProgress * (3 - 2 * exitUpProgress);
+
+    // Fade out smoothly right as it clears the top edge
     let opacity = 1;
     if (isDesktop) {
-      if (scrollY > vHeight * 1.10) {
-        opacity = Math.max(0, 1 - (scrollY - vHeight * 1.10) / (vHeight * 0.35));
+      if (smoothExitUp > 0.4) {
+        opacity = Math.max(0, 1 - (smoothExitUp - 0.4) / 0.5);
       }
     } else {
       if (scrollY > vHeight * 0.65) {
@@ -261,20 +266,24 @@ export default function Band({
       }
       wrapperRef.current.style.opacity = opacity.toFixed(3);
       wrapperRef.current.style.pointerEvents =
-        opacity > 0.05 && scrollY < vHeight * 1.3 ? "auto" : "none";
+        opacity > 0.05 && smoothExitUp < 0.5 ? "auto" : "none";
     }
 
     // Camera target coordinates:
     // In About Me, camera shifts to targetX = 0.88 so the card is perfectly framed in the left half
     const cardPos = card.current ? (card.current.translation() as any) : { x: 0, y: 0.15, z: 0 };
     const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, smoothShift) : 0;
-    const targetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, smoothZoom);
+
+    // Moving camera Y downwards moves the entire 3D scene (card + lanyard band) UPWARDS on screen ("ke atas")!
+    const baseTargetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, smoothZoom);
+    const targetY = isDesktop ? baseTargetY - (smoothExitUp * 9.5) : baseTargetY;
+
     // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=5.2)
     const targetZ = THREE.MathUtils.lerp(13, 5.2, smoothZoom);
 
-    state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 4.5, delta);
-    state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 4.5, delta);
-    state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, targetZ, 4.5, delta);
+    state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5.5, delta);
+    state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 6.0, delta);
+    state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, targetZ, 5.5, delta);
 
     // Look straight forward at target plane for zero perspective distortion
     state.camera.lookAt(state.camera.position.x, targetY, 0);
