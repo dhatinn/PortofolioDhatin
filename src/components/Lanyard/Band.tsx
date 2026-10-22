@@ -40,6 +40,7 @@ interface BandProps {
   minSpeed?: number;
   profile?: ProfileData;
   config?: PortfolioConfig;
+  wrapperRef?: React.RefObject<HTMLDivElement>;
 }
 
 export default function Band({
@@ -47,6 +48,7 @@ export default function Band({
   minSpeed = 10,
   profile: propProfile,
   config: propConfig,
+  wrapperRef,
 }: BandProps) {
   const contextPortfolio = usePortfolio();
   const profile = propProfile || contextPortfolio.profile;
@@ -199,6 +201,67 @@ export default function Band({
         false
       );
     }
+
+    // -------------------------------------------------------------
+    // Scroll-driven Zoom & Focus Animation onto the Photo
+    // -------------------------------------------------------------
+    const landingEl = document.getElementById("landingDiv");
+    const landingRect = landingEl ? landingEl.getBoundingClientRect() : null;
+    const scrollDist = landingRect ? -landingRect.top : (window.scrollY || 0);
+    const landingHeight = landingRect ? landingRect.height : (window.innerHeight || 800);
+
+    // Zoom phase: 0 to 60% of landing section scroll
+    const zoomEnd = Math.max(200, landingHeight * 0.6);
+    const rawProgress = Math.min(1, Math.max(0, scrollDist / zoomEnd));
+    // Smoothstep curve for silky cinematic zoom
+    const zoomProgress = rawProgress * rawProgress * (3 - 2 * rawProgress);
+
+    // Fade-out phase: when user continues into next sections
+    const fadeStart = landingHeight * 0.55;
+    const fadeEnd = landingHeight * 0.90;
+    let opacity = 1;
+    if (scrollDist > fadeStart) {
+      opacity = Math.max(0, 1 - (scrollDist - fadeStart) / (fadeEnd - fadeStart));
+    }
+    if (wrapperRef?.current) {
+      if (opacity <= 0.001) {
+        wrapperRef.current.style.display = "none";
+      } else {
+        wrapperRef.current.style.display = "flex";
+      }
+      wrapperRef.current.style.opacity = opacity.toFixed(3);
+      wrapperRef.current.style.pointerEvents = opacity > 0.05 ? "auto" : "none";
+    }
+
+    // Target camera coordinates centered on the card portrait photo
+    const cardPos = card.current ? (card.current.translation() as any) : { x: 0, y: 0.15, z: 0 };
+    const targetX = THREE.MathUtils.lerp(0, cardPos.x, zoomProgress);
+    const targetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, zoomProgress);
+    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=4.8)
+    const targetZ = THREE.MathUtils.lerp(13, 4.8, zoomProgress);
+
+    state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5, delta);
+    state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 5, delta);
+    state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, targetZ, 5, delta);
+
+    const lookX = THREE.MathUtils.lerp(0, cardPos.x, zoomProgress);
+    const lookY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, zoomProgress);
+    const lookZ = THREE.MathUtils.lerp(0, cardPos.z || 0, zoomProgress);
+    state.camera.lookAt(lookX, lookY, lookZ);
+
+    // When zooming in, gently align card rotation to face front so photo is clearly visible
+    if (zoomProgress > 0.05 && card.current) {
+      const curRot = card.current.rotation() as any;
+      const curAng = card.current.angvel() as any;
+      card.current.setAngvel(
+        {
+          x: THREE.MathUtils.damp(curAng.x, 0, 3 * zoomProgress, delta),
+          y: THREE.MathUtils.damp(curAng.y, -curRot.y * 3.5, 4 * zoomProgress, delta),
+          z: THREE.MathUtils.damp(curAng.z, 0, 3 * zoomProgress, delta),
+        },
+        false
+      );
+    }
   });
 
   curve.curveType = "chordal";
@@ -208,18 +271,18 @@ export default function Band({
     <>
       <group position={[0, 4.6, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
-        <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
+        <RigidBody position={[0.01, -1, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
-        <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
+        <RigidBody position={[0.02, -2, 0]} ref={j2} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
-        <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
+        <RigidBody position={[0.01, -3, 0]} ref={j3} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
 
         <RigidBody
-          position={[2, 0, 0]}
+          position={[0, -4.45, 0]}
           ref={card}
           {...segmentProps}
           type={dragged ? "kinematicPosition" : "dynamic"}

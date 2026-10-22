@@ -13,9 +13,10 @@ useTexture.preload("/assets/images/tag_texture.png");
 
 const LanyardCanvas: React.FC = () => {
   const { profile, config } = usePortfolio();
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <div className="lanyard-wrapper" data-cursor="disable">
+    <div className="lanyard-wrapper" ref={wrapperRef} data-cursor="disable">
       <Canvas
         camera={{ position: [0, 0, 13], fov: 25 }}
         style={{ width: "100%", height: "100%", backgroundColor: "transparent" }}
@@ -32,7 +33,7 @@ const LanyardCanvas: React.FC = () => {
             gravity={[0, -40, 0]}
             timeStep={1 / 60}
           >
-            <Band profile={profile} config={config} />
+            <Band profile={profile} config={config} wrapperRef={wrapperRef} />
           </Physics>
 
           <Environment blur={0.75}>

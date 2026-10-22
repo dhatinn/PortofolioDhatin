@@ -272,6 +272,7 @@ export function createCardTexture(
   const ctx = canvas.getContext("2d")!;
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.flipY = false;
   texture.anisotropy = 16;
   if ("colorSpace" in texture) {
     (texture as any).colorSpace = THREE.SRGBColorSpace;
