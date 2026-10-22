@@ -227,26 +227,32 @@ export default function Band({
     }
 
     // -------------------------------------------------------------
-    // Scroll-driven Zoom & Focus Animation onto the Photo
+    // Scroll-driven Zoom & Transition onto Left Side for About Me
     // -------------------------------------------------------------
-    const landingEl = document.getElementById("landingDiv");
-    const landingRect = landingEl ? landingEl.getBoundingClientRect() : null;
-    const scrollDist = landingRect ? -landingRect.top : (window.scrollY || 0);
-    const landingHeight = landingRect ? landingRect.height : (window.innerHeight || 800);
+    const vHeight = window.innerHeight || 800;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
 
-    // Zoom phase: 0 to 60% of landing section scroll
-    const zoomEnd = Math.max(200, landingHeight * 0.6);
-    const rawProgress = Math.min(1, Math.max(0, scrollDist / zoomEnd));
-    // Smoothstep curve for silky cinematic zoom
-    const zoomProgress = rawProgress * rawProgress * (3 - 2 * rawProgress);
+    // Phase 1: Zoom in onto the photo during landing scroll (0 to 65% of landing)
+    const zoomProgress = Math.min(1, Math.max(0, scrollY / (vHeight * 0.65)));
+    const smoothZoom = zoomProgress * zoomProgress * (3 - 2 * zoomProgress);
 
-    // Fade-out phase: when user continues into next sections
-    const fadeStart = landingHeight * 0.55;
-    const fadeEnd = landingHeight * 0.90;
+    // Phase 2: Glide to the LEFT side as we scroll into About Me (from 0.35 * vHeight to 1.0 * vHeight)
+    const shiftProgress = Math.min(1, Math.max(0, (scrollY - vHeight * 0.35) / (vHeight * 0.65)));
+    const smoothShift = shiftProgress * shiftProgress * (3 - 2 * shiftProgress);
+
+    // Phase 3: Fade out smoothly at the bottom of About Me so it never covers "WHAT I DO"
     let opacity = 1;
-    if (scrollDist > fadeStart) {
-      opacity = Math.max(0, 1 - (scrollDist - fadeStart) / (fadeEnd - fadeStart));
+    if (isDesktop) {
+      if (scrollY > vHeight * 1.10) {
+        opacity = Math.max(0, 1 - (scrollY - vHeight * 1.10) / (vHeight * 0.35));
+      }
+    } else {
+      if (scrollY > vHeight * 0.65) {
+        opacity = Math.max(0, 1 - (scrollY - vHeight * 0.65) / (vHeight * 0.3));
+      }
     }
+
     if (wrapperRef?.current) {
       if (opacity <= 0.001) {
         wrapperRef.current.style.display = "none";
@@ -254,34 +260,34 @@ export default function Band({
         wrapperRef.current.style.display = "flex";
       }
       wrapperRef.current.style.opacity = opacity.toFixed(3);
-      wrapperRef.current.style.pointerEvents = opacity > 0.05 ? "auto" : "none";
+      wrapperRef.current.style.pointerEvents =
+        opacity > 0.05 && scrollY < vHeight * 1.3 ? "auto" : "none";
     }
 
-    // Target camera coordinates centered on the card portrait photo
+    // Camera target coordinates:
+    // In About Me, camera shifts to targetX = 0.88 so the card is perfectly framed in the left half
     const cardPos = card.current ? (card.current.translation() as any) : { x: 0, y: 0.15, z: 0 };
-    const targetX = THREE.MathUtils.lerp(0, cardPos.x, zoomProgress);
-    const targetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, zoomProgress);
-    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=4.8)
-    const targetZ = THREE.MathUtils.lerp(13, 4.8, zoomProgress);
+    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, smoothShift) : 0;
+    const targetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, smoothZoom);
+    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=5.2)
+    const targetZ = THREE.MathUtils.lerp(13, 5.2, smoothZoom);
 
-    state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5, delta);
-    state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 5, delta);
-    state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, targetZ, 5, delta);
+    state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 4.5, delta);
+    state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 4.5, delta);
+    state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, targetZ, 4.5, delta);
 
-    const lookX = THREE.MathUtils.lerp(0, cardPos.x, zoomProgress);
-    const lookY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, zoomProgress);
-    const lookZ = THREE.MathUtils.lerp(0, cardPos.z || 0, zoomProgress);
-    state.camera.lookAt(lookX, lookY, lookZ);
+    // Look straight forward at target plane for zero perspective distortion
+    state.camera.lookAt(state.camera.position.x, targetY, 0);
 
-    // When zooming in, gently align card rotation to face front so photo is clearly visible
-    if (zoomProgress > 0.05 && card.current) {
+    // When zooming in or in About Me, gently align card rotation to face front so photo is crisp
+    if (smoothZoom > 0.05 && card.current) {
       const curRot = card.current.rotation() as any;
       const curAng = card.current.angvel() as any;
       card.current.setAngvel(
         {
-          x: THREE.MathUtils.damp(curAng.x, 0, 3 * zoomProgress, delta),
-          y: THREE.MathUtils.damp(curAng.y, -curRot.y * 3.5, 4 * zoomProgress, delta),
-          z: THREE.MathUtils.damp(curAng.z, 0, 3 * zoomProgress, delta),
+          x: THREE.MathUtils.damp(curAng.x, 0, 3 * smoothZoom, delta),
+          y: THREE.MathUtils.damp(curAng.y, -curRot.y * 3.5, 4 * smoothZoom, delta),
+          z: THREE.MathUtils.damp(curAng.z, 0, 3 * smoothZoom, delta),
         },
         false
       );
