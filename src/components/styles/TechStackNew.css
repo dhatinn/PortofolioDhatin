@@ -32,7 +32,7 @@
 .techstack-glow-1 {
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, #aa42ff 0%, rgba(138, 43, 226, 0) 70%);
+  background: radial-gradient(circle, #ff7a00 0%, rgba(234, 88, 12, 0) 70%);
   top: 20%;
   left: 20%;
   animation: floatOrb1 12s ease-in-out infinite alternate;
@@ -41,7 +41,7 @@
 .techstack-glow-2 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, #5b21b6 0%, rgba(88, 28, 135, 0) 70%);
+  background: radial-gradient(circle, #ea580c 0%, rgba(194, 65, 12, 0) 70%);
   bottom: 10%;
   right: 15%;
   animation: floatOrb2 14s ease-in-out infinite alternate;
@@ -109,7 +109,7 @@
   font-weight: 400;
   text-transform: uppercase;
   margin-bottom: 50px;
-  background: linear-gradient(180deg, #ffffff 0%, #c2a4ff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #ff8c1a 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -153,9 +153,9 @@
 
 .techstack-item:hover {
   transform: translateY(-6px) scale(1.08);
-  background: rgba(194, 164, 255, 0.1);
+  background: rgba(255, 122, 0, 0.12);
   border-color: var(--accentColor);
-  box-shadow: 0 8px 30px rgba(194, 164, 255, 0.25);
+  box-shadow: 0 8px 30px rgba(255, 122, 0, 0.3);
 }
 
 .techstack-item img {

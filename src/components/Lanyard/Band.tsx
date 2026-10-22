@@ -65,6 +65,8 @@ export default function Band({
   const ang = useMemo(() => new THREE.Vector3(), []);
   const rot = useMemo(() => new THREE.Vector3(), []);
   const dir = useMemo(() => new THREE.Vector3(), []);
+  const quat = useMemo(() => new THREE.Quaternion(), []);
+  const euler = useMemo(() => new THREE.Euler(0, 0, 0, "YXZ"), []);
 
   // Responsive card scale: on laptop screens (<1600px), use 1.8; on wide screens, use 2.15
   const [cardScale, setCardScale] = useState(() => {
@@ -107,7 +109,7 @@ export default function Band({
     const initials = profile?.badge?.initials || config.developer.initials || "DN";
     const badgeId = profile?.badge?.badgeId || "DEV ID • VERIFIED";
     const subText = profile?.badge?.subText || "ID: 2026-DHATIN-DEV-SECURE";
-    const accentColor = profile?.badge?.accentColor || "#a855f7";
+    const accentColor = profile?.badge?.accentColor || "#ff7a00";
 
     const tex = createCardTexture(
       {
@@ -216,14 +218,8 @@ export default function Band({
       curve.points[1].copy(j2Lerped ?? (j2.current.translation() as any));
       curve.points[2].copy(j1Lerped ?? (j1.current.translation() as any));
       curve.points[3].copy(fixed.current.translation() as any);
+      // Natural band curve tracking
       band.current.geometry.setPoints(curve.getPoints(32));
-
-      ang.copy(card.current.angvel() as any);
-      rot.copy(card.current.rotation() as any);
-      card.current.setAngvel(
-        { x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z },
-        false
-      );
     }
 
     // -------------------------------------------------------------
@@ -271,15 +267,15 @@ export default function Band({
 
     // Camera target coordinates:
     // In About Me, camera shifts to targetX = 0.88 so the card is perfectly framed in the left half
-    const cardPos = card.current ? (card.current.translation() as any) : { x: 0, y: 0.15, z: 0 };
     const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, smoothShift) : 0;
 
     // Moving camera Y downwards moves the entire 3D scene (card + lanyard band) UPWARDS on screen ("ke atas")!
-    const baseTargetY = THREE.MathUtils.lerp(0, cardPos.y + 0.18, smoothZoom);
+    // Stable world target for camera Y (no chasing oscillating physics body):
+    const baseTargetY = THREE.MathUtils.lerp(0, 0.28, smoothZoom);
     const targetY = isDesktop ? baseTargetY - (smoothExitUp * 9.5) : baseTargetY;
 
-    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=5.2)
-    const targetZ = THREE.MathUtils.lerp(13, 5.2, smoothZoom);
+    // Camera zooms smoothly from overview (z=13) in to close-up portrait (z=5.6)
+    const targetZ = THREE.MathUtils.lerp(13, 5.6, smoothZoom);
 
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5.5, delta);
     state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, targetY, 6.0, delta);
@@ -288,15 +284,42 @@ export default function Band({
     // Look straight forward at target plane for zero perspective distortion
     state.camera.lookAt(state.camera.position.x, targetY, 0);
 
-    // When zooming in or in About Me, gently align card rotation to face front so photo is crisp
-    if (smoothZoom > 0.05 && card.current) {
+    // Unified physics stabilization & alignment:
+    if (card.current && !dragged) {
       const curRot = card.current.rotation() as any;
+      quat.set(curRot.x, curRot.y, curRot.z, curRot.w);
+      euler.setFromQuaternion(quat, "YXZ");
+
+      let yaw = euler.y;
+      while (yaw > Math.PI) yaw -= Math.PI * 2;
+      while (yaw < -Math.PI) yaw += Math.PI * 2;
+
+      let pitch = euler.x;
+      while (pitch > Math.PI) pitch -= Math.PI * 2;
+      while (pitch < -Math.PI) pitch += Math.PI * 2;
+
+      let roll = euler.z;
+      while (roll > Math.PI) roll -= Math.PI * 2;
+      while (roll < -Math.PI) roll += Math.PI * 2;
+
+      // Adjust dynamic damping in Rapier based on zoom level:
+      // Freely swings in hero (damping = 2.0), settles naturally when zoomed in (damping = 4.8)
+      card.current.setAngularDamping(2.0 + smoothZoom * 2.8);
+      card.current.setLinearDamping(2.0 + smoothZoom * 1.8);
+
+      // Target angular velocity to keep card stable and upright:
+      const targetAngX = -pitch * (2.2 * smoothZoom);
+      const targetAngY = -yaw * (0.6 + 3.2 * smoothZoom);
+      const targetAngZ = -roll * (2.2 * smoothZoom);
+
       const curAng = card.current.angvel() as any;
+      const dampSpeed = 3.5 + smoothZoom * 3.5;
+
       card.current.setAngvel(
         {
-          x: THREE.MathUtils.damp(curAng.x, 0, 3 * smoothZoom, delta),
-          y: THREE.MathUtils.damp(curAng.y, -curRot.y * 3.5, 4 * smoothZoom, delta),
-          z: THREE.MathUtils.damp(curAng.z, 0, 3 * smoothZoom, delta),
+          x: THREE.MathUtils.damp(curAng.x, targetAngX, dampSpeed, delta),
+          y: THREE.MathUtils.damp(curAng.y, targetAngY, dampSpeed, delta),
+          z: THREE.MathUtils.damp(curAng.z, targetAngZ, dampSpeed, delta),
         },
         false
       );

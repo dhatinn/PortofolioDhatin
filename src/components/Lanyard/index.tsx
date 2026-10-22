@@ -53,14 +53,14 @@ const LanyardCanvas: React.FC = () => {
             />
             <Lightformer
               intensity={3}
-              color="#c084fc"
+              color="#ff7a00"
               position={[1, 1, 1]}
               rotation={[0, 0, Math.PI / 3]}
               scale={[100, 0.1, 1]}
             />
             <Lightformer
               intensity={8}
-              color="#e9d5ff"
+              color="#ffedd5"
               position={[-10, 0, 14]}
               rotation={[0, Math.PI / 2, Math.PI / 3]}
               scale={[100, 10, 1]}

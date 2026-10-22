@@ -19,7 +19,7 @@ export function drawLanyardCard(
   options: CardTextureOptions,
   img?: HTMLImageElement
 ) {
-  const accent = options.accentColor || "#a855f7";
+  const accent = options.accentColor || "#ff7a00";
   const initials = (options.initials || "DN").toUpperCase();
   const badgeId = (options.badgeId || "DEV ID • VERIFIED").toUpperCase();
   const subText = options.subText || "ID: 2026-DHATIN-DEV-SECURE";
@@ -64,7 +64,7 @@ export function drawLanyardCard(
   ctx.save();
   const badgeGrad = ctx.createLinearGradient(35, 35, 135, 75);
   badgeGrad.addColorStop(0, accent);
-  badgeGrad.addColorStop(1, "#e879f9");
+  badgeGrad.addColorStop(1, "#f59e0b");
   ctx.fillStyle = badgeGrad;
   ctx.beginPath();
   ctx.roundRect(35, 35, 95, 40, 8);
@@ -142,7 +142,7 @@ export function drawLanyardCard(
       photoY + photoH / 2 + 40
     );
     avatarGrad.addColorStop(0, accent);
-    avatarGrad.addColorStop(1, "#4f46e5");
+    avatarGrad.addColorStop(1, "#ea580c");
     ctx.fillStyle = avatarGrad;
     ctx.beginPath();
     ctx.arc(photoX + photoW / 2, photoY + photoH / 2 - 40, 80, 0, Math.PI * 2);
@@ -214,7 +214,7 @@ export function drawLanyardCard(
   ctx.save();
   const logoGrad = ctx.createLinearGradient(690, 220, 846, 376);
   logoGrad.addColorStop(0, accent);
-  logoGrad.addColorStop(1, "#ec4899");
+  logoGrad.addColorStop(1, "#ea580c");
   ctx.fillStyle = logoGrad;
   ctx.beginPath();
   ctx.roundRect(690, 220, 156, 156, 24);
