@@ -222,12 +222,6 @@ export default function Band({
       band.current.geometry.setPoints(curve.getPoints(32));
     }
 
-    // -------------------------------------------------------------
-    // Scroll-driven Zoom & Transition onto Left Side for About Me
-    // -------------------------------------------------------------
-    const vHeight = window.innerHeight || 800;
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
 
     // -------------------------------------------------------------
     // Multi-Section Lanyard Positioning:
