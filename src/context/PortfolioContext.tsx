@@ -24,6 +24,9 @@ import {
   fetchPortfolioFromSupabase,
   syncProfileToSupabase,
   syncProjectsToSupabase,
+  deleteProjectFromSupabase,
+  syncExperiencesToSupabase,
+  syncSkillsToSupabase,
   syncAllToSupabase,
   getStoredSupabaseConfig,
   saveSupabaseConfig,
@@ -375,9 +378,10 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
 
   const deleteProject = useCallback((index: number) => {
     setProjects((prev) => {
+      const projectToDelete = prev[index];
       const next = prev.filter((_, i) => i !== index);
-      if (isSupabaseConfigured()) {
-        syncProjectsToSupabase(next);
+      if (isSupabaseConfigured() && projectToDelete?.slug) {
+        deleteProjectFromSupabase(projectToDelete.slug);
       }
       return next;
     });
@@ -397,19 +401,34 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
 
   // Experience CRUD
   const addExperience = useCallback((exp: ExperienceData) => {
-    setExperience((prev) => [exp, ...prev]);
+    setExperience((prev) => {
+      const next = [exp, ...prev];
+      if (isSupabaseConfigured()) {
+        syncExperiencesToSupabase(next);
+      }
+      return next;
+    });
   }, []);
 
   const updateExperience = useCallback((index: number, exp: ExperienceData) => {
     setExperience((prev) => {
       const copy = [...prev];
       copy[index] = exp;
+      if (isSupabaseConfigured()) {
+        syncExperiencesToSupabase(copy);
+      }
       return copy;
     });
   }, []);
 
   const deleteExperience = useCallback((index: number) => {
-    setExperience((prev) => prev.filter((_, i) => i !== index));
+    setExperience((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (isSupabaseConfigured()) {
+        syncExperiencesToSupabase(next);
+      }
+      return next;
+    });
   }, []);
 
   // Skills CRUD
@@ -423,6 +442,9 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
           ...copy[categoryIndex],
           items: [...copy[categoryIndex].items, trimmed],
         };
+        if (isSupabaseConfigured()) {
+          syncSkillsToSupabase(copy);
+        }
       }
       return copy;
     });
@@ -437,6 +459,9 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
             ...copy[categoryIndex],
             items: copy[categoryIndex].items.filter((_, i) => i !== itemIndex),
           };
+          if (isSupabaseConfigured()) {
+            syncSkillsToSupabase(copy);
+          }
         }
         return copy;
       });
@@ -447,17 +472,29 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   const addSkillCategory = useCallback((categoryEn: string, categoryId: string) => {
     const en = categoryEn.trim();
     if (!en) return;
-    setSkills((prev) => [
-      ...prev,
-      {
-        category: { en, id: categoryId.trim() || en },
-        items: [],
-      },
-    ]);
+    setSkills((prev) => {
+      const next = [
+        ...prev,
+        {
+          category: { en, id: categoryId.trim() || en },
+          items: [],
+        },
+      ];
+      if (isSupabaseConfigured()) {
+        syncSkillsToSupabase(next);
+      }
+      return next;
+    });
   }, []);
 
   const removeSkillCategory = useCallback((categoryIndex: number) => {
-    setSkills((prev) => prev.filter((_, i) => i !== categoryIndex));
+    setSkills((prev) => {
+      const next = prev.filter((_, i) => i !== categoryIndex);
+      if (isSupabaseConfigured()) {
+        syncSkillsToSupabase(next);
+      }
+      return next;
+    });
   }, []);
 
   // Reset to Defaults

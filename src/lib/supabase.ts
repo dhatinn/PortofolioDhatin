@@ -355,6 +355,26 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
 }
 
 /**
+ * Menghapus proyek dari Supabase berdasarkan slug
+ */
+export async function deleteProjectFromSupabase(slug: string): Promise<boolean> {
+  const client = getSupabase();
+  if (!client) return false;
+
+  try {
+    const { error } = await client.from("portfolio_projects").delete().eq("slug", slug);
+    if (error) {
+      console.error("Gagal menghapus proyek dari Supabase:", error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Supabase delete project error:", err);
+    return false;
+  }
+}
+
+/**
  * Menyimpan riwayat pengalaman kerja ke Supabase
  */
 export async function syncExperiencesToSupabase(experience: ExperienceData[]): Promise<boolean> {
