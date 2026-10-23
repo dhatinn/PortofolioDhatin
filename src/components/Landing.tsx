@@ -4,12 +4,6 @@ import { usePortfolio } from "../context/PortfolioContext";
 import { useLoading } from "../context/LoadingProvider";
 import SolarAuraStage from "./SolarAuraStage";
 
-const ROLE_CATEGORIES: Record<number, string> = {
-  0: "FULL-STACK ENGINEERING",
-  1: "CREATIVE & UI/UX DESIGN",
-  2: "CINEMATICS & MOTION",
-};
-
 const Landing = () => {
   const { config } = usePortfolio();
   const { isLoading } = useLoading();
@@ -62,12 +56,6 @@ const Landing = () => {
     };
   }, [startLoopTimer]);
 
-  const handleSelectRole = (idx: number) => {
-    if (idx === roleIndexRef.current) return;
-    triggerTransition(idx);
-    startLoopTimer();
-  };
-
   const handleNextRole = () => {
     const next = (roleIndexRef.current + 1) % taglines.length;
     triggerTransition(next);
@@ -78,7 +66,6 @@ const Landing = () => {
   const roleWords = currentRole.split(" ");
   const line1 = roleWords[0] || currentRole;
   const line2 = roleWords.slice(1).join(" ");
-  const categoryTag = ROLE_CATEGORIES[roleIndex] || "EXPERTISE & DISCIPLINE";
 
   return (
     <>
@@ -90,10 +77,6 @@ const Landing = () => {
           {/* Left Intro Card: Glassmorphism Card (No orange stroke) */}
           <div className="landing-intro">
             <div className="landing-intro-glass">
-              <div className="landing-greeting-tag">
-                <span className="landing-pulse-dot" />
-                <span>HELLO, I'M</span>
-              </div>
               <h1 className="landing-name">
                 <span className="landing-name-first">{firstName.toUpperCase()}</span>
                 {lastName && (
@@ -110,11 +93,6 @@ const Landing = () => {
           {/* Right Info Card: Glassmorphism Card with Looping Animated Roles */}
           <div className="landing-info">
             <div className="landing-info-glass">
-              <div className="landing-info-tag">
-                <span className="landing-pulse-dot-small" />
-                <span>{categoryTag}</span>
-              </div>
-
               {/* Looping Animated Role Heading with Staggered Kinetic Slide */}
               <h2
                 className="landing-info-h2 interactive-role-heading"
@@ -132,26 +110,6 @@ const Landing = () => {
                   )}
                 </div>
               </h2>
-
-              {/* Interactive Role Switcher Pills */}
-              <div className="landing-sub-pills">
-                {taglines.map((role, idx) => {
-                  const isActive = idx === roleIndex;
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`landing-role-pill ${isActive ? "active" : ""}`}
-                      onClick={() => handleSelectRole(idx)}
-                      aria-pressed={isActive}
-                      title={`Ganti ke ${role}`}
-                    >
-                      <span className="role-pill-indicator" />
-                      <span>{role.toUpperCase()}</span>
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </div>
         </div>
