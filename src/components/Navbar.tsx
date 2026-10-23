@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 export let lenis: Lenis | null = null;
 
 const Navbar = () => {
-  const { config, isAuthenticated, openAdminDrawer, openLoginModal } = usePortfolio();
+  const { config } = usePortfolio();
   useEffect(() => {
     // Initialize Lenis smooth scroll
     lenis = new Lenis({
@@ -97,20 +97,6 @@ const Navbar = () => {
           <li>
             <a data-href="#contact" href="#contact">
               <HoverLinks text="CONTACT" />
-            </a>
-          </li>
-          <li>
-            <a
-              href="/admin"
-              onClick={(e) => {
-                e.preventDefault();
-                if (isAuthenticated) openAdminDrawer();
-                else openLoginModal();
-              }}
-              title="Menu Admin (Kelola Portofolio)"
-              className="navbar-admin-link"
-            >
-              <HoverLinks text="ADMIN" />
             </a>
           </li>
         </ul>
