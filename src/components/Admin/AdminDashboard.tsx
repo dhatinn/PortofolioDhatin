@@ -535,7 +535,7 @@ const AdminDashboard: React.FC = () => {
           >
             <FiImage className="admin-tab-icon" />
             <span>3D Card & Foto</span>
-            <span className="admin-tab-count" style={{ background: "#9333ea", color: "#fff" }}>
+            <span className="admin-tab-count" style={{ background: "#ff7a00", color: "#fff" }}>
               3D
             </span>
           </button>
@@ -619,7 +619,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="admin-stat-card">
                   <div
                     className="admin-stat-icon-wrap"
-                    style={{ background: "rgba(168, 85, 247, 0.15)", color: "#c084fc" }}
+                    style={{ background: "rgba(255, 122, 0, 0.15)", color: "#ff9f43" }}
                   >
                     <FiImage />
                   </div>
@@ -709,7 +709,7 @@ const AdminDashboard: React.FC = () => {
                   {/* Photo Upload Section */}
                   <div className="admin-card">
                     <div className="admin-card-title">
-                      <FiUpload style={{ color: "#a855f7" }} />
+                      <FiUpload style={{ color: "#ff7a00" }} />
                       Upload Foto Profil
                     </div>
 
@@ -852,7 +852,7 @@ const AdminDashboard: React.FC = () => {
                   {/* Card Styling & Text Customizer */}
                   <div className="admin-card">
                     <div className="admin-card-title">
-                      <FiSettings style={{ color: "#a855f7" }} />
+                      <FiSettings style={{ color: "#ff7a00" }} />
                       Kustomisasi Tampilan Kartu 3D
                     </div>
 
@@ -864,7 +864,7 @@ const AdminDashboard: React.FC = () => {
                           <div
                             key={item.value}
                             className={`admin-color-swatch ${
-                              (profileForm.badge?.accentColor || "#a855f7") === item.value
+                              (profileForm.badge?.accentColor || "#ff7a00") === item.value
                                 ? "active"
                                 : ""
                             }`}
@@ -1466,11 +1466,11 @@ const AdminDashboard: React.FC = () => {
                         style={{
                           background:
                             projectCategoryFilter === cat
-                              ? "rgba(168, 85, 247, 0.25)"
+                              ? "rgba(255, 122, 0, 0.22)"
                               : undefined,
                           borderColor:
                             projectCategoryFilter === cat
-                              ? "#a855f7"
+                              ? "#ff7a00"
                               : undefined,
                         }}
                         onClick={() => setProjectCategoryFilter(cat)}
@@ -1820,13 +1820,13 @@ const AdminDashboard: React.FC = () => {
                 style={{
                   borderColor: isSupabaseConnected
                     ? "rgba(16, 185, 129, 0.4)"
-                    : "rgba(168, 85, 247, 0.3)",
+                    : "rgba(255, 140, 20, 0.3)",
                 }}
               >
                 <div className="admin-card-title">
                   <FiLayers
                     style={{
-                      color: isSupabaseConnected ? "#10b981" : "#a855f7",
+                      color: isSupabaseConnected ? "#10b981" : "#ff7a00",
                     }}
                   />
                   Integrasi Backend Database Supabase
@@ -2051,7 +2051,7 @@ const AdminDashboard: React.FC = () => {
               {/* Backup & Restore */}
               <div className="admin-card">
                 <div className="admin-card-title">
-                  <FiDownload style={{ color: "#a855f7" }} />
+                  <FiDownload style={{ color: "#ff7a00" }} />
                   Ekspor & Cadangkan Data Portofolio
                 </div>
                 <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "16px" }}>
