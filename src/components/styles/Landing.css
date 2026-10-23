@@ -197,6 +197,12 @@
   position: relative;
   z-index: 5;
   max-width: var(--cMaxWidth);
+  pointer-events: none;
+}
+
+.landing-intro,
+.landing-info {
+  pointer-events: auto;
 }
 
 .landing-circle1 {
