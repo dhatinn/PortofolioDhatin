@@ -345,30 +345,31 @@
 }
 
 .landing-intro-glass {
-  background: linear-gradient(135deg, rgba(20, 16, 24, 0.72) 0%, rgba(12, 10, 15, 0.58) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* Pure frosted glass border highlight - NO ORANGE STROKE */
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(12, 10, 15, 0.24);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  /* Crystal frosted glass border highlight */
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 20px;
   padding: 24px 30px;
   box-shadow:
-    0 24px 48px -12px rgba(0, 0, 0, 0.82),
-    inset 0 1px 1px rgba(255, 255, 255, 0.18),
-    inset 0 0 20px rgba(255, 255, 255, 0.02);
+    0 16px 36px -8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .landing-intro-glass:hover {
   transform: translateY(-2px);
-  /* Subtle glass shimmer on hover - NO ORANGE STROKE */
-  border-color: rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%), rgba(12, 10, 15, 0.28);
+  border-color: rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 28px 55px -10px rgba(0, 0, 0, 0.9),
-    inset 0 1px 1px rgba(255, 255, 255, 0.28);
+    0 22px 45px -8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 24px rgba(255, 255, 255, 0.05);
 }
 
 /* Greeting Pill Tag - Pure Glassmorphic (No Orange Stroke) */
@@ -473,30 +474,31 @@
 }
 
 .landing-info-glass {
-  background: linear-gradient(135deg, rgba(20, 16, 24, 0.72) 0%, rgba(12, 10, 15, 0.58) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* Pure frosted glass border highlight - NO ORANGE STROKE */
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(12, 10, 15, 0.24);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  /* Crystal frosted glass border highlight */
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 20px;
   padding: 24px 30px;
   box-shadow:
-    0 24px 48px -12px rgba(0, 0, 0, 0.82),
-    inset 0 1px 1px rgba(255, 255, 255, 0.18),
-    inset 0 0 20px rgba(255, 255, 255, 0.02);
+    0 16px 36px -8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .landing-info-glass:hover {
   transform: translateY(-2px);
-  /* Subtle glass shimmer on hover - NO ORANGE STROKE */
-  border-color: rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%), rgba(12, 10, 15, 0.28);
+  border-color: rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 28px 55px -10px rgba(0, 0, 0, 0.9),
-    inset 0 1px 1px rgba(255, 255, 255, 0.28);
+    0 22px 45px -8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 24px rgba(255, 255, 255, 0.05);
 }
 
 .landing-info-tag {
