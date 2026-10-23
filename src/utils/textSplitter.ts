@@ -68,9 +68,12 @@ export class TextSplitter {
   private splitWords(element: Element) {
     let raw = this.originalHTML.get(element) || element.innerHTML || element.textContent || "";
 
-    // Normalize HTML <strong> and <b> tags into **markdown** format
-    raw = raw.replace(/<strong>(.*?)<\/strong>/gi, "**$1**");
-    raw = raw.replace(/<b>(.*?)<\/b>/gi, "**$1**");
+    // Normalize HTML <strong> and <b> tags (with any classes or attributes) into **markdown** format
+    raw = raw.replace(/<strong[^>]*>(.*?)<\/strong>/gis, "**$1**");
+    raw = raw.replace(/<b[^>]*>(.*?)<\/b>/gis, "**$1**");
+
+    // Clean any stray HTML tags so no HTML attributes can ever leak into word tokens
+    raw = raw.replace(/<[^>]+>/g, "");
 
     // If no explicit bold tags exist, automatically bold key highlights for professional presentation
     if (!raw.includes("**")) {
