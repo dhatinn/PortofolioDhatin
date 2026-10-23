@@ -68,30 +68,6 @@ export default function Band({
   const quat = useMemo(() => new THREE.Quaternion(), []);
   const euler = useMemo(() => new THREE.Euler(0, 0, 0, "YXZ"), []);
 
-  // Responsive card scale: on laptop screens (<1600px), use 1.8; on wide screens, use 2.15
-  const [cardScale, setCardScale] = useState(() => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth < 1200) return 1.65;
-      if (window.innerWidth < 1600) return 1.8;
-    }
-    return 2.15;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 1200) {
-        setCardScale(1.65);
-      } else if (w < 1600) {
-        setCardScale(1.8);
-      } else {
-        setCardScale(2.15);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
   const [hovered, hover] = useState(false);
 
@@ -165,7 +141,7 @@ export default function Band({
 
   useSphericalJoint(j3, card, [
     [0, 0, 0],
-    [0, 1.45, 0],
+    [0, 1.405, 0],
   ]);
 
   useEffect(() => {
@@ -199,7 +175,11 @@ export default function Band({
       });
     }
 
-    if (fixed.current) {
+    if (fixed.current && card.current) {
+      const cardTrans = card.current.translation() as any;
+      const cardRot = card.current.rotation() as any;
+      quat.set(cardRot.x, cardRot.y, cardRot.z, cardRot.w);
+
       const [j1Lerped, j2Lerped] = [j1, j2].map((ref) => {
         if (ref.current) {
           const lerped = new THREE.Vector3().copy(ref.current.translation() as any);
@@ -214,7 +194,12 @@ export default function Band({
         }
       });
 
-      curve.points[0].copy(j3.current.translation() as any);
+      // Anchor the bottom of the ribbon line directly into the clip loop
+      const clipAttach = new THREE.Vector3(0, 1.405, 0)
+        .applyQuaternion(quat)
+        .add(new THREE.Vector3(cardTrans.x, cardTrans.y, cardTrans.z));
+
+      curve.points[0].copy(clipAttach);
       curve.points[1].copy(j2Lerped ?? (j2.current.translation() as any));
       curve.points[2].copy(j1Lerped ?? (j1.current.translation() as any));
       curve.points[3].copy(fixed.current.translation() as any);
@@ -388,10 +373,10 @@ export default function Band({
           {...segmentProps}
           type={dragged ? "kinematicPosition" : "dynamic"}
         >
-          <CuboidCollider args={[0.35 * cardScale, 0.5 * cardScale, 0.01]} />
+          <CuboidCollider args={[0.8, 1.125, 0.01]} />
           <group
-            scale={cardScale}
-            position={[0, -cardScale * 0.555, -0.05]}
+            scale={2.25}
+            position={[0, -1.25, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
             onPointerUp={(e) => {
