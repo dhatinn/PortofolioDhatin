@@ -124,18 +124,6 @@ const AdminPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Subtext / Auto-fill hint */}
-          <p className="spacefox-subtext">
-            Don't have an account?{" "}
-            <span
-              className="spacefox-signup-link"
-              onClick={handleFillDefaults}
-              title="Click to fill default credentials"
-            >
-              Sign up
-            </span>
-          </p>
-
           {/* Bottom verified squircle button with glowing amber/coral rim */}
           <div className="spacefox-bottom-widget">
             <button
