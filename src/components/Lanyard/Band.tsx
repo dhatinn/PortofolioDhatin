@@ -237,17 +237,31 @@ export default function Band({
       return p * p * (3 - 2 * p);
     };
 
-    // Transition from Landing/Hero into About Me (zoom in & glide left)
-    // In Hero (scrollY < 0.60 * vHeight), toAboutProgress is 0 -> Lanyard is 100% hidden
-    // Emerges gently as Hero section scrolls off-screen, sitting cleanly underneath the Hero photo layer
-    const toAboutProgress = smoothstep(vHeight * 0.60, vHeight * 1.05, scrollY);
+    // -------------------------------------------------------------
+    // Multi-Section Lanyard Positioning & Straight Down Entrance:
+    // 1. Landing / Hero: Hidden above the viewport (enterOffsetY: -110%), ALREADY prepared on the LEFT (targetX: 1.25)
+    // 2. Entering About Me: Descends straight down ("turun lurus") from above into place, with ZERO horizontal drift
+    // 3. About Me: Zoomed on Left (targetX = 1.25, targetZ = 8.0, targetY = 0.35)
+    // 4. What I Do: Slides into Center (targetX = 0, targetZ = 13, targetY = 0) with interactive mouse sway
+    // 5. Past What I Do: Retracts upwards BEFORE Career heading reaches screen center
+    // -------------------------------------------------------------
+    const vHeight = window.innerHeight || 800;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
+
+    const smoothstep = (min: number, max: number, val: number) => {
+      const p = Math.min(1, Math.max(0, (val - min) / (max - min)));
+      return p * p * (3 - 2 * p);
+    };
+
+    // Straight-down vertical descent from above into About Me (X is already at 1.25 on left)
+    // Begins as Hero is scrolled past (0.35 * vHeight) and lands fully in About Me (0.95 * vHeight)
+    const enterDownProgress = smoothstep(vHeight * 0.35, vHeight * 0.95, scrollY);
 
     // Transition from About Me into What I Do (unzoom & return to center)
     const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);
 
-    // -------------------------------------------------------------
     // Dynamic Exit: Retract upwards BEFORE "My career & experience" reaches the center of screen
-    // -------------------------------------------------------------
     let exitUpProgress = 0;
     const careerHeading =
       typeof document !== "undefined"
@@ -259,8 +273,6 @@ export default function Band({
       const rect = careerHeading.getBoundingClientRect();
       const headingCenterY = rect.top + rect.height * 0.5;
 
-      // Start pulling up when Career heading approaches the lower part of screen (vHeight * 0.95)
-      // Fully pulled up & vanished when heading reaches vHeight * 0.62 (well BEFORE center vHeight * 0.50!)
       const exitStart = vHeight * 0.95;
       const exitEnd = vHeight * 0.62;
 
@@ -268,46 +280,53 @@ export default function Band({
         exitUpProgress = Math.min(1, Math.max(0, (exitStart - headingCenterY) / (exitStart - exitEnd)));
       }
     } else {
-      // Fallback scroll-based exit: starts right after What I Do (scrollY 2.05 to 2.50)
       exitUpProgress = smoothstep(vHeight * 2.05, vHeight * 2.50, scrollY);
     }
 
-    // In About Me, aboutFactor = 1; in What I Do, whatIDoFactor = 1.
-    const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
+    // Section factors
+    const aboutFactor = 1 - toWhatIDoProgress;
     const whatIDoFactor = toWhatIDoProgress * (1 - exitUpProgress);
 
     // Camera positioning:
-    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 1.25, aboutFactor) : 0;
-    const baseTargetY = THREE.MathUtils.lerp(0, 0.35, aboutFactor);
+    // Notice: targetX is ALREADY 1.25 (left) in Hero and About Me!
+    // It only transitions from 1.25 to 0 when going from About Me into What I Do.
+    const targetX = isDesktop ? THREE.MathUtils.lerp(1.25, 0, toWhatIDoProgress) : 0;
+    const baseTargetY = THREE.MathUtils.lerp(0.35, 0, toWhatIDoProgress);
     const targetY = isDesktop ? baseTargetY - (exitUpProgress * 8.5) : baseTargetY;
-    const targetZ = THREE.MathUtils.lerp(13, 8.0, aboutFactor);
+    const targetZ = THREE.MathUtils.lerp(8.0, 13.0, toWhatIDoProgress);
 
-    // Lanyard Visibility & CSS Transform:
+    // Vertical CSS offset:
+    // 1. Entrance descent: moves down from -110% to 0% straight into About Me
+    // 2. Career exit: pulls up from 0% to -125%
+    const enterOffsetY = (1 - enterDownProgress) * 110;
+    const exitOffsetY = exitUpProgress * 125;
+    const totalOffsetY = enterOffsetY + exitOffsetY;
+
+    // Lanyard Visibility:
     let opacity = 0;
     if (isDesktop) {
-      opacity = toAboutProgress;
+      opacity = enterDownProgress;
       if (exitUpProgress > 0.05) {
-        // Fades cleanly as it retracts upwards
-        opacity = Math.max(0, (1 - (exitUpProgress - 0.05) / 0.75) * toAboutProgress);
+        opacity = Math.max(0, (1 - (exitUpProgress - 0.05) / 0.75) * enterDownProgress);
       }
     } else {
       opacity = 0; // Hidden on mobile
     }
 
     if (wrapperRef?.current) {
-      if (opacity <= 0.005 || exitUpProgress >= 0.98) {
+      if (opacity <= 0.005 || totalOffsetY >= 105) {
         wrapperRef.current.style.opacity = "0";
         wrapperRef.current.style.visibility = "hidden";
         wrapperRef.current.style.pointerEvents = "none";
-        wrapperRef.current.style.transform = "translate3d(0, -130%, 0)";
+        wrapperRef.current.style.transform = `translate3d(0, -${totalOffsetY.toFixed(1)}%, 0)`;
       } else {
         wrapperRef.current.style.visibility = "visible";
         wrapperRef.current.style.opacity = opacity.toFixed(3);
         wrapperRef.current.style.pointerEvents =
           opacity > 0.1 && exitUpProgress < 0.3 ? "auto" : "none";
         wrapperRef.current.style.transform =
-          exitUpProgress > 0
-            ? `translate3d(0, -${(exitUpProgress * 125).toFixed(1)}%, 0)`
+          totalOffsetY > 0
+            ? `translate3d(0, -${totalOffsetY.toFixed(1)}%, 0)`
             : "";
       }
     }

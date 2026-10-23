@@ -22,7 +22,7 @@ const LanyardCanvas: React.FC = () => {
       data-cursor="disable"
     >
       <Canvas
-        camera={{ position: [0, 0, 13], fov: 25 }}
+        camera={{ position: [1.25, 0.35, 8], fov: 25 }}
         style={{ width: "100%", height: "100%", backgroundColor: "transparent" }}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
         dpr={[1, 1.5]}
