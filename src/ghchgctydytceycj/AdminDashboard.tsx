@@ -44,7 +44,7 @@ const ACCENT_COLORS = [
   { name: "Electric Blue", value: "#3b82f6" },
 ];
 
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export interface AdminDashboardProps {
   isStandalonePage?: boolean;
