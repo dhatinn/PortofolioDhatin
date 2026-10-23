@@ -27,7 +27,7 @@ declare global {
 
 const segmentProps = {
   type: "dynamic",
-  canSleep: true,
+  canSleep: false,
   colliders: false,
   angularDamping: 2,
   linearDamping: 2,
@@ -224,10 +224,11 @@ export default function Band({
 
 
     // -------------------------------------------------------------
-    // Multi-Section Lanyard Positioning:
-    // 1. Landing: Normal size in Center (targetX = 0, targetZ = 13, targetY = 0)
+    // Multi-Section Lanyard Positioning & Visibility:
+    // 1. Landing / Hero: Completely HIDDEN (opacity = 0)
     // 2. About Me: Zoomed on Left (targetX = 0.88, targetZ = 5.6, targetY = 0.28)
     // 3. What I Do: Normal size in Center (targetX = 0, targetZ = 13, targetY = 0)
+    //    Dynamic left-right interactive motion via cursor sway & physics drag
     // 4. Past What I Do: Flies upwards and exits cleanly
     // -------------------------------------------------------------
     const vHeight = window.innerHeight || 800;
@@ -239,17 +240,19 @@ export default function Band({
       return p * p * (3 - 2 * p);
     };
 
-    // Transition from Landing into About Me (zoom in & glide left)
-    const toAboutProgress = smoothstep(vHeight * 0.25, vHeight * 0.75, scrollY);
+    // Transition from Landing/Hero into About Me (zoom in & glide left)
+    // In Hero (scrollY < 0.35 * vHeight), toAboutProgress is 0 -> Lanyard is 100% hidden
+    const toAboutProgress = smoothstep(vHeight * 0.35, vHeight * 0.85, scrollY);
 
     // Transition from About Me into What I Do (unzoom & return to center)
     const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);
 
-    // Exit upwards after What I Do (scrollY from 2.40 * vHeight to 2.80 * vHeight)
-    const exitUpProgress = smoothstep(vHeight * 2.40, vHeight * 2.80, scrollY);
+    // Exit upwards after What I Do (scrollY from 2.45 * vHeight to 2.85 * vHeight)
+    const exitUpProgress = smoothstep(vHeight * 2.45, vHeight * 2.85, scrollY);
 
-    // In About Me, aboutFactor = 1; in Landing and What I Do, aboutFactor = 0.
+    // In About Me, aboutFactor = 1; in What I Do, whatIDoFactor = 1.
     const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
+    const whatIDoFactor = toWhatIDoProgress * (1 - exitUpProgress);
 
     const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, aboutFactor) : 0;
     const baseTargetY = THREE.MathUtils.lerp(0, 0.28, aboutFactor);
@@ -257,12 +260,14 @@ export default function Band({
     const targetZ = THREE.MathUtils.lerp(13, 5.6, aboutFactor);
 
     // Lanyard Visibility:
-    // Fully visible in Landing (Hero), About Me, and What I Do!
-    // Exits and fades out only AFTER What I Do (scrollY > 2.40 * vHeight)
-    let opacity = 1;
+    // - Hero (scrollY < 0.35 * vHeight): opacity = 0 (completely hidden)
+    // - About Me & What I Do: opacity = 1 (visible)
+    // - Past What I Do: fades out as it flies upwards
+    let opacity = 0;
     if (isDesktop) {
-      if (exitUpProgress > 0.3) {
-        opacity = Math.max(0, 1 - (exitUpProgress - 0.3) / 0.5);
+      opacity = toAboutProgress;
+      if (exitUpProgress > 0.15) {
+        opacity = Math.max(0, (1 - (exitUpProgress - 0.15) / 0.6) * toAboutProgress);
       }
     } else {
       opacity = 0; // Hidden on mobile
@@ -288,6 +293,36 @@ export default function Band({
     // Look straight forward at target plane for zero perspective distortion
     state.camera.lookAt(state.camera.position.x, targetY, 0);
 
+    // -------------------------------------------------------------
+    // What I Do: Interactive Left & Right Sway / Physics Control
+    // -------------------------------------------------------------
+    if (whatIDoFactor > 0.15 && fixed.current && !dragged) {
+      // Horizontal sway based on cursor pointer X (-1 on left to +1 on right)
+      const swayTargetX = THREE.MathUtils.clamp(state.pointer.x * 1.5, -1.25, 1.25) * whatIDoFactor;
+      const curFixed = fixed.current.translation() as any;
+      fixed.current.setTranslation(
+        {
+          x: THREE.MathUtils.damp(curFixed.x, swayTargetX, 4.0, delta),
+          y: 4.6,
+          z: 0,
+        },
+        true
+      );
+      [card, j1, j2, j3].forEach((ref) => ref.current?.wakeUp());
+    } else if (fixed.current && !dragged) {
+      const curFixed = fixed.current.translation() as any;
+      if (Math.abs(curFixed.x) > 0.005) {
+        fixed.current.setTranslation(
+          {
+            x: THREE.MathUtils.damp(curFixed.x, 0, 4.0, delta),
+            y: 4.6,
+            z: 0,
+          },
+          true
+        );
+      }
+    }
+
     // Unified physics stabilization & alignment:
     if (card.current && !dragged) {
       const curRot = card.current.rotation() as any;
@@ -306,15 +341,15 @@ export default function Band({
       while (roll > Math.PI) roll -= Math.PI * 2;
       while (roll < -Math.PI) roll += Math.PI * 2;
 
-      // Adjust dynamic damping in Rapier based on zoom level:
-      // Freely swings in hero and What I Do (damping = 2.0), settles naturally when zoomed in About Me (damping = 4.8)
-      card.current.setAngularDamping(2.0 + aboutFactor * 2.8);
-      card.current.setLinearDamping(2.0 + aboutFactor * 1.8);
+      // Adjust dynamic damping in Rapier based on section:
+      // Freely swings in What I Do (damping = 1.6), settles calmly in About Me (damping = 4.8)
+      card.current.setAngularDamping(1.6 + aboutFactor * 3.2);
+      card.current.setLinearDamping(1.4 + aboutFactor * 2.4);
 
       // Target angular velocity to keep card stable and upright:
-      const targetAngX = -pitch * (2.2 * aboutFactor);
-      const targetAngY = -yaw * (0.6 + 3.2 * aboutFactor);
-      const targetAngZ = -roll * (2.2 * aboutFactor);
+      const targetAngX = -pitch * (0.8 + 1.4 * aboutFactor);
+      const targetAngY = -yaw * (0.8 + 3.0 * aboutFactor);
+      const targetAngZ = -roll * (0.8 + 1.4 * aboutFactor);
 
       const curAng = card.current.angvel() as any;
       const dampSpeed = 3.5 + aboutFactor * 3.5;

@@ -9,11 +9,13 @@
   max-width: 1920px;
   margin: auto;
   z-index: 9;
+  pointer-events: none;
 }
 
 .what-box {
   position: relative;
   z-index: 12;
+  pointer-events: auto;
 }
 
 .what-box:first-child {

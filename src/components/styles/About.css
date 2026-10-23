@@ -8,12 +8,14 @@
   height: auto;
   width: var(--cWidth);
   margin: auto;
+  pointer-events: none;
 }
 .about-me {
   padding: 40px 0px;
   padding-bottom: 0;
   width: 100%;
   max-width: calc(100% - 15px);
+  pointer-events: auto;
 }
 .about-me h3 {
   font-size: 18px;
