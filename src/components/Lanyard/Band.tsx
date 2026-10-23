@@ -68,6 +68,11 @@ export default function Band({
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
   const [hovered, hover] = useState(false);
 
+  // 1.5s delayed physical drop animation state when arriving in About Me
+  const aboutMeTimerRef = useRef(0);
+  const hasDroppedRef = useRef(false);
+  const dropActiveTimeRef = useRef(0);
+
   const { nodes, materials } = useGLTF("/assets/3d/card.glb") as any;
   const ribbonTexture = useTexture("/assets/images/tag_texture.png");
 
@@ -321,9 +326,43 @@ export default function Band({
     state.camera.lookAt(state.camera.position.x, targetY, 0);
 
     // -------------------------------------------------------------
-    // Anchor & Physics Control (What I Do sway & Upward Retraction)
+    // Anchor & Physics Control (What I Do sway, Upward Retraction & 1.5s Drop)
     // -------------------------------------------------------------
-    const targetAnchorY = 4.6 + (exitUpProgress * 14.0);
+    // Detect arrival in About Me section
+    const inAboutMe = scrollY >= vHeight * 0.70 && scrollY <= vHeight * 1.35 && exitUpProgress < 0.05;
+
+    let dropAnchorOffset = 0;
+    if (inAboutMe) {
+      aboutMeTimerRef.current += delta;
+      if (aboutMeTimerRef.current < 1.5 && !hasDroppedRef.current) {
+        // Before 1.5s delay: held slightly higher (~0.5 units) in anticipation of drop
+        dropAnchorOffset = 0.5;
+      } else if (aboutMeTimerRef.current >= 1.5 && !hasDroppedRef.current) {
+        hasDroppedRef.current = true;
+        dropActiveTimeRef.current = 1.3;
+
+        // Wake all bodies up and apply realistic tactile drop physics
+        [card, j1, j2, j3, fixed].forEach((ref) => ref.current?.wakeUp());
+        if (!dragged && card.current) {
+          card.current.setLinvel({ x: 0.1, y: -5.4, z: 1.1 }, true);
+          card.current.setAngvel({ x: 1.8, y: 0.35, z: -0.25 }, true);
+        }
+      }
+    } else if (scrollY < vHeight * 0.35 || scrollY > vHeight * 1.8) {
+      // Reset when scrolled away so it can re-trigger when returning to About Me
+      aboutMeTimerRef.current = 0;
+      hasDroppedRef.current = false;
+      dropActiveTimeRef.current = 0;
+    }
+
+    if (dropActiveTimeRef.current > 0) {
+      dropActiveTimeRef.current = Math.max(0, dropActiveTimeRef.current - delta);
+      // Anchor drops rapidly in first 0.2s of drop
+      const dropT = Math.min(1, (1.3 - dropActiveTimeRef.current) / 0.2);
+      dropAnchorOffset = 0.5 * (1 - dropT * dropT);
+    }
+
+    const targetAnchorY = 4.6 + dropAnchorOffset + (exitUpProgress * 14.0);
 
     if (whatIDoFactor > 0.15 && fixed.current && !dragged) {
       // Horizontal sway based on cursor pointer X (-1 on left to +1 on right)
@@ -372,9 +411,14 @@ export default function Band({
       while (roll < -Math.PI) roll += Math.PI * 2;
 
       // Adjust dynamic damping in Rapier based on section:
-      // Freely swings in What I Do (damping = 1.6), settles calmly in About Me (damping = 4.8)
-      card.current.setAngularDamping(1.6 + aboutFactor * 3.2);
-      card.current.setLinearDamping(1.4 + aboutFactor * 2.4);
+      // When drop is active, soften damping to let the card freely drop, bounce on the ribbon, and sway before settling!
+      const isDropping = dropActiveTimeRef.current > 0;
+      const dropEase = isDropping ? dropActiveTimeRef.current / 1.3 : 0;
+      
+      const angularDamp = THREE.MathUtils.lerp(1.6 + aboutFactor * 3.2, 1.2, dropEase);
+      const linearDamp = THREE.MathUtils.lerp(1.4 + aboutFactor * 2.4, 0.7, dropEase);
+      card.current.setAngularDamping(angularDamp);
+      card.current.setLinearDamping(linearDamp);
 
       // Target angular velocity to keep card stable and upright:
       const targetAngX = -pitch * (0.8 + 1.4 * aboutFactor);
@@ -382,7 +426,7 @@ export default function Band({
       const targetAngZ = -roll * (0.8 + 1.4 * aboutFactor);
 
       const curAng = card.current.angvel() as any;
-      const dampSpeed = 3.5 + aboutFactor * 3.5;
+      const dampSpeed = THREE.MathUtils.lerp(3.5 + aboutFactor * 3.5, 1.6, dropEase);
 
       card.current.setAngvel(
         {
