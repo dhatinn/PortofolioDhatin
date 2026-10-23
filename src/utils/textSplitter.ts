@@ -66,18 +66,70 @@ export class TextSplitter {
   }
 
   private splitWords(element: Element) {
-    const text = element.textContent || "";
-    const words = text.split(/(\s+)/);
+    let raw = this.originalHTML.get(element) || element.innerHTML || element.textContent || "";
 
-    element.innerHTML = words
-      .map((word) => {
-        if (word.trim().length === 0) {
-          return word; // Preserve whitespace
+    // Normalize HTML <strong> and <b> tags into **markdown** format
+    raw = raw.replace(/<strong>(.*?)<\/strong>/gi, "**$1**");
+    raw = raw.replace(/<b>(.*?)<\/b>/gi, "**$1**");
+
+    // If no explicit bold tags exist, automatically bold key highlights for professional presentation
+    if (!raw.includes("**")) {
+      const KEY_PHRASES = [
+        "sixth-semester Informatics Engineering student",
+        "STMIK Mardira Indonesia",
+        "full-stack web development",
+        "React.js",
+        "TypeScript",
+        "Node.js",
+        "Supabase",
+        "graphic design",
+        "video editing",
+        "digital project management",
+        "real-world projects",
+        "government agencies",
+        "educational institutions",
+        "proactive communication",
+        "on-time delivery",
+        "Teknik Informatika semester enam",
+        "pengembangan web full-stack",
+        "desain grafis",
+        "penyuntingan video",
+        "manajemen proyek digital",
+        "proyek nyata",
+        "instansi pemerintah",
+        "lembaga pendidikan",
+        "komunikasi proaktif",
+        "ketepatan waktu",
+      ];
+      for (const phrase of KEY_PHRASES) {
+        if (raw.includes(phrase)) {
+          raw = raw.split(phrase).join(`**${phrase}**`);
         }
-        return `<span class="split-word">${word}</span>`;
-      })
-      .join("");
+      }
+    }
 
+    const tokens = raw.split(/(\*\*.*?\*\*)/g);
+    const htmlChunks: string[] = [];
+
+    tokens.forEach((token) => {
+      if (!token) return;
+      const isBold = token.startsWith("**") && token.endsWith("**");
+      const content = isBold ? token.slice(2, -2) : token;
+      const words = content.split(/(\s+)/);
+
+      words.forEach((w) => {
+        if (w.length === 0) return;
+        if (w.trim().length === 0) {
+          htmlChunks.push(w);
+        } else {
+          const boldClass = isBold ? " split-bold" : "";
+          const innerContent = isBold ? `<strong>${w}</strong>` : w;
+          htmlChunks.push(`<span class="split-word${boldClass}">${innerContent}</span>`);
+        }
+      });
+    });
+
+    element.innerHTML = htmlChunks.join("");
     this.words.push(...Array.from(element.querySelectorAll(".split-word")));
   }
 

@@ -29,15 +29,29 @@
 
 .about-me p {
   font-size: 20px;
-  font-weight: 600;
-  line-height: 26px;
-  letter-spacing: 0.5px;
+  font-weight: 350;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 28px;
+  letter-spacing: 0.3px;
   word-spacing: 2px;
 }
 
 .about-me .split-word {
   display: inline-block;
-  margin-right: 0.3em;
+  margin-right: 0.28em;
+  font-weight: 350;
+  color: rgba(226, 232, 240, 0.72);
+  transition: color 0.3s ease;
+}
+
+.about-me .split-word.split-bold,
+.about-me .split-word strong,
+.about-me strong,
+.about-me b {
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.35px;
 }
 
 .about-me .split-line {
