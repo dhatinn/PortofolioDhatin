@@ -181,19 +181,24 @@ ON CONFLICT (id) DO UPDATE SET
     photo = EXCLUDED.photo,
     badge = EXCLUDED.badge;
 
--- Projects Seed
+-- Projects Seed (Dhatin Nuril Arsandy's Real Projects)
 INSERT INTO public.portfolio_projects (slug, title, year, category, description, stack, thumbnail, demo, repo, display_order)
 VALUES
-('ppdb-online-system', 'PPDB Online System', 2024, 'Web App', 'Sistem Pendaftaran Peserta Didik Baru terintegrasi dengan validasi berkas otomatis dan dashboard pengumuman.', '["React.js", "TypeScript", "Node.js", "MySQL", "TailwindCSS"]'::jsonb, '/images/mypicnbg.png', 'https://demo-ppdb.example.com', 'https://github.com/dhatinn/ppdb-system', 1),
-('hospitality-booking-engine', 'Hospitality Booking Engine', 2024, 'Web App', 'Platform pemesanan kamar hotel dan akomodasi dengan integrasi payment gateway dan WhatsApp invoice otomatis.', '["React.js", "TypeScript", "Supabase", "Midtrans API"]'::jsonb, '/images/mypicnbg.png', 'https://demo-hotel.example.com', 'https://github.com/dhatinn/booking-engine', 2),
-('brand-identity-multimedia', 'Creative Studio Branding & Video Reel', 2023, 'Video', 'Produksi video promosi komersial dan visual branding untuk kampanye institusi pendidikan dan UMKM.', '["Premiere Pro", "CapCut", "After Effects", "Figma", "Photoshop"]'::jsonb, '/images/mypicnbg.png', '', '', 3)
-ON CONFLICT (slug) DO NOTHING;
+('salut-kedungwuni', 'SALUT Kedungwuni: Student Registration & Admin System', 2026, 'Web App', 'Live website replacing the old site, with online registration, document verification, student dashboard, digital QR student ID, semester billing, online payments, and WhatsApp notifications.', '["PHP", "MySQL", "DOKU", "Bank Jateng API", "WhatsApp Gateway"]'::jsonb, '/images/projects/salut.jpg', '', '', 1),
+('sma-pasundan-majalaya', 'School Profile Website & LMS: SMA Pasundan Majalaya', 2026, 'Website', 'Modern school profile website and school-scale LMS with a frontend integrated with a Node.js backend and Supabase database.', '["React.js", "TypeScript", "Node.js", "Supabase"]'::jsonb, '/images/projects/sma-pasundan.jpg', '', '', 2),
+('restaurant-ordering', 'Restaurant Ordering System', 2025, 'Web App', 'End-to-end food ordering app where orders are processed and menus are updated in real time.', '["React.js", "Node.js", "Supabase"]'::jsonb, '/images/projects/restaurant.jpg', '', '', 3),
+('portfolio-cms', 'Dynamic Portfolio Website with Lightweight CMS', 2025, 'Website', 'Custom, mobile-friendly portfolio website using Supabase as a lightweight CMS for the client.', '["React.js", "Node.js", "Supabase"]'::jsonb, '/images/projects/portfolio-cms.jpg', '', '', 4)
+ON CONFLICT (slug) DO UPDATE SET
+    title = EXCLUDED.title,
+    description = EXCLUDED.description,
+    stack = EXCLUDED.stack;
 
--- Experiences Seed
+-- Experiences Seed (Dhatin Nuril Arsandy's Real Experiences)
 INSERT INTO public.portfolio_experiences (role, company, location, period, highlights, tags, display_order)
 VALUES
-('Full-Stack Web Developer', 'Freelance & Client Projects', 'Bandung, Indonesia', '2021 – Sekarang', '["Merancang dan mendeploy aplikasi web responsif menggunakan React.js, TypeScript, dan Node.js.", "Mengintegrasikan database Supabase/MySQL dan payment gateway untuk ratusan pengguna aktif.", "Berkomunikasi aktif dengan klien dari sektor pemerintah, institusi pendidikan, dan UMKM."]'::jsonb, '["React.js", "TypeScript", "Node.js", "Supabase", "MySQL"]'::jsonb, 1),
-('Multimedia Designer & Video Editor', 'Creative Media Production', 'Bandung, Indonesia', '2022 – Sekarang', '["Memproduksi video promosi, reel interaktif, dan materi presentasi digital.", "Mendesain identitas visual, UI prototype di Figma, serta materi grafis cetak dan media sosial."]'::jsonb, '["Figma", "Premiere Pro", "CapCut", "Photoshop", "Illustrator"]'::jsonb, 2);
+('Full-Stack Developer Intern', 'PT Anugrah Inovasi Digital (Protades)', 'Bandung, Indonesia', 'Agustus 2026 – September 2026', '["Developed and deployed the live SALUT Kedungwuni website (PHP, MySQL) as sole developer, replacing a legacy site with weak UI and security.", "Built an online student registration system with document upload, admin verification, status tracker, digital student ID (QR code), and semester billing.", "Engineered an admin panel for registration review, tuition billing, payment tracking, CSV/Excel export, and WhatsApp gateway.", "Secured the system with CSRF protection, bcrypt password hashing, login rate limiting, and secure session handling.", "Integrated online payments via DOKU payment gateway and Bank Jateng API."]'::jsonb, '["PHP", "MySQL", "DOKU", "WhatsApp Gateway", "Security"]'::jsonb, 1),
+('Freelancer', 'FastWork & UpWork', 'Remote', 'Agustus 2021 – Sekarang', '["Designed digital and print promotional materials (social media feeds, posters, apparel) tailored to each client''s brand identity.", "Edited commercial videos for government agency and individual clients.", "Coordinated actively with clients during revisions and delivered on time."]'::jsonb, '["Graphic Design", "Video Editing", "Client Management"]'::jsonb, 2),
+('Project Director / Film Director', 'High School Farewell Film', 'Bandung, Indonesia', 'Juli 2023 – Agustus 2023', '["Led the project from pre-production to post-production.", "Coordinated crew and cast during filming.", "Handled video editing, color grading, audio mixing, visual effects, and transitions."]'::jsonb, '["Premiere Pro", "Color Grading", "Leadership"]'::jsonb, 3);
 
 -- Skills Seed
 INSERT INTO public.portfolio_skills (category, items, display_order)
