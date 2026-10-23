@@ -18,13 +18,15 @@
   max-width: calc(100% - 15px);
   pointer-events: auto;
 }
-.about-me h3 {
+.about-me h3,
+.about-me .title {
   font-size: 18px;
   text-transform: uppercase;
   letter-spacing: 4px;
   font-weight: 400;
   color: var(--accentColor);
   margin-bottom: 15px;
+  text-shadow: none !important;
 }
 
 .about-me p {

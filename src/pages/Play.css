@@ -1,13 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
 
-:root {
+.hopper-game-root {
   --primary-color: #ff6b6b;
   --secondary-color: #4ecdc4;
   --text-color: #ffffff;
   --pixel-font: "VT323", monospace;
-}
 
-.hopper-game-root {
   position: relative;
   width: 100vw;
   height: 100vh;
@@ -17,7 +15,7 @@
   user-select: none;
 }
 
-#game-container {
+.hopper-game-root #game-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -26,13 +24,13 @@
   z-index: 1;
 }
 
-#game-container canvas {
+.hopper-game-root #game-container canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
 }
 
-#ui-layer {
+.hopper-game-root #ui-layer {
   position: absolute;
   top: 0;
   left: 0;
@@ -42,13 +40,13 @@
   pointer-events: none;
 }
 
-/* Enable pointer events on interactive elements */
-button,
-a {
+/* Enable pointer events on interactive elements within game */
+.hopper-game-root button,
+.hopper-game-root a {
   pointer-events: auto;
 }
 
-.center-screen {
+.hopper-game-root .center-screen {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -64,7 +62,7 @@ a {
   max-width: 90vw;
 }
 
-.title {
+.hopper-game-root .title {
   font-size: clamp(3.2rem, 7vw, 6rem);
   color: #ffd700;
   text-shadow: 4px 4px #ff6b6b;
@@ -73,7 +71,7 @@ a {
   letter-spacing: 2px;
 }
 
-.subtitle {
+.hopper-game-root .subtitle {
   font-size: clamp(1.4rem, 3.2vw, 2.5rem);
   color: #fff;
   margin-bottom: 2rem;
@@ -81,7 +79,7 @@ a {
   letter-spacing: 1px;
 }
 
-button {
+.hopper-game-root button {
   background: #fff;
   color: #222;
   border: none;
@@ -94,16 +92,16 @@ button {
   border-radius: 6px;
 }
 
-button:active {
+.hopper-game-root button:active {
   transform: translateY(6px);
   box-shadow: 0 0 0 #999;
 }
 
-button:hover {
+.hopper-game-root button:hover {
   background: #f0f0f0;
 }
 
-#instructions {
+.hopper-game-root #instructions {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -123,7 +121,7 @@ button:hover {
   pointer-events: none;
 }
 
-.key {
+.hopper-game-root .key {
   display: inline-block;
   border: 2px solid #fff;
   border-radius: 4px;
@@ -133,7 +131,7 @@ button:hover {
   background: rgba(0, 0, 0, 0.4);
 }
 
-#score-display {
+.hopper-game-root #score-display {
   position: absolute;
   top: 20px;
   left: 20px;
@@ -143,7 +141,7 @@ button:hover {
   pointer-events: none;
 }
 
-.back-to-portfolio {
+.hopper-game-root .back-to-portfolio {
   position: absolute;
   bottom: 20px;
   left: 20px;
@@ -164,7 +162,7 @@ button:hover {
   z-index: 20;
 }
 
-.back-to-portfolio:hover {
+.hopper-game-root .back-to-portfolio:hover {
   background: rgba(255, 122, 0, 0.8);
   border-color: #ff7a00;
   transform: translateY(-2px);
@@ -172,7 +170,7 @@ button:hover {
 }
 
 /* Mobile Touch Controls */
-.mobile-controls {
+.hopper-game-root .mobile-controls {
   position: absolute;
   bottom: 25px;
   right: 20px;
@@ -182,7 +180,7 @@ button:hover {
   pointer-events: auto;
 }
 
-.touch-btn {
+.hopper-game-root .touch-btn {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -198,27 +196,27 @@ button:hover {
   cursor: pointer;
 }
 
-.touch-btn:active {
+.hopper-game-root .touch-btn:active {
   transform: translateY(4px);
   box-shadow: 0 0 0 #999;
 }
 
-.touch-btn-jump {
+.hopper-game-root .touch-btn-jump {
   background: #ffd700;
   box-shadow: 0 4px 0 #b39700;
 }
 
 @media screen and (max-width: 900px) {
-  .mobile-controls {
+  .hopper-game-root .mobile-controls {
     display: flex;
   }
-  .center-screen {
+  .hopper-game-root .center-screen {
     padding: 1.5rem 2rem;
   }
 }
 
 @media screen and (max-width: 600px) {
-  .back-to-portfolio {
+  .hopper-game-root .back-to-portfolio {
     top: 16px;
     bottom: auto;
     left: 16px;
@@ -226,38 +224,38 @@ button:hover {
     padding: 6px 12px;
   }
 
-  #score-display {
+  .hopper-game-root #score-display {
     top: 60px;
     left: 16px;
     font-size: 1.6rem;
   }
 
-  #instructions {
+  .hopper-game-root #instructions {
     display: none;
   }
 
-  .mobile-controls {
+  .hopper-game-root .mobile-controls {
     bottom: 24px;
     right: 50%;
     transform: translateX(50%);
     gap: 16px;
   }
 
-  .touch-btn {
+  .hopper-game-root .touch-btn {
     width: 60px;
     height: 60px;
     font-size: 2rem;
   }
 
-  .center-screen .title {
+  .hopper-game-root .center-screen .title {
     font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  .center-screen .subtitle {
+  .hopper-game-root .center-screen .subtitle {
     font-size: 1.2rem;
   }
 }
 
-.hidden {
+.hopper-game-root .hidden {
   display: none !important;
 }
