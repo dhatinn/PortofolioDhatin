@@ -35,12 +35,13 @@ type TabKey = "lanyard" | "profile" | "services" | "projects" | "experience" | "
 import { uploadImageToSupabaseStorage } from "../../lib/supabase";
 
 const ACCENT_COLORS = [
+  { name: "Solar Orange (Hero)", value: "#ff7a00" },
+  { name: "Golden Amber", value: "#f59e0b" },
   { name: "Neon Purple", value: "#a855f7" },
   { name: "Cyber Cyan", value: "#06b6d4" },
   { name: "Emerald Tech", value: "#10b981" },
   { name: "Sunset Pink", value: "#ec4899" },
   { name: "Electric Blue", value: "#3b82f6" },
-  { name: "Golden Amber", value: "#f59e0b" },
 ];
 
 const AdminDashboard: React.FC = () => {
@@ -50,6 +51,10 @@ const AdminDashboard: React.FC = () => {
     experience,
     skills,
     isSupabaseConnected,
+    supabaseConfig,
+    saveSupabaseSettings,
+    clearSupabaseSettings,
+    testSupabase,
     syncWithSupabase,
     updateProfile,
     addProject,
@@ -74,6 +79,18 @@ const AdminDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabKey>("lanyard");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Supabase Configuration Local State
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseConfig.url || "");
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(supabaseConfig.anonKey || "");
+  const [isTestingSupabase, setIsTestingSupabase] = useState(false);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+  const [supabaseTestMsg, setSupabaseTestMsg] = useState<{ success: boolean; message: string } | null>(null);
+
+  useEffect(() => {
+    setSupabaseUrlInput(supabaseConfig.url || "");
+    setSupabaseKeyInput(supabaseConfig.anonKey || "");
+  }, [supabaseConfig]);
 
   // Profile Form Local State
   const [profileForm, setProfileForm] = useState<ProfileData>(profile);
@@ -106,7 +123,7 @@ const AdminDashboard: React.FC = () => {
     const role =
       profileForm.badge?.badgeRole ||
       profileForm.taglines?.[0] ||
-      "FULL-STACK DEVELOPER";
+      "Full-Stack Developer";
     const name = profileForm.name || "Dhatin Nuril Arsandy";
     const initials =
       profileForm.badge?.initials ||
@@ -117,8 +134,8 @@ const AdminDashboard: React.FC = () => {
         .slice(0, 2)
         .toUpperCase() ||
       "DN";
-    const photoUrl = profileForm.photo || "/images/mypicnbg.png";
-    const accentColor = profileForm.badge?.accentColor || "#a855f7";
+    const photoUrl = profileForm.photo || "/images/lanyard_photo.jpg";
+    const accentColor = profileForm.badge?.accentColor || "#ff7a00";
     const badgeId = profileForm.badge?.badgeId || "DEV ID • VERIFIED";
     const subText = profileForm.badge?.subText || "ID: 2026-DHATIN-DEV-SECURE";
 
@@ -154,11 +171,11 @@ const AdminDashboard: React.FC = () => {
       img.crossOrigin = "anonymous";
       img.onload = () => updateDisplay(img);
       img.onerror = () => {
-        if (photoUrl !== "/images/mypicnbg.png") {
+        if (photoUrl !== "/images/lanyard_photo.jpg") {
           const fallback = new Image();
           fallback.crossOrigin = "anonymous";
           fallback.onload = () => updateDisplay(fallback);
-          fallback.src = "/images/mypicnbg.png";
+          fallback.src = "/images/lanyard_photo.jpg";
         }
       };
       img.src = photoUrl;
@@ -751,6 +768,33 @@ const AdminDashboard: React.FC = () => {
                         Foto Preset Portofolio:
                       </label>
                       <div className="admin-preset-photos-grid">
+                        <button
+                          type="button"
+                          className="admin-preset-btn"
+                          onClick={() => {
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              photo: "/images/lanyard_photo.jpg",
+                              badge: {
+                                ...(prev.badge || {}),
+                                photo: "/images/lanyard_photo.jpg",
+                              },
+                            }));
+                            updateProfile({
+                              ...profileForm,
+                              photo: "/images/lanyard_photo.jpg",
+                              badge: {
+                                ...(profileForm.badge || {}),
+                                photo: "/images/lanyard_photo.jpg",
+                              },
+                            });
+                            showToast("Foto Lanyard Asli Dhatin dipilih!");
+                          }}
+                        >
+                          <img src="/images/lanyard_photo.jpg" alt="Dhatin Lanyard" />
+                          <span>Dhatin (IMG_1199 Asli)</span>
+                        </button>
+
                         <button
                           type="button"
                           className="admin-preset-btn"
@@ -1817,8 +1861,156 @@ const AdminDashboard: React.FC = () => {
                     marginBottom: "16px",
                   }}
                 >
-                  Portofolio ini mendukung sinkronisasi otomatis dua arah dengan <strong>Supabase</strong> (Database PostgreSQL, Storage Bucket untuk foto profil, dan Row Level Security).
+                  Portofolio ini mendukung sinkronisasi cloud dengan <strong>Supabase</strong> (Database PostgreSQL, Storage Bucket, dan sinkronisasi real-time). Anda dapat memasukkan URL dan API Key langsung di bawah ini tanpa perlu mengedit file secara manual.
                 </p>
+
+                {/* Form Input URL & Anon Key */}
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div className="admin-grid-2">
+                    <div className="admin-form-group">
+                      <label>Supabase Project URL</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        placeholder="Contoh: https://xyzcompany.supabase.co"
+                        value={supabaseUrlInput}
+                        onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Supabase Anon Public Key</label>
+                      <input
+                        type="password"
+                        className="admin-input"
+                        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        value={supabaseKeyInput}
+                        onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {supabaseTestMsg && (
+                    <div
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        fontSize: "12.5px",
+                        marginBottom: "14px",
+                        background: supabaseTestMsg.success
+                          ? "rgba(16, 185, 129, 0.15)"
+                          : "rgba(239, 68, 68, 0.15)",
+                        border: `1px solid ${
+                          supabaseTestMsg.success
+                            ? "rgba(16, 185, 129, 0.3)"
+                            : "rgba(239, 68, 68, 0.3)"
+                        }`,
+                        color: supabaseTestMsg.success ? "#6ee7b7" : "#fca5a5",
+                      }}
+                    >
+                      {supabaseTestMsg.message}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      className="admin-btn-primary"
+                      onClick={() => {
+                        if (!supabaseUrlInput.trim() || !supabaseKeyInput.trim()) {
+                          showToast("Harap isi Project URL dan Anon Key Supabase.");
+                          return;
+                        }
+                        const ok = saveSupabaseSettings(supabaseUrlInput, supabaseKeyInput);
+                        if (ok) {
+                          showToast("Kredensial Supabase berhasil disimpan!");
+                          testSupabase(supabaseUrlInput, supabaseKeyInput).then((res) => {
+                            setSupabaseTestMsg(res);
+                          });
+                        } else {
+                          showToast("Format URL atau Anon Key Supabase tidak valid.");
+                        }
+                      }}
+                    >
+                      <FiSave />
+                      <span>Simpan Kredensial Supabase</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      disabled={isTestingSupabase}
+                      onClick={async () => {
+                        setIsTestingSupabase(true);
+                        setSupabaseTestMsg(null);
+                        const res = await testSupabase(supabaseUrlInput, supabaseKeyInput);
+                        setIsTestingSupabase(false);
+                        setSupabaseTestMsg(res);
+                        showToast(res.message);
+                      }}
+                    >
+                      <FiRefreshCw className={isTestingSupabase ? "admin-spin" : ""} />
+                      <span>{isTestingSupabase ? "Menguji..." : "Tes Koneksi"}</span>
+                    </button>
+
+                    {supabaseConfig.source === "custom" && (
+                      <button
+                        type="button"
+                        className="admin-btn-secondary"
+                        style={{ color: "#f87171", borderColor: "rgba(239,68,68,0.3)" }}
+                        onClick={() => {
+                          clearSupabaseSettings();
+                          setSupabaseUrlInput("");
+                          setSupabaseKeyInput("");
+                          setSupabaseTestMsg(null);
+                          showToast("Kredensial Supabase kustom dihapus.");
+                        }}
+                      >
+                        <FiTrash2 />
+                        <span>Hapus Kredensial</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tombol Sinkronisasi Seluruh Data */}
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "18px" }}>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    style={{
+                      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                      borderColor: "rgba(16, 185, 129, 0.4)",
+                    }}
+                    disabled={isSyncingSupabase}
+                    onClick={async () => {
+                      setIsSyncingSupabase(true);
+                      showToast("Menyinkronkan Profil, Proyek, Pengalaman, dan Skill ke Supabase...");
+                      const success = await syncWithSupabase();
+                      setIsSyncingSupabase(false);
+                      if (success) {
+                        showToast("Sinkronisasi database Supabase berhasil!");
+                      } else {
+                        showToast("Gagal sinkronisasi. Pastikan kredensial Supabase valid dan tabel sudah dibuat.");
+                      }
+                    }}
+                  >
+                    <FiRefreshCw className={isSyncingSupabase ? "admin-spin" : ""} />
+                    <span>
+                      {isSyncingSupabase
+                        ? "Menyinkronkan..."
+                        : "Sinkronkan Seluruh Data (Profil, Proyek, Karir, Skill)"}
+                    </span>
+                  </button>
+                </div>
 
                 <div
                   style={{
@@ -1836,7 +2028,7 @@ const AdminDashboard: React.FC = () => {
                       color: "#c084fc",
                     }}
                   >
-                    Langkah Menghubungkan Supabase:
+                    Panduan Setup Database Supabase:
                   </h4>
                   <ol
                     style={{
@@ -1847,47 +2039,12 @@ const AdminDashboard: React.FC = () => {
                       lineHeight: "1.7",
                     }}
                   >
-                    <li>Buat project baru di <strong>supabase.com</strong>.</li>
-                    <li>Buka menu <strong>SQL Editor</strong> di dashboard Supabase.</li>
-                    <li>Jalankan skrip <code>supabase_schema.sql</code> yang telah disiapkan di root proyek.</li>
+                    <li>Buat akun dan project baru secara gratis di <strong>supabase.com</strong>.</li>
+                    <li>Buka menu <strong>SQL Editor</strong> di dashboard Supabase Anda.</li>
+                    <li>Jalankan skrip <code>supabase_schema.sql</code> yang sudah disiapkan di root folder proyek ini.</li>
                     <li>Salin <strong>Project URL</strong> dan <strong>Anon Public Key</strong> dari menu <em>Project Settings → API</em>.</li>
-                    <li>
-                      Tempelkan ke file <code>.env</code> di root folder proyek:
-                      <pre
-                        style={{
-                          background: "#080610",
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          margin: "6px 0",
-                          color: "#a7f3d0",
-                          fontSize: "11.5px",
-                          border: "1px solid rgba(255,255,255,0.1)",
-                        }}
-                      >
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
-                      </pre>
-                    </li>
+                    <li>Tempelkan ke form input di atas dan klik <strong>Simpan Kredensial Supabase</strong>.</li>
                   </ol>
-                </div>
-
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    className="admin-btn-primary"
-                    onClick={async () => {
-                      showToast("Menghubungkan & menyinkronkan data dengan Supabase...");
-                      const success = await syncWithSupabase();
-                      if (success) {
-                        showToast("Sinkronisasi database Supabase berhasil!");
-                      } else {
-                        showToast("Supabase belum terhubung. Periksa konfigurasi .env Anda.");
-                      }
-                    }}
-                  >
-                    <FiRefreshCw />
-                    <span>Tes & Sinkronkan Database Sekarang</span>
-                  </button>
                 </div>
               </div>
 

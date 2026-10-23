@@ -11,6 +11,29 @@ import { LoadingProvider } from "./context/LoadingProvider";
 import { PortfolioProvider } from "./context/PortfolioContext";
 import { LoginModal, AdminDashboard } from "./components/Admin";
 
+import { usePortfolio } from "./context/PortfolioContext";
+import { useEffect } from "react";
+
+const AdminDirectRoute = () => {
+  const { isAuthenticated, openAdminDrawer, openLoginModal } = usePortfolio();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      openAdminDrawer();
+    } else {
+      openLoginModal();
+    }
+  }, [isAuthenticated, openAdminDrawer, openLoginModal]);
+
+  return (
+    <LoadingProvider>
+      <Suspense fallback={null}>
+        <MainContainer />
+      </Suspense>
+    </LoadingProvider>
+  );
+};
+
 const App = () => {
   return (
     <PortfolioProvider>
@@ -26,6 +49,7 @@ const App = () => {
               </LoadingProvider>
             }
           />
+          <Route path="/admin" element={<AdminDirectRoute />} />
           <Route
             path="/myworks"
             element={

@@ -24,6 +24,12 @@ import {
   fetchPortfolioFromSupabase,
   syncProfileToSupabase,
   syncProjectsToSupabase,
+  syncAllToSupabase,
+  getStoredSupabaseConfig,
+  saveSupabaseConfig,
+  clearSupabaseConfig,
+  testSupabaseConnection,
+  SupabaseConfigCredentials,
 } from "../lib/supabase";
 
 interface AdminCredentials {
@@ -38,8 +44,12 @@ interface PortfolioContextType {
   skills: SkillCategoryData[];
   config: PortfolioConfig;
 
-  // Supabase Status & Sync
+  // Supabase Status, Config & Sync
   isSupabaseConnected: boolean;
+  supabaseConfig: SupabaseConfigCredentials;
+  saveSupabaseSettings: (url: string, key: string) => boolean;
+  clearSupabaseSettings: () => void;
+  testSupabase: (url?: string, key?: string) => Promise<{ success: boolean; message: string }>;
   syncWithSupabase: () => Promise<boolean>;
 
   // Profile CRUD
@@ -110,12 +120,25 @@ function loadFromStorage<T>(key: string, defaultValue: T): T {
   return defaultValue;
 }
 
+function loadProfileFromStorage(): ProfileData {
+  const loaded = loadFromStorage(STORAGE_KEYS.PROFILE, defaultProfile as ProfileData);
+  return {
+    ...defaultProfile,
+    ...loaded,
+    photo: loaded.photo || defaultProfile.photo || "/images/lanyard_photo.jpg",
+    badge: {
+      ...defaultProfile.badge,
+      ...(loaded.badge || {}),
+      photo: loaded.badge?.photo || defaultProfile.badge?.photo || "/images/lanyard_photo.jpg",
+      accentColor: loaded.badge?.accentColor || defaultProfile.badge?.accentColor || "#ff7a00",
+    },
+  };
+}
+
 export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [profile, setProfile] = useState<ProfileData>(() =>
-    loadFromStorage(STORAGE_KEYS.PROFILE, defaultProfile as ProfileData)
-  );
+  const [profile, setProfile] = useState<ProfileData>(loadProfileFromStorage);
   const [projects, setProjects] = useState<ProjectData[]>(() =>
     loadFromStorage(STORAGE_KEYS.PROJECTS, defaultProjects as ProjectData[])
   );
@@ -134,7 +157,8 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     loadFromStorage(STORAGE_KEYS.AUTH_SESSION, false)
   );
 
-  // Supabase Connection State
+  // Supabase Connection & Configuration State
+  const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfigCredentials>(getStoredSupabaseConfig);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(false);
 
   // UI state for Modals
@@ -144,31 +168,54 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   // Initial Sync from Supabase if configured
   useEffect(() => {
     if (isSupabaseConfigured()) {
-      fetchPortfolioFromSupabase().then((data) => {
-        if (data) {
-          setIsSupabaseConnected(true);
-          if (data.profile) setProfile(data.profile);
-          if (data.projects && data.projects.length > 0) setProjects(data.projects);
-          if (data.experience && data.experience.length > 0) setExperience(data.experience);
-          if (data.skills && data.skills.length > 0) setSkills(data.skills);
+      testSupabaseConnection().then((res) => {
+        setIsSupabaseConnected(res.success);
+        if (res.success) {
+          fetchPortfolioFromSupabase().then((data) => {
+            if (data) {
+              if (data.profile) setProfile((prev) => ({ ...prev, ...data.profile }));
+              if (data.projects && data.projects.length > 0) setProjects(data.projects);
+              if (data.experience && data.experience.length > 0) setExperience(data.experience);
+              if (data.skills && data.skills.length > 0) setSkills(data.skills);
+            }
+          });
         }
       });
     }
   }, []);
 
+  const saveSupabaseSettings = useCallback((url: string, key: string) => {
+    const ok = saveSupabaseConfig(url, key);
+    const updated = getStoredSupabaseConfig();
+    setSupabaseConfig(updated);
+    if (ok) {
+      testSupabaseConnection().then((res) => setIsSupabaseConnected(res.success));
+    } else {
+      setIsSupabaseConnected(false);
+    }
+    return ok;
+  }, []);
+
+  const clearSupabaseSettings = useCallback(() => {
+    clearSupabaseConfig();
+    setSupabaseConfig(getStoredSupabaseConfig());
+    setIsSupabaseConnected(false);
+  }, []);
+
+  const testSupabase = useCallback(async (url?: string, key?: string) => {
+    const res = await testSupabaseConnection(
+      url && key ? { url, anonKey: key, source: "custom" } : undefined
+    );
+    setIsSupabaseConnected(res.success);
+    return res;
+  }, []);
+
   // Manual Trigger to Sync with Supabase
   const syncWithSupabase = useCallback(async (): Promise<boolean> => {
-    if (!isSupabaseConfigured()) return false;
-    try {
-      const pSuccess = await syncProfileToSupabase(profile);
-      const prSuccess = await syncProjectsToSupabase(projects);
-      setIsSupabaseConnected(pSuccess && prSuccess);
-      return pSuccess && prSuccess;
-    } catch (err) {
-      console.error("Supabase sync failed:", err);
-      return false;
-    }
-  }, [profile, projects]);
+    const res = await syncAllToSupabase(profile, projects, experience, skills);
+    setIsSupabaseConnected(res.success);
+    return res.success;
+  }, [profile, projects, experience, skills]);
 
   // Persist Profile
   useEffect(() => {
@@ -459,6 +506,10 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     skills,
     config,
     isSupabaseConnected,
+    supabaseConfig,
+    saveSupabaseSettings,
+    clearSupabaseSettings,
+    testSupabase,
     syncWithSupabase,
     updateProfile,
     addProject,
@@ -504,6 +555,10 @@ export const usePortfolio = (): PortfolioContextType => {
       skills: defaultSkills as SkillCategoryData[],
       config: buildConfig(),
       isSupabaseConnected: false,
+      supabaseConfig: { url: "", anonKey: "", source: "none" },
+      saveSupabaseSettings: () => false,
+      clearSupabaseSettings: () => {},
+      testSupabase: async () => ({ success: false, message: "" }),
       syncWithSupabase: async () => false,
       updateProfile: () => {},
       addProject: () => {},
