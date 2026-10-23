@@ -34,11 +34,16 @@ const techStack: TechItem[][] = [
     { name: "Photoshop", icon: `${DEVICON}/photoshop/photoshop-original.svg`, url: "https://adobe.com/products/photoshop" },
     { name: "Illustrator", icon: `${DEVICON}/illustrator/illustrator-plain.svg`, url: "https://adobe.com/products/illustrator" },
   ],
-  // Row 4 - Multimedia (tip of pyramid)
+  // Row 4 - Multimedia (3 items)
   [
     { name: "Canva", icon: `${DEVICON}/canva/canva-original.svg`, url: "https://canva.com" },
     { name: "Premiere Pro", icon: `${DEVICON}/premierepro/premierepro-original.svg`, url: "https://adobe.com/products/premiere" },
     { name: "CapCut", icon: "/images/capcut.svg", url: "https://www.capcut.com" },
+  ],
+  // Row 5 - Motion & Web Stack (tip of pyramid: 2 items)
+  [
+    { name: "After Effects", icon: `${DEVICON}/aftereffects/aftereffects-original.svg`, url: "https://adobe.com/products/aftereffects" },
+    { name: "Tailwind CSS", icon: `${DEVICON}/tailwindcss/tailwindcss-original.svg`, url: "https://tailwindcss.com" },
   ],
 ];
 
