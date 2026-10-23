@@ -256,16 +256,19 @@ export default function Band({
     const targetY = isDesktop ? baseTargetY - (exitUpProgress * 9.5) : baseTargetY;
     const targetZ = THREE.MathUtils.lerp(13, 5.6, aboutFactor);
 
-    // Fade out after What I Do
-    let opacity = 1;
+    // Lanyard Visibility:
+    // Landing (Hero): Hidden (opacity = 0) because video.mp4 background plays here ("disini gausa pake lanyard nya")
+    // Entering About Me: Fades in smoothly (toAboutProgress: 0 -> 1) on the left
+    // What I Do: Stays visible in the center (opacity = 1)
+    // Past What I Do: Fades out (exitUpProgress)
+    let opacity = 0;
     if (isDesktop) {
-      if (exitUpProgress > 0.4) {
-        opacity = Math.max(0, 1 - (exitUpProgress - 0.4) / 0.5);
+      opacity = toAboutProgress;
+      if (exitUpProgress > 0.3) {
+        opacity = Math.max(0, (1 - (exitUpProgress - 0.3) / 0.5) * toAboutProgress);
       }
     } else {
-      if (scrollY > vHeight * 0.65) {
-        opacity = Math.max(0, 1 - (scrollY - vHeight * 0.65) / (vHeight * 0.3));
-      }
+      opacity = 0;
     }
 
     if (wrapperRef?.current) {

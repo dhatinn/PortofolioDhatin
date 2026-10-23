@@ -11,6 +11,19 @@ const Landing = () => {
   return (
     <>
       <div className="landing-section" id="landingDiv">
+        {/* Looping Hero Background Video with 75% opacity and black vignette */}
+        <div className="landing-video-bg-container">
+          <video
+            className="landing-bg-video"
+            src="/video.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+          <div className="landing-video-vignette" />
+        </div>
+
         <div className="landing-container">
           <div className="landing-intro">
             <h2>Hello! I'm</h2>
