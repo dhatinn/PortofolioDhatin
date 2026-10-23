@@ -219,24 +219,6 @@ export default function Band({
       band.current.geometry.setPoints(curve.getPoints(32));
     }
 
-
-    // -------------------------------------------------------------
-    // Multi-Section Lanyard Positioning & Visibility:
-    // 1. Landing / Hero: Completely HIDDEN (opacity = 0)
-    // 2. About Me: Zoomed on Left (targetX = 0.88, targetZ = 5.6, targetY = 0.28)
-    // 3. What I Do: Normal size in Center (targetX = 0, targetZ = 13, targetY = 0)
-    //    Dynamic left-right interactive motion via cursor sway & physics drag
-    // 4. Past What I Do: Flies upwards and exits cleanly
-    // -------------------------------------------------------------
-    const vHeight = window.innerHeight || 800;
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    const isDesktop = typeof window !== "undefined" && window.innerWidth > 1024;
-
-    const smoothstep = (min: number, max: number, val: number) => {
-      const p = Math.min(1, Math.max(0, (val - min) / (max - min)));
-      return p * p * (3 - 2 * p);
-    };
-
     // -------------------------------------------------------------
     // Multi-Section Lanyard Positioning & Straight Down Entrance:
     // 1. Landing / Hero: Hidden above the viewport (enterOffsetY: -110%), ALREADY prepared on the LEFT (targetX: 1.25)
@@ -266,7 +248,7 @@ export default function Band({
     const careerHeading =
       typeof document !== "undefined"
         ? (document.querySelector(".career-section h2") as HTMLElement | null) ||
-          (document.querySelector(".career-section") as HTMLElement | null)
+        (document.querySelector(".career-section") as HTMLElement | null)
         : null;
 
     if (careerHeading) {

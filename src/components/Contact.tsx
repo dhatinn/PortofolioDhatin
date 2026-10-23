@@ -2,7 +2,6 @@ import { MdArrowOutward, MdCopyright } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import "./styles/Contact.css";
 import { usePortfolio } from "../context/PortfolioContext";
-import { AdminTrigger } from "../ghchgctydytceycj";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
@@ -110,20 +109,18 @@ const Contact = () => {
                 </>
               )}
             </h2>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-              <h5
-                onClick={() => navigate("/ghchgctydytceycj")}
-                className="secret-copyright-trigger"
-                title={
-                  isAuthenticated
-                    ? "Buka Dashboard Admin (Ctrl+Shift+A)"
-                    : "Owner Portal (Ctrl+Shift+A)"
-                }
-              >
-                <MdCopyright /> {new Date().getFullYear()}
-              </h5>
-              <AdminTrigger />
-            </div>
+            <h5
+              onClick={() => navigate("/ghchgctydytceycj")}
+              className="secret-copyright-trigger"
+              data-cursor="disable"
+              title={
+                isAuthenticated
+                  ? "Buka Dashboard Admin (Ctrl+Shift+A)"
+                  : "Owner Portal (Ctrl+Shift+A)"
+              }
+            >
+              <MdCopyright /> {new Date().getFullYear()}
+            </h5>
           </div>
         </div>
       </div>
