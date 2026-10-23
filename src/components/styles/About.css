@@ -9,6 +9,7 @@
   width: var(--cWidth);
   margin: auto;
   pointer-events: none;
+  z-index: 6;
 }
 .about-me {
   padding: 40px 0px;

@@ -238,8 +238,9 @@ export default function Band({
     };
 
     // Transition from Landing/Hero into About Me (zoom in & glide left)
-    // In Hero (scrollY < 0.35 * vHeight), toAboutProgress is 0 -> Lanyard is 100% hidden
-    const toAboutProgress = smoothstep(vHeight * 0.35, vHeight * 0.85, scrollY);
+    // In Hero (scrollY < 0.60 * vHeight), toAboutProgress is 0 -> Lanyard is 100% hidden
+    // Emerges gently as Hero section scrolls off-screen, sitting cleanly underneath the Hero photo layer
+    const toAboutProgress = smoothstep(vHeight * 0.60, vHeight * 1.05, scrollY);
 
     // Transition from About Me into What I Do (unzoom & return to center)
     const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);

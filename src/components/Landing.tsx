@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import "./styles/Landing.css";
 import { usePortfolio } from "../context/PortfolioContext";
 import { useLoading } from "../context/LoadingProvider";
-import LanyardCanvas from "./Lanyard";
 import SolarAuraStage from "./SolarAuraStage";
 
 const ROLE_CATEGORIES: Record<number, string> = {
@@ -156,9 +155,6 @@ const Landing = () => {
             </div>
           </div>
         </div>
-
-        {/* Interactive 3D Lanyard ID Badge (shown in About Me & What I Do) */}
-        <LanyardCanvas />
       </div>
     </>
   );

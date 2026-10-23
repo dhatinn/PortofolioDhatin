@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  z-index: 10;
+  z-index: 4; /* Layered strictly behind Hero photo layer (Hero z-index: 10) */
   pointer-events: none;
   user-select: none;
   touch-action: none;
@@ -13,7 +13,7 @@
   visibility: hidden;
   justify-content: center;
   align-items: center;
-  transition: opacity 0.3s ease-out;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
 }
 
 .lanyard-wrapper canvas {

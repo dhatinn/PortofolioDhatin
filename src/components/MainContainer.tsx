@@ -10,6 +10,7 @@ import WhatIDo from "./WhatIDo";
 import Work from "./Work";
 import TechStackNew from "./TechStackNew";
 import CallToAction from "./CallToAction";
+import LanyardCanvas from "./Lanyard";
 import setSplitText from "./utils/splitText";
 
 const MainContainer = () => {
@@ -29,6 +30,8 @@ const MainContainer = () => {
       <Cursor />
       <Navbar />
       <SocialIcons />
+      {/* 3D Lanyard ID Badge: mounted at background layer (z-index: 4) under Hero */}
+      <LanyardCanvas />
       <div className="container-main">
         <Landing />
         <About />
