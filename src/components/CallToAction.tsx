@@ -12,15 +12,15 @@ const CallToAction = () => {
       <div className="cta-buttons">
         <SpecularButton
           size="lg"
-          radius={12}
+          radius={18}
           tint="#ffffff"
-          tintOpacity={0.06}
-          textColor="#ffffff"
+          tintOpacity={0.05}
+          textColor="#f5f5f5"
           lineColor="#ffffff"
-          baseColor="#404040"
-          intensity={1.2}
+          baseColor="#525252"
+          intensity={1.1}
           idleIntensity={0.35}
-          thickness={1.3}
+          thickness={1.2}
           glow={1.0}
           onClick={() => navigate("/play")}
           data-cursor="disable"
@@ -30,17 +30,20 @@ const CallToAction = () => {
         
         <SpecularButton
           size="lg"
-          radius={12}
-          tint="#ff8c00"
-          tintOpacity={0.96}
-          textColor="#000000"
-          lineColor="#ffffff"
+          radius={18}
+          tint="#facc15"
+          tintOpacity={0.16}
+          textColor="#facc15"
+          lineColor="#fff59d"
           baseColor="#d97706"
-          intensity={1.4}
+          intensity={1.3}
           idleIntensity={0.45}
-          thickness={1.4}
+          thickness={1.3}
           glow={1.2}
-          style={{ fontWeight: 600 }}
+          style={{
+            fontWeight: 600,
+            boxShadow: "0 0 25px -4px rgba(250, 204, 21, 0.25), 0 10px 24px -14px rgba(0, 0, 0, 0.45)"
+          }}
           onClick={() => {
             const target = config.contact.linkedin || `mailto:${config.contact.email}` || "#contact";
             window.open(target, "_blank", "noopener,noreferrer");
