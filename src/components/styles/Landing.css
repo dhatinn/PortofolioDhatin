@@ -328,8 +328,10 @@
 .landing-intro {
   position: absolute;
   z-index: 10;
-  top: 6%;
+  top: 50%;
   left: 0;
+  transform: translateY(-50%);
+  width: max-content;
   max-width: 480px;
 }
 
@@ -347,6 +349,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
   transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
@@ -376,6 +380,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .landing-pulse-dot {
@@ -385,6 +390,7 @@
   background: #ff7a00;
   box-shadow: 0 0 10px #ff7a00;
   animation: pulseDot 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes pulseDot {
@@ -394,17 +400,20 @@
 
 .landing-name {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
+  display: block;
+  line-height: 1.15;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  gap: 2px;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .landing-name-first {
-  font-size: clamp(32px, 3.4vw, 48px);
+  display: block;
+  font-size: clamp(30px, 3.2vw, 46px);
   font-weight: 900;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  word-break: keep-all;
   background: linear-gradient(180deg, #ffffff 40%, #fed7aa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -412,9 +421,12 @@
 }
 
 .landing-name-last {
-  font-size: clamp(26px, 2.8vw, 40px);
+  display: block;
+  font-size: clamp(24px, 2.6vw, 38px);
   font-weight: 800;
   letter-spacing: 1px;
+  white-space: nowrap;
+  word-break: keep-all;
   background: linear-gradient(180deg, #f8fafc 40%, #cbd5e1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -426,6 +438,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 4px;
+  white-space: nowrap;
 }
 
 .landing-status-dot {
@@ -434,6 +447,7 @@
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 10px #10b981;
+  flex-shrink: 0;
 }
 
 .landing-status-badge span {
@@ -441,14 +455,18 @@
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 /* Right Info Card: Role & Specialized Skills */
 .landing-info {
   position: absolute;
   right: 0;
-  bottom: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  bottom: auto;
   z-index: 10;
+  width: max-content;
   max-width: 500px;
   text-align: left;
 }
@@ -612,127 +630,47 @@
 
   .landing-intro {
     top: 50%;
-    left: 3%;
+    left: 2%;
     right: auto;
     bottom: auto;
     transform: translateY(-50%);
-    max-width: 30%;
+    width: max-content;
+    max-width: 440px;
   }
 
-  .landing-intro h2 {
-    font-size: 24px;
-  }
-
-  .landing-intro h1 {
-    font-size: 38px;
-    line-height: 1.15;
-  }
-
-  /* LAPTOP SCREEN (1025px - 1439px) */
   .landing-info {
     bottom: auto;
     top: 50%;
-    z-index: 9;
+    z-index: 10;
     text-align: left;
     transform: translateY(-50%);
-    right: 3%;
+    right: 2%;
     left: auto;
-    max-width: 33%;
-  }
-
-  .landing-info h3 {
-    font-size: 18px;
-  }
-
-  h2.landing-info-h2 {
-    font-size: 34px;
-    line-height: 0.95;
-    font-weight: 900;
-  }
-
-  h2.landing-info-sub {
-    font-size: 21px;
-    line-height: 1.15;
-    margin-top: -8px;
-    margin-left: 16px;
+    width: max-content;
+    max-width: 480px;
   }
 }
 
 @media screen and (min-width: 1440px) {
   .landing-intro {
-    top: 50%;
-    left: 4%;
-    right: auto;
-    bottom: auto;
-    transform: translateY(-50%);
-    max-width: 32%;
+    left: 3%;
+    max-width: 480px;
   }
 
-  .landing-intro h1 {
-    font-size: 46px;
-    line-height: 1.15;
-  }
-
-  /* STANDARD MONITOR (1440px - 1679px) */
   .landing-info {
-    bottom: auto;
-    top: 50%;
-    z-index: 9;
-    text-align: left;
-    transform: translateY(-50%);
-    right: 4%;
-    left: auto;
-    max-width: 34%;
-  }
-
-  .landing-info h3 {
-    font-size: 22px;
-  }
-
-  h2.landing-info-h2 {
-    font-size: 44px;
-    line-height: 0.95;
-    font-weight: 900;
-  }
-
-  h2.landing-info-sub {
-    font-size: 25px;
-    line-height: 1.15;
-    margin-top: -12px;
-    margin-left: 20px;
+    right: 3%;
+    max-width: 520px;
   }
 }
 
 @media screen and (min-width: 1680px) {
-  .landing-intro h2 {
-    font-size: 28px;
-  }
-
-  .landing-intro h1 {
-    font-size: 56px;
-    line-height: 1.15;
-  }
-
-  /* WIDE MONITOR (1680px+) */
-  .landing-info h3 {
-    font-size: 24px;
+  .landing-intro {
+    left: 4%;
+    max-width: 520px;
   }
 
   .landing-info {
-    right: 5%;
-    max-width: 34%;
-  }
-
-  h2.landing-info-h2 {
-    font-size: 52px;
-    line-height: 0.95;
-    font-weight: 900;
-  }
-
-  h2.landing-info-sub {
-    font-size: 28px;
-    line-height: 1.15;
-    margin-top: -14px;
-    margin-left: 24px;
+    right: 4%;
+    max-width: 550px;
   }
 }

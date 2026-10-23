@@ -62,61 +62,7 @@ export function initialFX() {
     }
   );
 
-  const selectors = [".landing-info h3", ".landing-intro h2", ".landing-intro h1"];
-  const elements = selectors.flatMap(selector => Array.from(document.querySelectorAll(selector)));
-  var landingText = new TextSplitter(elements, {
-    type: "chars,lines",
-    linesClass: "split-line",
-  });
-  gsap.fromTo(
-    landingText.chars,
-    { opacity: 0, y: 80, filter: "blur(5px)" },
-    {
-      opacity: 1,
-      duration: 1.2,
-      filter: "blur(0px)",
-      ease: "power3.inOut",
-      y: 0,
-      stagger: 0.025,
-      delay: 0.3,
-    }
-  );
-
-  let TextProps = { type: "chars,lines", linesClass: "split-h2" };
-
-  var landingText4 = new TextSplitter(".landing-h2-1", TextProps);
-  if (landingText4.chars && landingText4.chars.length > 0) {
-    gsap.fromTo(
-      landingText4.chars,
-      { opacity: 0, y: 50, filter: "blur(5px)" },
-      {
-        opacity: 1,
-        duration: 1.2,
-        filter: "blur(0px)",
-        ease: "power3.inOut",
-        y: 0,
-        stagger: 0.02,
-        delay: 0.25,
-      }
-    );
-  }
-
-  var landingText2 = new TextSplitter(".landing-h2-info", TextProps);
-  if (landingText2.chars && landingText2.chars.length > 0) {
-    gsap.fromTo(
-      landingText2.chars,
-      { opacity: 0, y: 50, filter: "blur(5px)" },
-      {
-        opacity: 1,
-        duration: 1.2,
-        filter: "blur(0px)",
-        ease: "power3.inOut",
-        y: 0,
-        stagger: 0.02,
-        delay: 0.4,
-      }
-    );
-  }
+  // Hero cards are animated smoothly above via .landing-intro and .landing-info entrance animations
 
   gsap.fromTo(
     [".header", ".icons-section", ".nav-fade"],
