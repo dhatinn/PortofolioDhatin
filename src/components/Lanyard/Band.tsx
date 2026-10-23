@@ -107,6 +107,7 @@ export default function Band({
     };
   }, [
     profile?.photo,
+    profile?.badge?.photo,
     profile?.name,
     profile?.taglines,
     profile?.badge?.badgeRole,

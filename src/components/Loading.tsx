@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
 
@@ -10,6 +10,19 @@ const Loading = ({ percent }: { percent: number }) => {
   const [loaded, setLoaded] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [stage, setStage] = useState<"counter" | "split" | "welcome" | "portfolio" | "exit">("counter");
+
+  const handleExit = useCallback(() => {
+    if (stage === "exit") return;
+    setStage("exit");
+    import("./utils/initialFX").then((module) => {
+      if (module.initialFX) {
+        module.initialFX();
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 700);
+    });
+  }, [stage, setIsLoading]);
 
   useEffect(() => {
     if (percent >= 100 && stage === "counter") {
@@ -42,20 +55,7 @@ const Loading = ({ percent }: { percent: number }) => {
       }, 150);
       return () => clearTimeout(t1);
     }
-  }, [percent, stage]);
-
-  const handleExit = () => {
-    if (stage === "exit") return;
-    setStage("exit");
-    import("./utils/initialFX").then((module) => {
-      if (module.initialFX) {
-        module.initialFX();
-      }
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 700);
-    });
-  };
+  }, [percent, stage, handleExit]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     const { currentTarget: target } = e;
