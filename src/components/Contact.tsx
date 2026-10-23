@@ -72,12 +72,6 @@ const Contact = () => {
                 {config.contact.email}
               </a>
             </p>
-            <h4>{language === "id" ? "Telepon / WhatsApp" : "Phone / WhatsApp"}</h4>
-            <p>
-              <a href={config.contact.whatsapp} target="_blank" rel="noopener noreferrer" data-cursor="disable">
-                {config.contact.phone}
-              </a>
-            </p>
             <h4>{language === "id" ? "Lokasi" : "Location"}</h4>
             <p>
               <span>{config.social.location}</span>

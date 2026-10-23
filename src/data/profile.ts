@@ -9,7 +9,7 @@ export const profile: ProfileData = {
     id: "Mahasiswa Teknik Informatika | Full-Stack Developer & Multimedia Designer",
   },
   location: "Bandung, Indonesia",
-  phone: "+62 851-4215-6672",
+  phone: "",
   whatsapp: "6285142156672",
   email: "dhatinsandy24@gmail.com",
   github: "https://github.com/dhatinn",

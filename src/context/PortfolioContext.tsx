@@ -139,6 +139,7 @@ function loadProfileFromStorage(): ProfileData {
     ...defaultProfile,
     ...loaded,
     photo: loaded.photo || defaultProfile.photo || "/images/lanyard_photo.jpg",
+    phone: loaded.phone && loaded.phone.includes("851-4215-6672") ? "" : (loaded.phone || ""),
     about: {
       en: loaded.about?.en && loaded.about.en.includes("**") ? loaded.about.en : defaultProfile.about.en,
       id: loaded.about?.id && loaded.about.id.includes("**") ? loaded.about.id : defaultProfile.about.id,
