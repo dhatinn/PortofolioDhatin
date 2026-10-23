@@ -93,6 +93,14 @@ interface PortfolioContextType {
   isAdminOpen: boolean;
   openAdminDrawer: () => void;
   closeAdminDrawer: () => void;
+
+  // Theme & Language
+  theme: "dark" | "light";
+  toggleTheme: () => void;
+  setTheme: (t: "dark" | "light") => void;
+  language: "id" | "en";
+  toggleLanguage: () => void;
+  setLanguage: (l: "id" | "en") => void;
 }
 
 const STORAGE_KEYS = {
@@ -102,6 +110,8 @@ const STORAGE_KEYS = {
   SKILLS: "portfolio_skills_v2",
   CREDENTIALS: "portfolio_admin_credentials_v2",
   AUTH_SESSION: "portfolio_admin_session_v2",
+  THEME: "portfolio_theme_v1",
+  LANGUAGE: "portfolio_language_v1",
 };
 
 const DEFAULT_CREDENTIALS: AdminCredentials = {
@@ -254,10 +264,69 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(isAuthenticated));
   }, [isAuthenticated]);
 
+  // Theme state & persistence
+  const [theme, setThemeState] = useState<"dark" | "light">(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.THEME);
+      if (saved === "light" || saved === "dark") return saved;
+      return "dark";
+    } catch {
+      return "dark";
+    }
+  });
+
+  // Language state & persistence
+  const [language, setLanguageState] = useState<"id" | "en">(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+      if (saved === "id" || saved === "en") return saved;
+      return "id";
+    } catch {
+      return "id";
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    } catch {}
+    document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "light") {
+      document.body.classList.add("light-theme");
+      document.body.classList.remove("dark-theme");
+    } else {
+      document.body.classList.add("dark-theme");
+      document.body.classList.remove("light-theme");
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
+    } catch {}
+    document.documentElement.setAttribute("lang", language);
+  }, [language]);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((prev) => (prev === "dark" ? "light" : "dark"));
+  }, []);
+
+  const setTheme = useCallback((t: "dark" | "light") => {
+    setThemeState(t);
+  }, []);
+
+  const toggleLanguage = useCallback(() => {
+    setLanguageState((prev) => (prev === "id" ? "en" : "id"));
+  }, []);
+
+  const setLanguage = useCallback((l: "id" | "en") => {
+    setLanguageState(l);
+  }, []);
+
   // Reactive Config
   const config = useMemo(() => {
-    return buildConfig(profile, experience, projects, skills);
-  }, [profile, experience, projects, skills]);
+    return buildConfig(profile, experience, projects, skills, language);
+  }, [profile, experience, projects, skills, language]);
 
   // Keyboard shortcut listener: Ctrl+Shift+A or Cmd+Shift+A
   useEffect(() => {
@@ -577,6 +646,12 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     isAdminOpen,
     openAdminDrawer,
     closeAdminDrawer,
+    theme,
+    toggleTheme,
+    setTheme,
+    language,
+    toggleLanguage,
+    setLanguage,
   };
 
   return (
@@ -626,6 +701,12 @@ export const usePortfolio = (): PortfolioContextType => {
       isAdminOpen: false,
       openAdminDrawer: () => {},
       closeAdminDrawer: () => {},
+      theme: "dark",
+      toggleTheme: () => {},
+      setTheme: () => {},
+      language: "id",
+      toggleLanguage: () => {},
+      setLanguage: () => {},
     };
   }
   return context;

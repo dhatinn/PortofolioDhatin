@@ -8,7 +8,7 @@ import { useEffect } from "react";
 gsap.registerPlugin(ScrollTrigger);
 
 const Contact = () => {
-  const { config } = usePortfolio();
+  const { config, language } = usePortfolio();
   useEffect(() => {
     const contactTimeline = gsap.timeline({
       scrollTrigger: {
@@ -69,19 +69,19 @@ const Contact = () => {
                 {config.contact.email}
               </a>
             </p>
-            <h4>Phone / WhatsApp</h4>
+            <h4>{language === "id" ? "Telepon / WhatsApp" : "Phone / WhatsApp"}</h4>
             <p>
               <a href={config.contact.whatsapp} target="_blank" rel="noopener noreferrer" data-cursor="disable">
                 {config.contact.phone}
               </a>
             </p>
-            <h4>Location</h4>
+            <h4>{language === "id" ? "Lokasi" : "Location"}</h4>
             <p>
               <span>{config.social.location}</span>
             </p>
           </div>
           <div className="contact-box">
-            <h4>Social</h4>
+            <h4>{language === "id" ? "Media Sosial" : "Social"}</h4>
             {[
               { label: "Github", href: config.contact.github },
               { label: "WhatsApp", href: config.contact.whatsapp },
@@ -103,7 +103,15 @@ const Contact = () => {
           </div>
           <div className="contact-box">
             <h2>
-              Designed and Developed <br /> by <span>{config.developer.fullName}</span>
+              {language === "id" ? (
+                <>
+                  Dirancang & Dikembangkan <br /> oleh <span>{config.developer.fullName}</span>
+                </>
+              ) : (
+                <>
+                  Designed and Developed <br /> by <span>{config.developer.fullName}</span>
+                </>
+              )}
             </h2>
             <h5>
               <MdCopyright /> {new Date().getFullYear()}

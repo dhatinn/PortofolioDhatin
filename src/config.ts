@@ -16,7 +16,8 @@ export const buildConfig = (
   p: ProfileData = defaultProfile,
   exp: ExperienceData[] = defaultExperience,
   proj: ProjectData[] = defaultProjects,
-  sk: SkillCategoryData[] = defaultSkills
+  sk: SkillCategoryData[] = defaultSkills,
+  lang: "id" | "en" = "id"
 ): PortfolioConfig => {
   const nameParts = (p.name || "Dhatin").trim().split(/\s+/);
   const initials = nameParts
@@ -45,20 +46,22 @@ export const buildConfig = (
     desc: "Commercial video editing & color grading.",
   };
 
+  const isId = lang === "id";
+
   return {
     placeholderImage: PLACEHOLDER_IMAGE,
     developer: {
       name: nameParts[0] || "Dhatin",
       fullName: p.name,
       initials: initials || "DN",
-      title: p.title?.en || "Full-Stack Developer",
+      title: isId ? (p.title?.id || p.title?.en || "Full-Stack Developer") : (p.title?.en || "Full-Stack Developer"),
       taglines: p.taglines?.length
         ? p.taglines
         : ["Full-Stack Developer", "Graphic Designer"],
-      description: p.about?.en || "",
+      description: isId ? (p.about?.id || p.about?.en || "") : (p.about?.en || ""),
       photo: p.photo || "/images/profile.jpg",
       cv: p.cv || "/cv.pdf",
-      available: p.available?.en || "Available for internship & freelance",
+      available: isId ? (p.available?.id || "Terbuka untuk magang & freelance") : (p.available?.en || "Available for internship & freelance"),
     },
     social: {
       github: getGithubUsername(p.github || ""),
@@ -66,8 +69,8 @@ export const buildConfig = (
       location: p.location || "Bandung, Indonesia",
     },
     about: {
-      title: "About Me",
-      description: p.about?.en || "",
+      title: isId ? "Tentang Saya" : "About Me",
+      description: isId ? (p.about?.id || p.about?.en || "") : (p.about?.en || ""),
     },
     experiences: (exp || []).map((e) => ({
       position: e.role,
@@ -98,11 +101,15 @@ export const buildConfig = (
     },
     skills: {
       develop: {
-        title: devService.title?.toUpperCase() || "FULL-STACK DEV",
-        description: devService.desc,
+        title: isId ? "PENGEMBANGAN WEB" : (devService.title?.toUpperCase() || "FULL-STACK DEV"),
+        description: isId
+          ? "Website dan aplikasi web responsif dengan React, Node.js, dan Supabase."
+          : devService.desc,
         details:
           devService.details ||
-          "Building responsive websites and web apps end-to-end — from React/TypeScript frontends to Node.js/PHP backends with MySQL or Supabase, including payment gateway and WhatsApp integrations.",
+          (isId
+            ? "Membangun website dan aplikasi web responsif dari hulu ke hilir — mulai dari antarmuka React/TypeScript hingga backend Node.js/PHP dengan database MySQL atau Supabase, termasuk integrasi payment gateway dan WhatsApp."
+            : "Building responsive websites and web apps end-to-end — from React/TypeScript frontends to Node.js/PHP backends with MySQL or Supabase, including payment gateway and WhatsApp integrations."),
         tools:
           devService.tools && devService.tools.length > 0
             ? devService.tools
@@ -113,10 +120,17 @@ export const buildConfig = (
               ],
       },
       design: {
-        title: `${designService.title || "DESIGN"} & ${videoService.title || "VIDEO"}`.toUpperCase(),
-        description: `${designService.desc} ${videoService.desc}`,
+        title: isId
+          ? "DESAIN GRAFIS & VIDEO"
+          : `${designService.title || "DESIGN"} & ${videoService.title || "VIDEO"}`.toUpperCase(),
+        description: isId
+          ? "Desain visual media sosial, branding, dan editing video komersial sinematik."
+          : `${designService.desc} ${videoService.desc}`,
         details:
-          designService.details || `${designService.desc} ${videoService.desc}`,
+          designService.details ||
+          (isId
+            ? "Desain grafis untuk media sosial, poster, brosur, identitas visual, serta penyuntingan video komersial dengan color grading, audio mixing, dan efek visual."
+            : `${designService.desc} ${videoService.desc}`),
         tools:
           designService.tools && designService.tools.length > 0
             ? designService.tools

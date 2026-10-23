@@ -5,7 +5,7 @@ import { useLoading } from "../context/LoadingProvider";
 import SolarAuraStage from "./SolarAuraStage";
 
 const Landing = () => {
-  const { config } = usePortfolio();
+  const { config, language } = usePortfolio();
   const { isLoading } = useLoading();
 
   const nameParts = (config.developer.fullName || "").split(" ");
@@ -85,7 +85,12 @@ const Landing = () => {
               </h1>
               <div className="landing-status-badge">
                 <span className="landing-status-dot" />
-                <span>Available for Projects</span>
+                <span>
+                  {config.developer.available ||
+                    (language === "id"
+                      ? "Tersedia untuk Proyek"
+                      : "Available for Projects")}
+                </span>
               </div>
             </div>
           </div>
@@ -96,7 +101,11 @@ const Landing = () => {
             <h2
               className="landing-info-h2 interactive-role-heading"
               onClick={handleNextRole}
-              title="Klik untuk ganti profesi"
+              title={
+                language === "id"
+                  ? "Klik untuk ganti profesi"
+                  : "Click to switch role"
+              }
             >
               <div className={`landing-h2-anim-wrap anim-${animState}`}>
                 <span className="landing-h2-line line-1">

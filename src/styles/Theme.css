@@ -1,0 +1,240 @@
+/* ===== src/styles/Theme.css ===== */
+/* Light Mode & Dark Mode Styling Tokens & Overrides */
+
+:root {
+  --transition-theme: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Global transitions when switching theme */
+body,
+.header,
+.landing-section,
+.about-section,
+.whatIDO,
+.techstack,
+.work-section,
+.contact-section,
+.landing-intro-glass,
+.work-box,
+.what-content-in,
+.tech-card,
+.nav-btn {
+  transition: var(--transition-theme);
+}
+
+/* ---------------------------------------------------- */
+/* LIGHT THEME OVERRIDES                                */
+/* ---------------------------------------------------- */
+[data-theme="light"],
+body.light-theme {
+  --backgroundColor: #f7f7f9 !important;
+  background-color: #f7f7f9 !important;
+  color: #0f172a !important;
+}
+
+/* Header & Navigation in Light Mode */
+.light-theme .header {
+  color: #0f172a;
+}
+
+.light-theme .navbar-title {
+  color: #0f172a !important;
+}
+
+.light-theme .navbar-connect {
+  color: #475569 !important;
+}
+
+.light-theme .navbar-connect:hover {
+  color: var(--accentColor) !important;
+}
+
+/* Landing Section in Light Mode */
+.light-theme .landing-section {
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .landing-name-first,
+.light-theme .landing-name-last {
+  color: #0f172a !important;
+}
+
+.light-theme .landing-intro-glass {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.light-theme .landing-status-badge {
+  background: rgba(255, 122, 0, 0.12) !important;
+  color: #c25700 !important;
+  border: 1px solid rgba(255, 122, 0, 0.3) !important;
+}
+
+.light-theme .landing-status-dot {
+  background: #ff7a00 !important;
+  box-shadow: 0 0 10px rgba(255, 122, 0, 0.6) !important;
+}
+
+.light-theme .landing-h2-gradient {
+  background: linear-gradient(135deg, #0f172a 0%, #ea580c 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* About Section in Light Mode */
+.light-theme .about-section {
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .about-me .title {
+  color: var(--accentColor) !important;
+}
+
+.light-theme .about-me .para {
+  color: #334155 !important;
+}
+
+.light-theme .about-bold {
+  color: #0f172a !important;
+}
+
+/* What I Do Section in Light Mode */
+.light-theme .whatIDO {
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .what-box h2 {
+  color: #0f172a !important;
+}
+
+.light-theme .what-content-in {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.05) !important;
+  color: #334155 !important;
+}
+
+.light-theme .what-content-in h3 {
+  color: #0f172a !important;
+}
+
+.light-theme .what-content-in h4 {
+  color: #ea580c !important;
+}
+
+.light-theme .what-content-in p {
+  color: #475569 !important;
+}
+
+.light-theme .what-content-in h5 {
+  color: #64748b !important;
+}
+
+.light-theme .what-tags {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* TechStack Section in Light Mode */
+.light-theme .techstack {
+  background: linear-gradient(180deg, #f7f7f9 0%, #edeaf3 100%) !important;
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .techstack h2 {
+  color: #0f172a !important;
+}
+
+.light-theme .tech-card {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+
+.light-theme .tech-name {
+  color: #0f172a !important;
+}
+
+/* Work Section in Light Mode */
+.light-theme .work-section {
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .work-container h2 {
+  color: #0f172a !important;
+}
+
+.light-theme .work-box {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .work-title h3 {
+  color: #94a3b8 !important;
+}
+
+.light-theme .work-title h4 {
+  color: #0f172a !important;
+}
+
+.light-theme .work-title p {
+  color: #64748b !important;
+}
+
+.light-theme .work-info h4 {
+  color: #475569 !important;
+}
+
+.light-theme .work-info p {
+  color: #64748b !important;
+}
+
+.light-theme .see-all-works h3 {
+  color: #0f172a !important;
+}
+
+.light-theme .see-all-works p {
+  color: #64748b !important;
+}
+
+/* Contact Section in Light Mode */
+.light-theme .contact-section {
+  background-color: var(--backgroundColor) !important;
+}
+
+.light-theme .contact-container > h3 {
+  color: #0f172a !important;
+}
+
+.light-theme .contact-box h4 {
+  color: #64748b !important;
+}
+
+.light-theme .contact-box p a,
+.light-theme .contact-box span {
+  color: #0f172a !important;
+}
+
+.light-theme .contact-box .contact-social {
+  color: #0f172a !important;
+}
+
+.light-theme .contact-box .contact-social:hover {
+  color: var(--accentColor) !important;
+}
+
+.light-theme .contact-box h2 {
+  color: #0f172a !important;
+}
+
+.light-theme .contact-box h5 {
+  color: #94a3b8 !important;
+}
