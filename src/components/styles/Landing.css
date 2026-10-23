@@ -21,7 +21,6 @@
     padding-bottom: 40px;
   }
 
-  /* Fix spacing between name and subtitle */
   .landing-intro {
     position: relative !important;
     top: auto !important;
@@ -29,35 +28,24 @@
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    padding-top: 40px;
-    /* Shift higher up */
-    margin-bottom: 20px;
+    padding-top: 30px;
+    margin-bottom: 15px;
     z-index: 10;
-    text-align: center;
     width: 100% !important;
+    max-width: 100% !important;
     order: 1;
-    /* First: Name */
-    height: auto !important;
   }
 
-  .landing-intro h1 {
-    word-spacing: 0.1em;
-    font-size: 32px !important;
-    /* Ensure nice size */
-    line-height: 1.2 !important;
-    margin: 0;
+  .landing-intro-glass {
+    align-items: center;
+    text-align: center;
+    padding: 18px 20px;
   }
 
-  /* Ensure name parts display correctly */
-  .landing-intro h1 br {
-    display: block;
-    /* Keep break on mobile for 2 lines, or use display:none for 1 line */
-    content: " ";
-    /* Fallback */
-    margin-bottom: 5px;
+  .landing-name {
+    align-items: center;
   }
 
-  /* Subtitles Container */
   .landing-info {
     position: relative !important;
     top: auto !important;
@@ -65,49 +53,23 @@
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    text-align: center;
-    margin-top: 20px;
-    /* Space between name and subtitles */
     z-index: 10;
-    background: transparent;
-    padding-bottom: 50px;
-    /* Add bottom padding for scroll space */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    height: auto !important;
-    /* Force auto height */
     width: 100% !important;
-    order: 3;
-    /* Third: Subtitles */
+    max-width: 100% !important;
+    margin-top: 10px;
+    padding-bottom: 40px;
+    order: 2;
   }
 
-  .landing-info h3 {
+  .landing-info-glass {
+    align-items: center;
     text-align: center;
-    display: none;
-    /* Hide 'An' if not needed, or keep it static */
+    padding: 18px 20px;
   }
 
-  /* Force static positioning to prevent overlaps */
-  .landing-info h2,
-  h2.landing-info-h2,
-  .landing-h2-1,
-  .landing-h2-info {
-    position: static !important;
-    display: block;
-    width: auto;
-    margin: 0 !important;
-    font-size: 20px !important;
-    line-height: 1.5 !important;
-    white-space: normal;
-    text-align: center;
-    height: auto !important;
-    transform: none !important;
-    /* Remove any transforms */
+  .landing-sub-pills {
+    justify-content: center;
   }
-
-  /* Specific styling for the distinct parts */
   .landing-h2-1 {
     font-size: 24px !important;
     color: var(--accentColor);
@@ -359,120 +321,228 @@
   border-radius: 50%;
 }
 
+/* ========================================================
+   HERO TYPOGRAPHY - MODERN LUXURY GLASSMORPHISM & HIGH CONTRAST
+   ======================================================== */
+
 .landing-intro {
   position: absolute;
-  z-index: 9;
-  top: 5%;
+  z-index: 10;
+  top: 6%;
   left: 0;
+  max-width: 480px;
 }
 
-.landing-intro h2 {
-  margin: 0;
-  color: var(--accentColor);
-  font-size: 22px;
-  font-weight: 300;
-  letter-spacing: 2px;
+.landing-intro-glass {
+  background: linear-gradient(135deg, rgba(14, 11, 16, 0.78) 0%, rgba(20, 14, 24, 0.58) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 145, 25, 0.25);
+  border-radius: 24px;
+  padding: 24px 30px;
+  box-shadow:
+    0 24px 50px -12px rgba(0, 0, 0, 0.88),
+    0 0 30px -5px rgba(255, 122, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
-.landing-intro h1 {
-  margin: 0;
+.landing-intro-glass:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 155, 35, 0.45);
+  box-shadow:
+    0 28px 55px -10px rgba(0, 0, 0, 0.92),
+    0 0 38px -2px rgba(255, 122, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.landing-greeting-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  width: fit-content;
+  background: rgba(255, 122, 0, 0.14);
+  border: 1px solid rgba(255, 140, 20, 0.35);
+  border-radius: 999px;
+}
+
+.landing-greeting-tag span:last-child {
+  color: #ffb366;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 2px;
-  font-size: 28px;
-  line-height: 28px;
+  text-transform: uppercase;
+}
+
+.landing-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff7a00;
+  box-shadow: 0 0 10px #ff7a00;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+.landing-name {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  gap: 2px;
+}
+
+.landing-name-first {
+  font-size: clamp(32px, 3.4vw, 48px);
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  background: linear-gradient(180deg, #ffffff 40%, #fed7aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.75));
+}
+
+.landing-name-last {
+  font-size: clamp(26px, 2.8vw, 40px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, #f8fafc 40%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.7));
+}
+
+.landing-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.landing-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.landing-status-badge span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
   font-weight: 500;
-  font-family: "Geist", sans-serif;
+  letter-spacing: 0.5px;
 }
 
-/* .landing-intro h1 span {
-   font-weight: 200; 
-} */
-
+/* Right Info Card: Role & Specialized Skills */
 .landing-info {
   position: absolute;
-  right: 4%;
+  right: 0;
   bottom: 40px;
-  top: inherit;
-  z-index: 9;
-  max-width: 35%;
+  z-index: 10;
+  max-width: 500px;
   text-align: left;
 }
 
-.landing-info h3 {
-  font-size: 20px;
+.landing-info-glass {
+  background: linear-gradient(135deg, rgba(14, 11, 16, 0.82) 0%, rgba(20, 14, 24, 0.62) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 145, 25, 0.25);
+  border-radius: 24px;
+  padding: 24px 30px;
+  box-shadow:
+    0 24px 50px -12px rgba(0, 0, 0, 0.88),
+    0 0 30px -5px rgba(255, 122, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.landing-info-glass:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 155, 35, 0.45);
+  box-shadow:
+    0 28px 55px -10px rgba(0, 0, 0, 0.92),
+    0 0 38px -2px rgba(255, 122, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.landing-info-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  width: fit-content;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+}
+
+.landing-info-tag span {
+  font-size: 10.5px;
+  font-weight: 700;
   letter-spacing: 2px;
-  font-weight: 300;
-  color: var(--accentColor);
-  margin: 0 0 2px 0;
-}
-
-/* Line 1: Full-Stack Developer - EXTRA BOLD & ACCENT GLOW */
-h2.landing-info-h2 {
-  color: #ff7a00;
-  font-size: clamp(28px, 2.8vw, 50px);
-  line-height: 0.95;
-  margin: 0;
-  font-family: "Geist", sans-serif;
-  font-weight: 900;
-  letter-spacing: 1px;
+  color: #ffb366;
   text-transform: uppercase;
-  position: relative;
-  z-index: 3;
-  width: auto;
-  white-space: normal;
-  word-break: break-word;
 }
 
-.landing-h2-1 {
-  font-size: inherit;
-  line-height: inherit;
-  color: #ff7a00;
-  font-weight: 900;
-  white-space: normal;
-  text-shadow: 0 4px 25px rgba(255, 122, 0, 0.45);
-}
-
-/* Line 2: Layer Di Bawahnya (Graphic Designer & Video Editor) */
-h2.landing-info-sub {
+.landing-info-h2 {
   margin: 0;
-  margin-top: -10px;
-  margin-left: 20px;
-  font-family: "Geist", sans-serif;
-  font-weight: 600;
-  font-size: clamp(18px, 1.8vw, 30px);
+  font-size: clamp(24px, 2.5vw, 38px);
   line-height: 1.15;
-  position: relative;
-  z-index: 2;
-  display: block;
+  font-weight: 900;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  white-space: normal;
-  word-break: break-word;
-  color: rgba(255, 255, 255, 0.88);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.landing-h2-info {
-  white-space: normal;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: inherit;
-  line-height: inherit;
+.landing-h2-gradient {
+  background: linear-gradient(135deg, #ffb347 0%, #ff7a00 50%, #e65100 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 16px rgba(255, 122, 0, 0.45));
+  display: inline-block;
+}
+
+.landing-sub-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.landing-role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  letter-spacing: 1px;
+  color: #f1f5f9;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
 }
 
-.landing-h2-info-1 {
-  position: absolute;
-  top: 0;
-  white-space: nowrap;
-}
-
-.landing-h2-2 {
-  position: absolute;
-  top: 0;
-  white-space: nowrap;
-}
-
-.landing-info-h2::after {
-  display: none !important;
+.landing-role-pill:hover {
+  background: rgba(255, 122, 0, 0.18);
+  border-color: rgba(255, 140, 20, 0.5);
+  color: #ffedd5;
+  transform: translateY(-1px);
 }
 
 @media screen and (min-width: 500px) {

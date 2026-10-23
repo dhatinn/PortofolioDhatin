@@ -11,6 +11,8 @@ const Landing = () => {
   const nameParts = (config.developer.fullName || "").split(" ");
   const firstName = nameParts[0] || config.developer.name;
   const lastName = nameParts.slice(1).join(" ") || "";
+  const mainRole = config.developer.taglines[0] || "Full-Stack Developer";
+  const subRoles = config.developer.taglines.slice(1);
 
   return (
     <>
@@ -19,24 +21,45 @@ const Landing = () => {
         <SolarAuraStage isPlaying={!isLoading} />
 
         <div className="landing-container">
+          {/* Left Intro Card: Greeting & Full Name with Luxury Glass Card */}
           <div className="landing-intro">
-            <h2>Hello! I'm</h2>
-            <h1>
-              {firstName.toUpperCase()}{" "}
-              <br />
-              {lastName && <span>{lastName.toUpperCase()}</span>}
-            </h1>
-          </div>
-          <div className="landing-info">
-            <h3>A</h3>
-            <h2 className="landing-info-h2">
-              <div className="landing-h2-1">{config.developer.taglines[0]}</div>
-            </h2>
-            <h2 className="landing-info-sub">
-              <div className="landing-h2-info">
-                {config.developer.taglines.slice(1).join(" & ")}
+            <div className="landing-intro-glass">
+              <div className="landing-greeting-tag">
+                <span className="landing-pulse-dot" />
+                <span>HELLO, I'M</span>
               </div>
-            </h2>
+              <h1 className="landing-name">
+                <span className="landing-name-first">{firstName.toUpperCase()}</span>
+                {lastName && (
+                  <span className="landing-name-last">{lastName.toUpperCase()}</span>
+                )}
+              </h1>
+              <div className="landing-status-badge">
+                <span className="landing-status-dot" />
+                <span>Available for Projects</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Info Card: Role & Specialized Skills */}
+          <div className="landing-info">
+            <div className="landing-info-glass">
+              <div className="landing-info-tag">
+                <span>EXPERTISE & DISCIPLINE</span>
+              </div>
+              <h2 className="landing-info-h2">
+                <span className="landing-h2-gradient">{mainRole}</span>
+              </h2>
+              {subRoles.length > 0 && (
+                <div className="landing-sub-pills">
+                  {subRoles.map((role, idx) => (
+                    <span key={idx} className="landing-role-pill">
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
