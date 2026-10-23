@@ -245,44 +245,70 @@ export default function Band({
     // Transition from About Me into What I Do (unzoom & return to center)
     const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);
 
-    // Exit upwards after What I Do (scrollY from 2.95 * vHeight to 3.45 * vHeight)
-    // Stays 100% active and interactive throughout the entire What I Do section
-    const exitUpProgress = smoothstep(vHeight * 2.95, vHeight * 3.45, scrollY);
+    // -------------------------------------------------------------
+    // Dynamic Exit: Retract upwards BEFORE "My career & experience" reaches the center of screen
+    // -------------------------------------------------------------
+    let exitUpProgress = 0;
+    const careerHeading =
+      typeof document !== "undefined"
+        ? (document.querySelector(".career-section h2") as HTMLElement | null) ||
+          (document.querySelector(".career-section") as HTMLElement | null)
+        : null;
+
+    if (careerHeading) {
+      const rect = careerHeading.getBoundingClientRect();
+      const headingCenterY = rect.top + rect.height * 0.5;
+
+      // Start pulling up when Career heading approaches the lower part of screen (vHeight * 0.95)
+      // Fully pulled up & vanished when heading reaches vHeight * 0.62 (well BEFORE center vHeight * 0.50!)
+      const exitStart = vHeight * 0.95;
+      const exitEnd = vHeight * 0.62;
+
+      if (headingCenterY < exitStart) {
+        exitUpProgress = Math.min(1, Math.max(0, (exitStart - headingCenterY) / (exitStart - exitEnd)));
+      }
+    } else {
+      // Fallback scroll-based exit: starts right after What I Do (scrollY 2.05 to 2.50)
+      exitUpProgress = smoothstep(vHeight * 2.05, vHeight * 2.50, scrollY);
+    }
 
     // In About Me, aboutFactor = 1; in What I Do, whatIDoFactor = 1.
     const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
     const whatIDoFactor = toWhatIDoProgress * (1 - exitUpProgress);
 
-    // About Me Zoom: Moderated zoom (targetZ = 8.0 instead of 5.6) for elegant framing with comfortable margins
+    // Camera positioning:
     const targetX = isDesktop ? THREE.MathUtils.lerp(0, 1.25, aboutFactor) : 0;
     const baseTargetY = THREE.MathUtils.lerp(0, 0.35, aboutFactor);
-    const targetY = isDesktop ? baseTargetY - (exitUpProgress * 9.5) : baseTargetY;
+    const targetY = isDesktop ? baseTargetY - (exitUpProgress * 8.5) : baseTargetY;
     const targetZ = THREE.MathUtils.lerp(13, 8.0, aboutFactor);
 
-    // Lanyard Visibility:
-    // - Hero (scrollY < 0.35 * vHeight): opacity = 0 (completely hidden)
-    // - About Me & What I Do: opacity = 1 (visible)
-    // - Past What I Do: fades out as it flies upwards
+    // Lanyard Visibility & CSS Transform:
     let opacity = 0;
     if (isDesktop) {
       opacity = toAboutProgress;
-      if (exitUpProgress > 0.15) {
-        opacity = Math.max(0, (1 - (exitUpProgress - 0.15) / 0.6) * toAboutProgress);
+      if (exitUpProgress > 0.05) {
+        // Fades cleanly as it retracts upwards
+        opacity = Math.max(0, (1 - (exitUpProgress - 0.05) / 0.75) * toAboutProgress);
       }
     } else {
       opacity = 0; // Hidden on mobile
     }
 
     if (wrapperRef?.current) {
-      if (opacity <= 0.005) {
+      if (opacity <= 0.005 || exitUpProgress >= 0.98) {
         wrapperRef.current.style.opacity = "0";
         wrapperRef.current.style.visibility = "hidden";
         wrapperRef.current.style.pointerEvents = "none";
+        wrapperRef.current.style.transform = "translate3d(0, -130%, 0)";
       } else {
         wrapperRef.current.style.visibility = "visible";
         wrapperRef.current.style.opacity = opacity.toFixed(3);
         wrapperRef.current.style.pointerEvents =
-          opacity > 0.1 && exitUpProgress < 0.5 ? "auto" : "none";
+          opacity > 0.1 && exitUpProgress < 0.3 ? "auto" : "none";
+        wrapperRef.current.style.transform =
+          exitUpProgress > 0
+            ? `translate3d(0, -${(exitUpProgress * 125).toFixed(1)}%, 0)`
+            : "";
       }
     }
 
@@ -294,8 +320,10 @@ export default function Band({
     state.camera.lookAt(state.camera.position.x, targetY, 0);
 
     // -------------------------------------------------------------
-    // What I Do: Interactive Left & Right Sway / Physics Control
+    // Anchor & Physics Control (What I Do sway & Upward Retraction)
     // -------------------------------------------------------------
+    const targetAnchorY = 4.6 + (exitUpProgress * 14.0);
+
     if (whatIDoFactor > 0.15 && fixed.current && !dragged) {
       // Horizontal sway based on cursor pointer X (-1 on left to +1 on right)
       const swayTargetX = THREE.MathUtils.clamp(state.pointer.x * 2.2, -1.8, 1.8) * whatIDoFactor;
@@ -303,7 +331,7 @@ export default function Band({
       fixed.current.setTranslation(
         {
           x: THREE.MathUtils.damp(curFixed.x, swayTargetX, 4.5, delta),
-          y: 4.6,
+          y: THREE.MathUtils.damp(curFixed.y, targetAnchorY, 6.0, delta),
           z: 0,
         },
         true
@@ -311,15 +339,16 @@ export default function Band({
       [card, j1, j2, j3].forEach((ref) => ref.current?.wakeUp());
     } else if (fixed.current && !dragged) {
       const curFixed = fixed.current.translation() as any;
-      if (Math.abs(curFixed.x) > 0.005) {
-        fixed.current.setTranslation(
-          {
-            x: THREE.MathUtils.damp(curFixed.x, 0, 4.5, delta),
-            y: 4.6,
-            z: 0,
-          },
-          true
-        );
+      fixed.current.setTranslation(
+        {
+          x: THREE.MathUtils.damp(curFixed.x, 0, 4.5, delta),
+          y: THREE.MathUtils.damp(curFixed.y, targetAnchorY, 6.0, delta),
+          z: 0,
+        },
+        true
+      );
+      if (exitUpProgress > 0.05) {
+        [card, j1, j2, j3].forEach((ref) => ref.current?.wakeUp());
       }
     }
 
