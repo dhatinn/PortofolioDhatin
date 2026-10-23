@@ -15,47 +15,64 @@
   --admin-border-hover: rgba(255, 255, 255, 0.2);
 }
 
-/* --- Discreet Bottom Trigger --- */
-.admin-secret-trigger {
+/* --- Ultra-Stealth Discreet Admin Trigger --- */
+.admin-stealth-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.55);
-  padding: 6px 14px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 8px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.admin-secret-trigger:hover {
-  color: #ffedd5;
-  background: rgba(255, 122, 0, 0.16);
-  border-color: rgba(255, 140, 20, 0.45);
-  box-shadow: 0 0 16px rgba(255, 122, 0, 0.3);
-  transform: translateY(-1px);
-}
-
-.admin-secret-trigger.authenticated {
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.35);
-  background: rgba(52, 211, 153, 0.1);
-  box-shadow: 0 0 12px rgba(52, 211, 153, 0.15);
-}
-
-.admin-trigger-dot {
-  width: 6px;
-  height: 6px;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.25);
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.4);
-  transition: all 0.2s ease;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  opacity: 0.2;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.admin-stealth-trigger:hover {
+  opacity: 1;
+  color: #ff7a00;
+  background: rgba(255, 122, 0, 0.15);
+  border-color: rgba(255, 122, 0, 0.4);
+  box-shadow: 0 0 12px rgba(255, 122, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.admin-stealth-trigger.is-auth {
+  opacity: 0.6;
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.admin-stealth-trigger.is-auth:hover {
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
+}
+
+.stealth-icon {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Discreet Copyright Trigger */
+.secret-copyright-trigger {
+  cursor: pointer !important;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  user-select: none;
+}
+
+.secret-copyright-trigger:hover {
+  color: #ff7a00 !important;
+  text-shadow: 0 0 10px rgba(255, 122, 0, 0.4);
 }
 
 .admin-secret-trigger:hover .admin-trigger-dot {

@@ -1,6 +1,7 @@
 import { MdArrowOutward, MdCopyright } from "react-icons/md";
 import "./styles/Contact.css";
 import { usePortfolio } from "../context/PortfolioContext";
+import { AdminTrigger } from "../ghchgctydytceycj";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
@@ -8,7 +9,7 @@ import { useEffect } from "react";
 gsap.registerPlugin(ScrollTrigger);
 
 const Contact = () => {
-  const { config, language } = usePortfolio();
+  const { config, language, isAuthenticated, openLoginModal, openAdminDrawer } = usePortfolio();
   useEffect(() => {
     const contactTimeline = gsap.timeline({
       scrollTrigger: {
@@ -113,9 +114,20 @@ const Contact = () => {
                 </>
               )}
             </h2>
-            <h5>
-              <MdCopyright /> {new Date().getFullYear()}
-            </h5>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <h5
+                onClick={isAuthenticated ? openAdminDrawer : openLoginModal}
+                className="secret-copyright-trigger"
+                title={
+                  isAuthenticated
+                    ? "Buka Dashboard Admin (Ctrl+Shift+A)"
+                    : "Owner Portal (Ctrl+Shift+A)"
+                }
+              >
+                <MdCopyright /> {new Date().getFullYear()}
+              </h5>
+              <AdminTrigger />
+            </div>
           </div>
         </div>
       </div>

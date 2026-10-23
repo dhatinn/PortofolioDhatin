@@ -10,7 +10,16 @@ gsap.registerPlugin(ScrollTrigger);
 export let lenis: Lenis | null = null;
 
 const Navbar = () => {
-  const { config, theme, toggleTheme, language, toggleLanguage } = usePortfolio();
+  const {
+    config,
+    theme,
+    toggleTheme,
+    language,
+    toggleLanguage,
+    isAuthenticated,
+    openLoginModal,
+    openAdminDrawer,
+  } = usePortfolio();
   useEffect(() => {
     // Initialize Lenis smooth scroll
     lenis = new Lenis({
@@ -50,7 +59,17 @@ const Navbar = () => {
   return (
     <>
       <div className="header">
-        <a href="/#" className="navbar-title" data-cursor="disable">
+        <a
+          href="/#"
+          className="navbar-title"
+          data-cursor="disable"
+          onDoubleClick={(e) => {
+            e.preventDefault();
+            if (isAuthenticated) openAdminDrawer();
+            else openLoginModal();
+          }}
+          title={isAuthenticated ? "Dashboard Admin (Double click)" : "DN (Double click: Login Admin)"}
+        >
           {config.developer.initials}
         </a>
         <a

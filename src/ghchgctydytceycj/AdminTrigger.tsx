@@ -1,5 +1,5 @@
 import React from "react";
-import { FiLock, FiSettings } from "react-icons/fi";
+import { FiShield, FiSettings } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import "./styles/Admin.css";
 
@@ -8,27 +8,19 @@ const AdminTrigger: React.FC = () => {
 
   return (
     <button
-      className={`admin-secret-trigger ${isAuthenticated ? "authenticated" : ""}`}
+      type="button"
+      className={`admin-stealth-trigger ${isAuthenticated ? "is-auth" : ""}`}
       onClick={isAuthenticated ? openAdminDrawer : openLoginModal}
       title={
         isAuthenticated
           ? "Buka Dashboard Admin (Ctrl+Shift+A)"
-          : "Admin Login (Ctrl+Shift+A)"
+          : "Owner Portal (Ctrl+Shift+A)"
       }
-      aria-label="Admin Access"
+      aria-label="Admin Portal"
     >
-      <span className="admin-trigger-dot"></span>
-      {isAuthenticated ? (
-        <>
-          <FiSettings style={{ fontSize: "12px" }} />
-          <span>Dashboard</span>
-        </>
-      ) : (
-        <>
-          <FiLock style={{ fontSize: "11px" }} />
-          <span>Admin</span>
-        </>
-      )}
+      <span className="stealth-icon">
+        {isAuthenticated ? <FiSettings /> : <FiShield />}
+      </span>
     </button>
   );
 };
