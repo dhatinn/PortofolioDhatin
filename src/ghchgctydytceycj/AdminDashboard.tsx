@@ -24,13 +24,14 @@ import {
   FiLayers,
   FiGrid,
   FiSearch,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import { ProjectData, ExperienceData, ProfileData } from "../types/portfolio";
 import { drawLanyardCard } from "../components/Lanyard/cardTexture";
 import "./styles/Admin.css";
 
-type TabKey = "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
+type TabKey = "overview" | "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
 
 import { uploadImageToSupabaseStorage } from "../lib/supabase";
 
@@ -84,7 +85,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     closeAdminDrawer,
   } = usePortfolio();
 
-  const [activeTab, setActiveTab] = useState<TabKey>("lanyard");
+  const [activeTab, setActiveTab] = useState<TabKey>("overview");
+  const [searchQuery, setSearchQuery] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Supabase Configuration Local State
@@ -187,7 +189,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       };
       img.src = photoUrl;
     }
-  }, [profileForm, previewFace]);
+  }, [profileForm, previewFace, activeTab]);
 
   // Project Modal State
   const [projectSearch, setProjectSearch] = useState("");
@@ -450,164 +452,492 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   });
 
   return (
-    <div className={`admin-drawer-container ${isStandalonePage ? "is-standalone" : ""}`}>
-      {/* Topbar */}
-      <div className="admin-topbar">
-        <div className="admin-topbar-left">
-          <div className="admin-badge-logo">DN</div>
-          <div className="admin-topbar-title">
-            <h1>
-              Portfolio Studio & Control Center
-              <span className="admin-sync-pill">Live Mode</span>
-              {isSupabaseConnected ? (
-                <span
-                  className="admin-sync-pill"
-                  style={{
-                    background: "rgba(16, 185, 129, 0.15)",
-                    color: "#10b981",
-                    borderColor: "rgba(16, 185, 129, 0.35)",
-                  }}
-                  title="Terkoneksi langsung ke database Supabase"
-                >
-                  🟢 Supabase Connected
-                </span>
-              ) : (
-                <span
-                  className="admin-sync-pill"
-                  style={{
-                    background: "rgba(245, 158, 11, 0.12)",
-                    color: "#f59e0b",
-                    borderColor: "rgba(245, 158, 11, 0.3)",
-                  }}
-                  title="Menggunakan local storage (Atur .env untuk menghubungkan Supabase)"
-                >
-                  🟡 Mode Lokal (Offline)
-                </span>
-              )}
-              <span className="admin-pill-hot">3D Lanyard Active</span>
-            </h1>
-            <span className="subtitle">
-              Kelola foto 3D lanyard, biografi, proyek, karir, dan keahlian secara fleksibel
-            </span>
+    <div className={`admin-drawer-container ${isStandalonePage ? "is-standalone" : ""} charcoal-theme`}>
+      {/* Floating Dashboard Card Frame matching wireframe layout & charcoal tone */}
+      <div className="charcoal-dashboard-card">
+        {/* Top Section Row 1: Search Pill on Left + Action Pills on Right */}
+        <div className="charcoal-top-row">
+          <div className="charcoal-search-pill">
+            <FiSearch className="charcoal-search-icon" />
+            <input
+              type="text"
+              placeholder="Cari modul atau menu dashboard..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="charcoal-search-input"
+            />
+            <span
+              className={`charcoal-status-indicator ${isSupabaseConnected ? "online" : "local"}`}
+              title={isSupabaseConnected ? "Supabase Cloud Aktif" : "Mode Penyimpanan Lokal (Mock)"}
+            />
+          </div>
+
+          <div className="charcoal-top-actions">
+            <button
+              type="button"
+              className="charcoal-action-pill"
+              onClick={() => {
+                if (isStandalonePage) navigate("/");
+                else closeAdminDrawer();
+              }}
+              title="Buka Website Portofolio"
+            >
+              <FiEye />
+              <span>Lihat Website</span>
+            </button>
+
+            <button
+              type="button"
+              className="charcoal-action-pill highlight"
+              onClick={() => handleSaveProfile()}
+              title="Simpan Semua Perubahan"
+            >
+              <FiSave />
+              <span>Simpan</span>
+            </button>
+
+            <button
+              type="button"
+              className="charcoal-action-pill danger"
+              onClick={() => {
+                logout();
+                if (isStandalonePage) navigate("/ghchgctydytceycj");
+              }}
+              title="Keluar dari sesi admin"
+            >
+              <FiLogOut />
+              <span>Keluar</span>
+            </button>
+
+            {!isStandalonePage && (
+              <button
+                type="button"
+                className="charcoal-action-circle"
+                onClick={closeAdminDrawer}
+                title="Tutup Panel Admin"
+              >
+                <FiX />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="admin-topbar-right">
+        {/* Top Section Row 2: Horizontal Pill Navigation Tabs matching wireframe */}
+        <div className="charcoal-pill-tabs-bar">
           <button
             type="button"
-            className="admin-btn-secondary"
-            onClick={() => {
-              if (isStandalonePage) navigate("/");
-              else closeAdminDrawer();
-            }}
-            title="Buka portofolio utama di browser"
+            className={`charcoal-tab-pill ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
           >
-            <FiEye />
-            <span>Lihat Website</span>
+            <span>✦ Overview</span>
           </button>
           <button
             type="button"
-            className="admin-btn-primary"
-            onClick={() => handleSaveProfile()}
-          >
-            <FiSave />
-            <span>Simpan Semua</span>
-          </button>
-          <button
-            type="button"
-            className="admin-btn-danger"
-            onClick={() => {
-              logout();
-              if (isStandalonePage) navigate("/ghchgctydytceycj");
-            }}
-            title="Keluar dari sesi admin"
-          >
-            <FiLogOut />
-            <span>Keluar</span>
-          </button>
-          <button
-            type="button"
-            className="admin-close-btn"
-            style={{ position: "static" }}
-            onClick={() => {
-              if (isStandalonePage) navigate("/");
-              else closeAdminDrawer();
-            }}
-            title="Kembali ke Portofolio"
-          >
-            <FiX />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Body */}
-      <div className="admin-body">
-        {/* Sidebar Nav */}
-        <div className="admin-sidebar">
-          <div className="admin-sidebar-section-title">Visual & 3D</div>
-          <button
-            className={`admin-tab-btn ${activeTab === "lanyard" ? "active" : ""}`}
+            className={`charcoal-tab-pill ${activeTab === "lanyard" ? "active" : ""}`}
             onClick={() => setActiveTab("lanyard")}
           >
-            <FiImage className="admin-tab-icon" />
+            <FiImage />
             <span>3D Card & Foto</span>
-            <span className="admin-tab-count" style={{ background: "#ff7a00", color: "#fff" }}>
-              3D
-            </span>
           </button>
-
-          <div className="admin-sidebar-section-title">Konten Portofolio</div>
           <button
-            className={`admin-tab-btn ${activeTab === "profile" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "profile" ? "active" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
-            <FiUser className="admin-tab-icon" />
+            <FiUser />
             <span>Profil & Bio</span>
           </button>
           <button
-            className={`admin-tab-btn ${activeTab === "services" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "services" ? "active" : ""}`}
             onClick={() => setActiveTab("services")}
           >
-            <FiGrid className="admin-tab-icon" />
-            <span>Layanan / What I Do</span>
+            <FiGrid />
+            <span>Layanan</span>
           </button>
           <button
-            className={`admin-tab-btn ${activeTab === "projects" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "projects" ? "active" : ""}`}
             onClick={() => setActiveTab("projects")}
           >
-            <FiBriefcase className="admin-tab-icon" />
-            <span>Proyek Portofolio</span>
-            <span className="admin-tab-count">{projects.length}</span>
+            <FiBriefcase />
+            <span>Proyek ({projects.length})</span>
           </button>
           <button
-            className={`admin-tab-btn ${activeTab === "experience" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "experience" ? "active" : ""}`}
             onClick={() => setActiveTab("experience")}
           >
-            <FiClock className="admin-tab-icon" />
-            <span>Pengalaman Karir</span>
-            <span className="admin-tab-count">{experience.length}</span>
+            <FiClock />
+            <span>Karir ({experience.length})</span>
           </button>
           <button
-            className={`admin-tab-btn ${activeTab === "skills" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "skills" ? "active" : ""}`}
             onClick={() => setActiveTab("skills")}
           >
-            <FiCpu className="admin-tab-icon" />
-            <span>Keahlian & Tools</span>
-            <span className="admin-tab-count">{skills.length}</span>
+            <FiCpu />
+            <span>Keahlian ({skills.length})</span>
           </button>
-
-          <div className="admin-sidebar-section-title">Sistem & Keamanan</div>
           <button
-            className={`admin-tab-btn ${activeTab === "settings" ? "active" : ""}`}
+            type="button"
+            className={`charcoal-tab-pill ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            <FiSettings className="admin-tab-icon" />
-            <span>Akun & Backup</span>
+            <FiSettings />
+            <span>Database & Akun</span>
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="admin-main-content">
+        {/* Main Dashboard Content Area */}
+        <div className="charcoal-dashboard-content">
+          {/* =========================================================================
+              TAB: OVERVIEW (EXACT BENTO GRID MATCHING THE USER'S WIREFRAME)
+             ========================================================================= */}
+          {activeTab === "overview" && (
+            <div className="charcoal-bento-grid">
+              {/* Left Column (~33%) */}
+              <div className="bento-col bento-col-left">
+                {/* Top Card: 3D Lanyard Card & Profile Preview */}
+                <div
+                  className="bento-card bento-card-profile"
+                  onClick={() => setActiveTab("lanyard")}
+                  title="Klik untuk kustomisasi 3D Lanyard & Foto"
+                >
+                  <div className="bento-inner-preview-card">
+                    {/* Pill badge in top right corner */}
+                    <div className="bento-badge-pill">
+                      <span>{profileForm.badge?.badgeId || "DEV ID • VERIFIED"}</span>
+                    </div>
+
+                    {/* Centered Avatar and Details */}
+                    <div className="bento-avatar-wrap">
+                      <img
+                        src={profileForm.photo || "/images/lanyard_photo.jpg"}
+                        alt={profileForm.name}
+                        className="bento-avatar-img"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                      <div className="bento-avatar-initials">
+                        {profileForm.badge?.initials || "DN"}
+                      </div>
+                    </div>
+
+                    <div className="bento-profile-info">
+                      <h3 className="bento-profile-name">
+                        {profileForm.name || "Dhatin Nuril Arsandy"}
+                      </h3>
+                      <p className="bento-profile-role">
+                        {profileForm.badge?.badgeRole ||
+                          profileForm.taglines?.[0] ||
+                          "Full-Stack Developer"}
+                      </p>
+                      <p className="bento-profile-bio-snippet">
+                        {(profileForm.about?.id || profileForm.about?.en || "Creative Developer & Designer crafting high performance web experiences.").slice(0, 95)}...
+                      </p>
+                    </div>
+
+                    {/* Verified badge in bottom right corner */}
+                    <div className="bento-verified-circle" title="Verified ID Badge">
+                      <FiCheck />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Card: Horizontal Action Bar */}
+                <div
+                  className="bento-card bento-action-bar"
+                  onClick={() => {
+                    if (isStandalonePage) navigate("/");
+                    else closeAdminDrawer();
+                  }}
+                  title="Lihat Website Portofolio (Live)"
+                >
+                  <div className="bento-action-circle left">
+                    <FiEye />
+                  </div>
+                  <span className="bento-action-text">Website Portofolio • Live</span>
+                  <div className="bento-action-circle right">
+                    <FiExternalLink />
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Column (~42%) */}
+              <div className="bento-col bento-col-center">
+                {/* Top Card: Main Editor */}
+                <div className="bento-card bento-card-main-editor">
+                  <div className="bento-editor-header">
+                    <div className="bento-header-pill">
+                      <span>EDITOR UTAMA</span>
+                    </div>
+                    <h2 className="bento-editor-title">Profil & Identitas Eksklusif</h2>
+                    <p className="bento-editor-subtitle">
+                      Ubah nama, peran utama, dan bio portofolio secara instan
+                    </p>
+                  </div>
+
+                  <div className="bento-editor-body">
+                    <div className="bento-field-group">
+                      <label>Nama Lengkap</label>
+                      <input
+                        type="text"
+                        className="bento-input"
+                        value={profileForm.name || ""}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, name: e.target.value })
+                        }
+                        placeholder="Dhatin Nuril Arsandy"
+                      />
+                    </div>
+
+                    <div className="bento-field-group">
+                      <label>Role Utama / Badge Role</label>
+                      <input
+                        type="text"
+                        className="bento-input"
+                        value={profileForm.badge?.badgeRole || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            badge: { ...profileForm.badge, badgeRole: e.target.value },
+                          })
+                        }
+                        placeholder="Full-Stack Developer | Graphic Designer"
+                      />
+                    </div>
+
+                    <div className="bento-field-group">
+                      <label>Ringkasan Bio</label>
+                      <textarea
+                        className="bento-textarea"
+                        rows={2}
+                        value={profileForm.about?.id || profileForm.about?.en || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            about: {
+                              id: e.target.value,
+                              en: profileForm.about?.en || e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="Deskripsi singkat tentang dirimu..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bento-editor-footer">
+                    <button
+                      type="button"
+                      className="bento-btn-primary"
+                      onClick={() => handleSaveProfile()}
+                    >
+                      <FiSave />
+                      <span>Simpan Perubahan</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bottom Row: Split into 2 Sub-cards */}
+                <div className="bento-row-bottom-split">
+                  {/* Left Sub-card: Skills Progress Bars */}
+                  <div
+                    className="bento-card bento-subcard-skills"
+                    onClick={() => setActiveTab("skills")}
+                    title="Klik untuk kelola keahlian & tools"
+                  >
+                    <div className="bento-subcard-header">
+                      <span className="bento-mini-pill">KEAHLIAN</span>
+                      <span className="bento-count-circle">{skills.length}</span>
+                    </div>
+                    <div className="bento-progress-list">
+                      <div className="bento-progress-item">
+                        <div className="bento-progress-meta">
+                          <span>Frontend & React</span>
+                          <span>95%</span>
+                        </div>
+                        <div className="bento-progress-track">
+                          <div className="bento-progress-fill" style={{ width: "95%" }} />
+                        </div>
+                      </div>
+                      <div className="bento-progress-item">
+                        <div className="bento-progress-meta">
+                          <span>UI/UX & Design</span>
+                          <span>92%</span>
+                        </div>
+                        <div className="bento-progress-track">
+                          <div className="bento-progress-fill" style={{ width: "92%" }} />
+                        </div>
+                      </div>
+                      <div className="bento-progress-item">
+                        <div className="bento-progress-meta">
+                          <span>Three.js & 3D Web</span>
+                          <span>88%</span>
+                        </div>
+                        <div className="bento-progress-track">
+                          <div className="bento-progress-fill" style={{ width: "88%" }} />
+                        </div>
+                      </div>
+                      <div className="bento-progress-item">
+                        <div className="bento-progress-meta">
+                          <span>Backend & Database</span>
+                          <span>90%</span>
+                        </div>
+                        <div className="bento-progress-track">
+                          <div className="bento-progress-fill" style={{ width: "90%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Sub-card: Database / Supabase */}
+                  <div
+                    className="bento-card bento-subcard-database"
+                    onClick={() => setActiveTab("settings")}
+                    title="Klik untuk konfigurasi database Supabase"
+                  >
+                    <div className="bento-subcard-header">
+                      <span className="bento-mini-pill">DATABASE</span>
+                      <span
+                        className={`bento-status-dot ${isSupabaseConnected ? "connected" : "local"}`}
+                      />
+                    </div>
+                    <div className="bento-db-info">
+                      <h4 className="bento-db-title">
+                        {isSupabaseConnected ? "Supabase Cloud" : "Local Storage"}
+                      </h4>
+                      <p className="bento-db-status">
+                        {isSupabaseConnected
+                          ? "Sinkronisasi Cloud Aktif"
+                          : "Mode Penyimpanan Lokal"}
+                      </p>
+                    </div>
+                    <div className="bento-db-toggle-wrap">
+                      <button
+                        type="button"
+                        className={`bento-toggle-pill ${isSupabaseConnected ? "active" : ""}`}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setIsTestingSupabase(true);
+                          const res = await testSupabase(supabaseUrlInput, supabaseKeyInput);
+                          setIsTestingSupabase(false);
+                          setSupabaseTestMsg(res);
+                          showToast(res.message);
+                        }}
+                        disabled={isTestingSupabase}
+                      >
+                        <FiRefreshCw className={isTestingSupabase ? "admin-spin" : ""} />
+                        <span>
+                          {isTestingSupabase
+                            ? "Testing..."
+                            : isSupabaseConnected
+                            ? "Terkoneksi"
+                            : "Uji Koneksi"}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column (~25%) */}
+              <div className="bento-col bento-col-right">
+                {/* Card 1: Tech Stack Badges */}
+                <div
+                  className="bento-card bento-card-techstack"
+                  onClick={() => setActiveTab("skills")}
+                  title="Klik untuk lihat semua tools"
+                >
+                  <div className="bento-card-top-row">
+                    <span className="bento-mini-pill">TECH STACK</span>
+                    <span className="bento-count-circle">{skills.length}</span>
+                  </div>
+                  <h4 className="bento-card-mini-title">Core Technologies</h4>
+                  <div className="bento-circle-badges-row">
+                    <div className="bento-circle-badge" title="React">⚛</div>
+                    <div className="bento-circle-badge" title="TypeScript">TS</div>
+                    <div className="bento-circle-badge" title="Three.js">3D</div>
+                    <div className="bento-circle-badge" title="Supabase">⚡</div>
+                    <div className="bento-circle-badge" title="Vite">🚀</div>
+                  </div>
+                </div>
+
+                {/* Card 2: Projects Quick Manager */}
+                <div
+                  className="bento-card bento-card-projects-quick"
+                  onClick={() => setActiveTab("projects")}
+                  title="Klik untuk kelola proyek portofolio"
+                >
+                  <div className="bento-card-top-row">
+                    <span className="bento-mini-pill">PROYEK</span>
+                    <span className="bento-count-circle">{projects.length}</span>
+                  </div>
+                  <h4 className="bento-card-mini-title">Portfolio Projects</h4>
+                  <p className="bento-card-mini-desc">
+                    {projects.length} karya aktif ditampilkan di halaman utama
+                  </p>
+                  <button
+                    type="button"
+                    className="bento-btn-wide-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTab("projects");
+                      handleOpenAddProject();
+                    }}
+                  >
+                    <FiPlus />
+                    <span>Tambah Proyek Baru</span>
+                  </button>
+                </div>
+
+                {/* Card 3: Career Timeline & Stacked Angled Cards Illustration */}
+                <div
+                  className="bento-card bento-card-career-stack"
+                  onClick={() => setActiveTab("experience")}
+                  title="Klik untuk kelola riwayat karir"
+                >
+                  <div className="bento-card-top-row">
+                    <span className="bento-mini-pill">PENGALAMAN</span>
+                    <span className="bento-count-circle">{experience.length}</span>
+                  </div>
+                  <h4 className="bento-card-mini-title">Career Timeline</h4>
+                  <p className="bento-card-mini-desc">
+                    {experience.length} posisi kerja & track record
+                  </p>
+
+                  {/* 3 Overlapping Layered Angled Cards illustration matching wireframe */}
+                  <div className="bento-layered-cards-container">
+                    <div className="bento-layer-card layer-back" />
+                    <div className="bento-layer-card layer-mid" />
+                    <div className="bento-layer-card layer-front">
+                      <span className="layer-role">{experience[0]?.role || "Software Eng"}</span>
+                      <span className="layer-year">
+                        {experience[0]?.period?.split("–")[0] || "2024"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Breadcrumb back to Overview if on another tab */}
+          {activeTab !== "overview" && (
+            <div className="charcoal-tab-back-bar">
+              <button
+                type="button"
+                className="charcoal-back-to-bento-btn"
+                onClick={() => setActiveTab("overview")}
+              >
+                <FiArrowLeft />
+                <span>Kembali ke Bento Overview</span>
+              </button>
+            </div>
+          )}
+
           {/* =========================================================================
               TAB: 3D CARD & FOTO PROFIL (HERO FEATURE)
              ========================================================================= */}
