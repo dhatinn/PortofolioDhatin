@@ -21,7 +21,6 @@ import {
   FiAlertTriangle,
   FiImage,
   FiEye,
-  FiLayers,
   FiGrid,
   FiSearch,
   FiArrowLeft,
@@ -958,52 +957,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                   <FiSave />
                   <span>Terapkan Perubahan</span>
                 </button>
-              </div>
-
-              {/* Quick Stats Grid */}
-              <div className="admin-stats-grid">
-                <div className="admin-stat-card">
-                  <div
-                    className="admin-stat-icon-wrap"
-                    style={{ background: "rgba(255, 122, 0, 0.15)", color: "#ff9f43" }}
-                  >
-                    <FiImage />
-                  </div>
-                  <div className="admin-stat-info">
-                    <h4>Status Foto 3D</h4>
-                    <div className="value" style={{ fontSize: "16px", color: "#34d399" }}>
-                      Aktif & Terpasang
-                    </div>
-                  </div>
-                </div>
-
-                <div className="admin-stat-card">
-                  <div
-                    className="admin-stat-icon-wrap"
-                    style={{ background: "rgba(59, 130, 246, 0.15)", color: "#60a5fa" }}
-                  >
-                    <FiLayers />
-                  </div>
-                  <div className="admin-stat-info">
-                    <h4>Fisika Rapier</h4>
-                    <div className="value" style={{ fontSize: "16px", color: "#60a5fa" }}>
-                      Interactive Rope
-                    </div>
-                  </div>
-                </div>
-
-                <div className="admin-stat-card">
-                  <div
-                    className="admin-stat-icon-wrap"
-                    style={{ background: "rgba(236, 72, 153, 0.15)", color: "#f472b6" }}
-                  >
-                    <FiEye />
-                  </div>
-                  <div className="admin-stat-info">
-                    <h4>Resolusi Tekstur</h4>
-                    <div className="value" style={{ fontSize: "16px" }}>1024 x 1024 HD</div>
-                  </div>
-                </div>
               </div>
 
               {/* Main Customizer Grid */}
