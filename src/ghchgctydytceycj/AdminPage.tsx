@@ -1,15 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  FiLock,
-  FiUser,
-  FiEye,
-  FiEyeOff,
-  FiArrowRight,
-  FiAlertCircle,
-  FiArrowLeft,
-  FiShield,
-} from "react-icons/fi";
+import { FiEye, FiEyeOff, FiCheck, FiArrowLeft, FiAlertCircle } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import AdminDashboard from "./AdminDashboard";
 import "./styles/Admin.css";
@@ -27,7 +18,7 @@ const AdminPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     if (!username.trim() || !password) {
-      setError("Mohon isi username dan password Anda.");
+      setError("Please fill in both username and password");
       return;
     }
 
@@ -36,116 +27,126 @@ const AdminPage: React.FC = () => {
       const ok = login(username, password);
       setIsSubmitting(false);
       if (!ok) {
-        setError("Username atau password salah! Coba default: admin / admin123");
+        setError("Invalid username or password. (Default: admin / admin123)");
       }
-    }, 250);
+    }, 200);
   };
 
-  // If already logged in, show the full-screen standalone Admin Dashboard
+  const handleFillDefaults = () => {
+    setUsername("admin");
+    setPassword("admin123");
+    setError(null);
+  };
+
+  // If already authenticated, show the standalone Admin Dashboard
   if (isAuthenticated) {
     return <AdminDashboard isStandalonePage={true} />;
   }
 
-  // Standalone Clean Login Page
   return (
-    <div className="admin-page-login-wrap">
-      {/* Ambient background glow */}
-      <div className="admin-login-glow-bg" />
-
-      {/* Return to website button */}
-      <Link to="/" className="admin-back-to-web-link">
+    <div className="spacefox-login-viewport">
+      {/* Top Left Return Link */}
+      <Link to="/" className="spacefox-back-link" title="Return to portfolio">
         <FiArrowLeft />
-        <span>Kembali ke Portofolio</span>
+        <span>WEBSITE</span>
       </Link>
 
-      <div className="admin-standalone-login-card">
-        {/* Brand header */}
-        <div className="admin-login-brand">
-          <div className="admin-login-logo">DN</div>
-          <h2>Control Center</h2>
-          <p>Portal Pengelolaan Konten & Konfigurasi Portofolio</p>
-        </div>
-
-        {error && (
-          <div className="admin-login-error">
-            <FiAlertCircle className="error-icon" />
-            <span>{error}</span>
+      {/* Center 3D Dark Planet / Orb Container */}
+      <div className="spacefox-orb-container">
+        <div className="spacefox-orb-body">
+          {/* Logo / Title */}
+          <div className="spacefox-brand">
+            <h1 className="spacefox-logo">S P A C E F O X</h1>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="admin-login-form">
-          <div className="admin-form-group">
-            <label htmlFor="admin-user-input">Username / Email</label>
-            <div className="admin-input-wrap">
-              <span className="admin-input-icon">
-                <FiUser />
-              </span>
-              <input
-                id="admin-user-input"
-                type="text"
-                className="admin-input with-icon"
-                placeholder="admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoFocus
-                autoComplete="username"
-              />
+          {error && (
+            <div className="spacefox-error-alert">
+              <FiAlertCircle />
+              <span>{error}</span>
             </div>
-          </div>
+          )}
 
-          <div className="admin-form-group">
-            <label htmlFor="admin-pass-input">Password</label>
-            <div className="admin-input-wrap">
-              <span className="admin-input-icon">
-                <FiLock />
-              </span>
-              <input
-                id="admin-pass-input"
-                type={showPassword ? "text" : "password"}
-                className="admin-input with-icon with-eye"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                className="admin-eye-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <FiEyeOff /> : <FiEye />}
-              </button>
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="spacefox-form">
+            {/* Email / Username field with floating underline */}
+            <div className="spacefox-field">
+              <label htmlFor="spacefox-email" className="spacefox-label">
+                Email address
+              </label>
+              <div className="spacefox-input-wrap">
+                <input
+                  id="spacefox-email"
+                  type="text"
+                  className="spacefox-input"
+                  placeholder="admin"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  autoFocus
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            className="admin-submit-btn"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <span>Memeriksa kredensial...</span>
-            ) : (
-              <>
-                <span>Masuk ke Dashboard</span>
-                <FiArrowRight />
-              </>
-            )}
-          </button>
-        </form>
+            {/* Password field with floating underline */}
+            <div className="spacefox-field">
+              <label htmlFor="spacefox-password" className="spacefox-label">
+                Password
+              </label>
+              <div className="spacefox-input-wrap">
+                <input
+                  id="spacefox-password"
+                  type={showPassword ? "text" : "password"}
+                  className="spacefox-input password-input"
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="spacefox-eye-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
+              </div>
+            </div>
 
-        <div className="admin-login-footer-info">
-          <div className="admin-hint-pill">
-            <FiShield className="hint-icon" />
-            <span>
-              Kredensial bawaan: <code>admin</code> / <code>admin123</code>
+            {/* Sign In Button */}
+            <button
+              type="submit"
+              className="spacefox-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "SIGNING IN..." : "SIGN IN"}
+            </button>
+          </form>
+
+          {/* Subtext / Auto-fill hint */}
+          <p className="spacefox-subtext">
+            Don't have an account?{" "}
+            <span
+              className="spacefox-signup-link"
+              onClick={handleFillDefaults}
+              title="Click to fill default credentials"
+            >
+              Sign up
             </span>
-          </div>
-          <p className="admin-hint-sub">
-            Password dan data dapat diubah secara aman di menu Pengaturan.
           </p>
+
+          {/* Bottom verified squircle button with glowing amber/coral rim */}
+          <div className="spacefox-bottom-widget">
+            <button
+              type="button"
+              className="spacefox-verified-btn"
+              onClick={handleFillDefaults}
+              title="Quick Auth Fill (admin / admin123)"
+            >
+              <FiCheck className="verified-check-icon" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

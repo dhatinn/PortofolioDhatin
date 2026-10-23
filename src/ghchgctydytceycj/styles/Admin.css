@@ -86,12 +86,12 @@
 }
 
 /* ==========================================================================
-   STANDALONE ADMIN LOGIN PAGE (at /ghchgctydytceycj)
+   SPACEFOX COSMIC DARK ORB LOGIN DESIGN (at /ghchgctydytceycj)
    ========================================================================== */
-.admin-page-login-wrap {
+.spacefox-login-viewport {
   min-height: 100vh;
   width: 100vw;
-  background: #08060c;
+  background: #08080a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,149 +99,260 @@
   overflow: hidden;
   padding: 24px;
   box-sizing: border-box;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  user-select: none;
 }
 
-.admin-login-glow-bg {
+.spacefox-back-link {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 650px;
-  height: 650px;
-  background: radial-gradient(circle, rgba(255, 122, 0, 0.16) 0%, rgba(168, 85, 247, 0.08) 45%, transparent 70%);
-  pointer-events: none;
-  filter: blur(60px);
-}
-
-.admin-back-to-web-link {
-  position: absolute;
-  top: 28px;
-  left: 28px;
+  top: 32px;
+  left: 36px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 18px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 13px;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
-  backdrop-filter: blur(12px);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
   transition: all 0.25s ease;
-  z-index: 10;
+  z-index: 20;
 }
 
-.admin-back-to-web-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-color: rgba(255, 122, 0, 0.4);
+.spacefox-back-link:hover {
+  color: #ffffff;
   transform: translateX(-3px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-.admin-standalone-login-card {
-  width: 100%;
-  max-width: 440px;
-  background: linear-gradient(160deg, rgba(20, 16, 28, 0.94), rgba(11, 9, 16, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 42px 36px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(255, 122, 0, 0.1);
-  backdrop-filter: blur(28px);
-  position: relative;
-  z-index: 5;
-  animation: adminSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.admin-login-brand {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.admin-login-logo {
-  width: 54px;
-  height: 54px;
-  background: linear-gradient(135deg, #ff9f43, #ea580c);
-  border-radius: 15px;
+/* Center 3D Dark Planet / Orb Container */
+.spacefox-orb-container {
+  width: min(680px, 92vw);
+  height: min(680px, 92vw);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #18181d 0%, #111115 50%, #09090c 78%, #060608 100%);
+  box-shadow: 0 0 140px rgba(0, 0, 0, 0.98), 
+              inset 0 1px 2px rgba(255, 255, 255, 0.12), 
+              inset 0 -25px 70px rgba(0, 0, 0, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 21px;
-  color: #fff;
-  margin: 0 auto 16px;
-  box-shadow: 0 8px 24px rgba(255, 122, 0, 0.4);
-  letter-spacing: 0.5px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  animation: spacefoxFadeIn 0.5s ease-out;
 }
 
-.admin-login-brand h2 {
-  font-size: 23px;
+@keyframes spacefoxFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.spacefox-orb-body {
+  width: 100%;
+  max-width: 310px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+}
+
+.spacefox-brand {
+  margin-bottom: 44px;
+}
+
+.spacefox-logo {
+  font-size: 17px;
   font-weight: 700;
-  color: #fff;
-  margin: 0 0 6px;
-  letter-spacing: -0.4px;
-}
-
-.admin-login-brand p {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
   margin: 0;
-  line-height: 1.45;
+  line-height: 1;
+  text-indent: 0.55em;
 }
 
-.admin-input-icon {
-  position: absolute;
-  left: 14px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 16px;
+.spacefox-error-alert {
   display: flex;
   align-items: center;
-  pointer-events: none;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  font-size: 11px;
+  margin-bottom: 18px;
+  text-align: left;
+  line-height: 1.4;
+  box-sizing: border-box;
 }
 
-.admin-input.with-icon {
-  padding-left: 42px;
+.spacefox-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 }
 
-.admin-input.with-eye {
-  padding-right: 42px;
+.spacefox-field {
+  margin-bottom: 22px;
+  width: 100%;
 }
 
-.admin-login-footer-info {
-  margin-top: 26px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.spacefox-label {
+  display: block;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.42);
+  margin-bottom: 6px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.spacefox-input-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.spacefox-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 14px;
+  padding: 6px 0 10px 0;
+  border-radius: 0;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.spacefox-input:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.spacefox-input.password-input {
+  letter-spacing: 0.15em;
+  padding-right: 28px;
+}
+
+.spacefox-eye-btn {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  padding: 4px;
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+.spacefox-eye-btn:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.spacefox-submit-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 12px;
+  background: #1c1c20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spacefox-submit-btn:hover {
+  background: #25252b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.spacefox-submit-btn:active {
+  transform: translateY(0);
+}
+
+.spacefox-subtext {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 22px 0 0 0;
   text-align: center;
 }
 
-.admin-hint-pill {
-  display: inline-flex;
+.spacefox-signup-link {
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.spacefox-signup-link:hover {
+  color: #ff851b;
+}
+
+.spacefox-bottom-widget {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.spacefox-verified-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #141417;
+  border: 1px solid rgba(249, 115, 22, 0.38);
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.18), inset 0 0 8px rgba(249, 115, 22, 0.1);
+  display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  background: rgba(255, 122, 0, 0.08);
-  border: 1px solid rgba(255, 140, 20, 0.2);
-  color: #fed7aa;
-  font-size: 12px;
-  font-weight: 500;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
 }
 
-.admin-hint-pill code {
-  color: #fff;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1px 6px;
-  border-radius: 4px;
+.spacefox-verified-btn:hover {
+  border-color: #f97316;
+  box-shadow: 0 0 22px rgba(249, 115, 22, 0.4);
+  transform: scale(1.08);
 }
 
-.admin-hint-sub {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 8px 0 0;
+.verified-check-icon {
+  stroke-width: 2.5;
 }
 
 /* --- Modal Overlay & Animations --- */
