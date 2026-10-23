@@ -16,7 +16,12 @@ const LanyardCanvas: React.FC = () => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <div className="lanyard-wrapper" ref={wrapperRef} data-cursor="disable">
+    <div
+      className="lanyard-wrapper"
+      ref={wrapperRef}
+      data-cursor="disable"
+      style={{ display: "none", opacity: 0 }}
+    >
       <Canvas
         camera={{ position: [0, 0, 13], fov: 25 }}
         style={{ width: "100%", height: "100%", backgroundColor: "transparent" }}
