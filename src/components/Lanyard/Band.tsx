@@ -239,10 +239,11 @@ export default function Band({
     const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
     const whatIDoFactor = toWhatIDoProgress * (1 - exitUpProgress);
 
-    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 0.88, aboutFactor) : 0;
-    const baseTargetY = THREE.MathUtils.lerp(0, 0.28, aboutFactor);
+    // About Me Zoom: Moderated zoom (targetZ = 8.0 instead of 5.6) for elegant framing with comfortable margins
+    const targetX = isDesktop ? THREE.MathUtils.lerp(0, 1.25, aboutFactor) : 0;
+    const baseTargetY = THREE.MathUtils.lerp(0, 0.35, aboutFactor);
     const targetY = isDesktop ? baseTargetY - (exitUpProgress * 9.5) : baseTargetY;
-    const targetZ = THREE.MathUtils.lerp(13, 5.6, aboutFactor);
+    const targetZ = THREE.MathUtils.lerp(13, 8.0, aboutFactor);
 
     // Lanyard Visibility:
     // - Hero (scrollY < 0.35 * vHeight): opacity = 0 (completely hidden)
