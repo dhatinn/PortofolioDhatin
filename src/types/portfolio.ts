@@ -4,6 +4,7 @@ export interface BadgeConfig {
   initials?: string;
   accentColor?: string;
   subText?: string;
+  photo?: string;
 }
 
 export interface ProfileData {

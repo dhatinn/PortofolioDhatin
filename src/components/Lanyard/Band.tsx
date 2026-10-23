@@ -79,7 +79,7 @@ export default function Band({
   const [textureVersion, setTextureVersion] = useState(0);
 
   useEffect(() => {
-    const photo = profile?.photo || config.developer.photo || "/images/mypicnbg.png";
+    const photo = profile?.badge?.photo || profile?.photo || config.developer.photo || "/images/lanyard_photo.jpg";
     const name = profile?.name || config.developer.fullName || config.developer.name || "Dhatin Nuril Arsandy";
     const role = profile?.badge?.badgeRole || profile?.taglines?.[0] || config.developer.taglines?.[0] || config.developer.title || "Full-Stack Developer";
     const initials = profile?.badge?.initials || config.developer.initials || "DN";

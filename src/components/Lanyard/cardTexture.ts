@@ -129,7 +129,8 @@ export function drawLanyardCard(
       sW = img.naturalWidth;
       sH = img.naturalWidth / boxRatio;
       sX = 0;
-      sY = (img.naturalHeight - sH) / 2;
+      // For vertical portraits, bias slightly toward the top (18%) so the head and face are framed nicely
+      sY = Math.max(0, (img.naturalHeight - sH) * 0.18);
     }
 
     ctx.drawImage(img, sX, sY, sW, sH, photoX, photoY, photoW, photoH);

@@ -11,9 +11,15 @@ export const profile = {
   whatsapp: "6285142156672",
   email: "dhatinsandy24@gmail.com",
   github: "https://github.com/dhatinn",
-  linkedin: "", // TODO: isi jika ada
-  photo: "/images/mypicnbg.png", // Dhatin's photo with transparent background
-  cv: "/cv.pdf", // TODO: siapkan file CV PDF
+  photo: "/images/lanyard_photo.jpg", // Dhatin's photo from IMG_1199.JPG.jpeg
+  badge: {
+    photo: "/images/lanyard_photo.jpg",
+    badgeRole: "Full-Stack Developer",
+    badgeId: "DEV ID • VERIFIED",
+    initials: "DN",
+    subText: "ID: 2026-DHATIN-DEV-SECURE",
+    accentColor: "#ff7a00",
+  },
   available: {
     en: "Available for internship & freelance",
     id: "Terbuka untuk magang & freelance",
