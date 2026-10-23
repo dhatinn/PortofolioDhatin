@@ -8,11 +8,11 @@
   pointer-events: none;
   user-select: none;
   touch-action: none;
-  display: none; /* Hidden by default in hero, dynamically shown in About Me & What I Do */
-  opacity: 0;
+  display: flex;
+  opacity: 1;
   justify-content: center;
   align-items: center;
-  transition: opacity 0.2s ease-out;
+  transition: opacity 0.3s ease-out;
 }
 
 .lanyard-wrapper canvas {

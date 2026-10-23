@@ -20,7 +20,6 @@ const LanyardCanvas: React.FC = () => {
       className="lanyard-wrapper"
       ref={wrapperRef}
       data-cursor="disable"
-      style={{ display: "none", opacity: 0 }}
     >
       <Canvas
         camera={{ position: [0, 0, 13], fov: 25 }}

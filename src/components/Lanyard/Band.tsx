@@ -257,29 +257,28 @@ export default function Band({
     const targetZ = THREE.MathUtils.lerp(13, 5.6, aboutFactor);
 
     // Lanyard Visibility:
-    // Landing (Hero): Hidden (opacity = 0) because video.mp4 background plays here ("disini gausa pake lanyard nya")
-    // Entering About Me: Fades in smoothly (toAboutProgress: 0 -> 1) on the left
-    // What I Do: Stays visible in the center (opacity = 1)
-    // Past What I Do: Fades out (exitUpProgress)
-    let opacity = 0;
+    // Fully visible in Landing (Hero), About Me, and What I Do!
+    // Exits and fades out only AFTER What I Do (scrollY > 2.40 * vHeight)
+    let opacity = 1;
     if (isDesktop) {
-      opacity = toAboutProgress;
       if (exitUpProgress > 0.3) {
-        opacity = Math.max(0, (1 - (exitUpProgress - 0.3) / 0.5) * toAboutProgress);
+        opacity = Math.max(0, 1 - (exitUpProgress - 0.3) / 0.5);
       }
     } else {
-      opacity = 0;
+      opacity = 0; // Hidden on mobile
     }
 
     if (wrapperRef?.current) {
-      if (opacity <= 0.001) {
-        wrapperRef.current.style.display = "none";
+      if (opacity <= 0.005) {
+        wrapperRef.current.style.opacity = "0";
+        wrapperRef.current.style.visibility = "hidden";
+        wrapperRef.current.style.pointerEvents = "none";
       } else {
-        wrapperRef.current.style.display = "flex";
+        wrapperRef.current.style.visibility = "visible";
+        wrapperRef.current.style.opacity = opacity.toFixed(3);
+        wrapperRef.current.style.pointerEvents =
+          opacity > 0.1 && exitUpProgress < 0.5 ? "auto" : "none";
       }
-      wrapperRef.current.style.opacity = opacity.toFixed(3);
-      wrapperRef.current.style.pointerEvents =
-        opacity > 0.05 && exitUpProgress < 0.5 ? "auto" : "none";
     }
 
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, targetX, 5.5, delta);
