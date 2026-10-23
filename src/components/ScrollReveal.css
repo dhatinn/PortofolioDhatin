@@ -1,0 +1,21 @@
+/* ---- ScrollReveal.css ---- */
+.scroll-reveal {
+  margin: 0;
+  display: block;
+}
+
+.scroll-reveal-text {
+  display: block;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+}
+
+.scroll-reveal-word,
+.scroll-reveal-piece {
+  display: inline-block;
+}

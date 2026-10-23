@@ -1,20 +1,6 @@
 import "./styles/About.css";
 import { usePortfolio } from "../context/PortfolioContext";
-
-function renderFormattedAbout(text: string) {
-  if (!text) return null;
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={i} className="about-bold">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
+import ScrollReveal from "./ScrollReveal";
 
 const About = () => {
   const { config } = usePortfolio();
@@ -22,9 +8,21 @@ const About = () => {
     <div className="about-section" id="about">
       <div className="about-me">
         <h3 className="title">{config.about.title}</h3>
-        <p className="para">
-          {renderFormattedAbout(config.about.description)}
-        </p>
+        <ScrollReveal
+          as="p"
+          formattedText={config.about.description}
+          containerClassName="about-scroll-reveal"
+          textClassName="about-scroll-text"
+          enableBlur={true}
+          blurStrength={5}
+          baseOpacity={0.15}
+          stagger={0.035}
+          inStart="top 80%"
+          inEnd="center 50%"
+          enableOutAnimation={true}
+          outStart="center 42%"
+          outEnd="bottom 15%"
+        />
       </div>
     </div>
   );
