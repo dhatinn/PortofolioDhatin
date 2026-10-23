@@ -21,7 +21,7 @@ const Landing = () => {
         <SolarAuraStage isPlaying={!isLoading} />
 
         <div className="landing-container">
-          {/* Left Intro Card: Greeting & Full Name with Luxury Glass Card */}
+          {/* Left Intro Card: Glassmorphism Card (No orange stroke) */}
           <div className="landing-intro">
             <div className="landing-intro-glass">
               <div className="landing-greeting-tag">
@@ -41,20 +41,20 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* Right Info Card: Role & Specialized Skills */}
+          {/* Right Info Card: Glassmorphism Card (No orange stroke) */}
           <div className="landing-info">
             <div className="landing-info-glass">
               <div className="landing-info-tag">
                 <span>EXPERTISE & DISCIPLINE</span>
               </div>
               <h2 className="landing-info-h2">
-                <span className="landing-h2-gradient">{mainRole}</span>
+                <span className="landing-h2-gradient">{mainRole.toUpperCase()}</span>
               </h2>
               {subRoles.length > 0 && (
                 <div className="landing-sub-pills">
                   {subRoles.map((role, idx) => (
                     <span key={idx} className="landing-role-pill">
-                      {role}
+                      {role.toUpperCase()}
                     </span>
                   ))}
                 </div>

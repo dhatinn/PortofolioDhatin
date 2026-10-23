@@ -33,17 +33,8 @@
     z-index: 10;
     width: 100% !important;
     max-width: 100% !important;
-    order: 1;
-  }
-
-  .landing-intro-glass {
-    align-items: center;
     text-align: center;
-    padding: 18px 20px;
-  }
-
-  .landing-name {
-    align-items: center;
+    order: 1;
   }
 
   .landing-info {
@@ -56,19 +47,14 @@
     z-index: 10;
     width: 100% !important;
     max-width: 100% !important;
-    margin-top: 10px;
+    margin-top: 15px;
     padding-bottom: 40px;
+    text-align: center;
     order: 2;
   }
 
-  .landing-info-glass {
-    align-items: center;
-    text-align: center;
-    padding: 18px 20px;
-  }
-
-  .landing-sub-pills {
-    justify-content: center;
+  .landing-info-sub {
+    white-space: normal;
   }
   .landing-h2-1 {
     font-size: 24px !important;
@@ -322,7 +308,7 @@
 }
 
 /* ========================================================
-   HERO TYPOGRAPHY - MODERN LUXURY GLASSMORPHISM & HIGH CONTRAST
+   HERO TYPOGRAPHY - MODERN GLASSMORPHISM (NO ORANGE STROKE)
    ======================================================== */
 
 .landing-intro {
@@ -332,55 +318,55 @@
   left: 0;
   transform: translateY(-50%);
   width: max-content;
-  max-width: 480px;
+  max-width: 520px;
+  pointer-events: auto;
 }
 
 .landing-intro-glass {
-  background: linear-gradient(135deg, rgba(14, 11, 16, 0.78) 0%, rgba(20, 14, 24, 0.58) 100%);
+  background: linear-gradient(135deg, rgba(20, 16, 24, 0.72) 0%, rgba(12, 10, 15, 0.58) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 145, 25, 0.25);
-  border-radius: 24px;
+  /* Pure frosted glass border highlight - NO ORANGE STROKE */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
   padding: 24px 30px;
   box-shadow:
-    0 24px 50px -12px rgba(0, 0, 0, 0.88),
-    0 0 30px -5px rgba(255, 122, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 24px 48px -12px rgba(0, 0, 0, 0.82),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  gap: 12px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .landing-intro-glass:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 155, 35, 0.45);
+  /* Subtle glass shimmer on hover - NO ORANGE STROKE */
+  border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 28px 55px -10px rgba(0, 0, 0, 0.92),
-    0 0 38px -2px rgba(255, 122, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 28px 55px -10px rgba(0, 0, 0, 0.9),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28);
 }
 
+/* Greeting Pill Tag - Pure Glassmorphic (No Orange Stroke) */
 .landing-greeting-tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 5px 14px;
   width: fit-content;
-  background: rgba(255, 122, 0, 0.14);
-  border: 1px solid rgba(255, 140, 20, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 
 .landing-greeting-tag span:last-child {
-  color: #ffb366;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .landing-pulse-dot {
@@ -390,7 +376,6 @@
   background: #ff7a00;
   box-shadow: 0 0 10px #ff7a00;
   animation: pulseDot 2s infinite ease-in-out;
-  flex-shrink: 0;
 }
 
 @keyframes pulseDot {
@@ -400,45 +385,40 @@
 
 .landing-name {
   margin: 0;
-  display: block;
-  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  word-break: normal;
-  overflow-wrap: normal;
+  gap: 3px;
 }
 
 .landing-name-first {
-  display: block;
-  font-size: clamp(30px, 3.2vw, 46px);
+  font-size: clamp(32px, 3.4vw, 48px);
   font-weight: 900;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   white-space: nowrap;
   word-break: keep-all;
   background: linear-gradient(180deg, #ffffff 40%, #fed7aa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.75));
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.75));
 }
 
 .landing-name-last {
-  display: block;
-  font-size: clamp(24px, 2.6vw, 38px);
+  font-size: clamp(26px, 2.8vw, 38px);
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   white-space: nowrap;
   word-break: keep-all;
-  background: linear-gradient(180deg, #f8fafc 40%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.7));
+  color: #f1f5f9;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
 }
 
 .landing-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-  white-space: nowrap;
+  margin-top: 2px;
 }
 
 .landing-status-dot {
@@ -447,15 +427,13 @@
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 10px #10b981;
-  flex-shrink: 0;
 }
 
 .landing-status-badge span {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  white-space: nowrap;
 }
 
 /* Right Info Card: Role & Specialized Skills */
@@ -467,34 +445,36 @@
   bottom: auto;
   z-index: 10;
   width: max-content;
-  max-width: 500px;
+  max-width: 520px;
   text-align: left;
+  pointer-events: auto;
 }
 
 .landing-info-glass {
-  background: linear-gradient(135deg, rgba(14, 11, 16, 0.82) 0%, rgba(20, 14, 24, 0.62) 100%);
+  background: linear-gradient(135deg, rgba(20, 16, 24, 0.72) 0%, rgba(12, 10, 15, 0.58) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 145, 25, 0.25);
-  border-radius: 24px;
+  /* Pure frosted glass border highlight - NO ORANGE STROKE */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
   padding: 24px 30px;
   box-shadow:
-    0 24px 50px -12px rgba(0, 0, 0, 0.88),
-    0 0 30px -5px rgba(255, 122, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 24px 48px -12px rgba(0, 0, 0, 0.82),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .landing-info-glass:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 155, 35, 0.45);
+  /* Subtle glass shimmer on hover - NO ORANGE STROKE */
+  border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 28px 55px -10px rgba(0, 0, 0, 0.92),
-    0 0 38px -2px rgba(255, 122, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 28px 55px -10px rgba(0, 0, 0, 0.9),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28);
 }
 
 .landing-info-tag {
@@ -502,8 +482,8 @@
   align-items: center;
   padding: 4px 12px;
   width: fit-content;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
 }
 
@@ -511,7 +491,7 @@
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: #ffb366;
+  color: rgba(255, 255, 255, 0.85);
   text-transform: uppercase;
 }
 
@@ -526,11 +506,11 @@
 }
 
 .landing-h2-gradient {
-  background: linear-gradient(135deg, #ffb347 0%, #ff7a00 50%, #e65100 100%);
+  display: inline-block;
+  background: linear-gradient(135deg, #ffc078 0%, #ff851b 50%, #e65100 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 4px 16px rgba(255, 122, 0, 0.45));
-  display: inline-block;
 }
 
 .landing-sub-pills {
@@ -544,11 +524,11 @@
 .landing-role-pill {
   display: inline-flex;
   align-items: center;
-  padding: 7px 16px;
+  padding: 6px 15px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 1px;
   color: #f1f5f9;
@@ -557,9 +537,8 @@
 }
 
 .landing-role-pill:hover {
-  background: rgba(255, 122, 0, 0.18);
-  border-color: rgba(255, 140, 20, 0.5);
-  color: #ffedd5;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-1px);
 }
 
@@ -572,54 +551,11 @@
     z-index: 0;
   }
 
-  .landing-info h3 {
-    font-size: 18px;
-  }
-
-  .landing-intro h2 {
-    font-size: 18px;
-  }
-
-  .landing-intro h1 {
-    font-size: 30px;
-    line-height: 30px;
-  }
-
-  .landing-info h2 {
-    font-size: 35px;
-    line-height: 40px;
-  }
-
-  h2.landing-info-h2 {
-    font-size: 38px;
-  }
 }
 
 @media screen and (min-width: 768px) {
   .character-model {
     height: 80vh;
-  }
-
-  .landing-intro h2 {
-    font-size: 25px;
-  }
-
-  .landing-intro h1 {
-    font-size: 40px;
-    line-height: 35px;
-  }
-
-  .landing-info h3 {
-    font-size: 25px;
-  }
-
-  .landing-info h2 {
-    font-size: 45px;
-    line-height: 42px;
-  }
-
-  h2.landing-info-h2 {
-    font-size: 55px;
   }
 }
 
@@ -635,7 +571,7 @@
     bottom: auto;
     transform: translateY(-50%);
     width: max-content;
-    max-width: 440px;
+    max-width: 480px;
   }
 
   .landing-info {
@@ -647,7 +583,7 @@
     right: 2%;
     left: auto;
     width: max-content;
-    max-width: 480px;
+    max-width: 500px;
   }
 }
 
