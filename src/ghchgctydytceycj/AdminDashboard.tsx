@@ -24,6 +24,7 @@ import {
   FiGrid,
   FiSearch,
   FiArrowLeft,
+  FiLayers,
 } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import { ProjectData, ExperienceData, ProfileData } from "../types/portfolio";
