@@ -37,8 +37,7 @@
     order: 1;
   }
 
-  .landing-intro-glass,
-  .landing-info-glass {
+  .landing-intro-glass {
     padding: 18px 16px !important;
     border-radius: 16px !important;
     width: 100% !important;
@@ -459,7 +458,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Right Info Card: Role & Specialized Skills */
+/* Right Info: Floating Kinetic Animated Role Heading */
 .landing-info {
   position: absolute;
   right: 0;
@@ -471,34 +470,6 @@
   max-width: 520px;
   text-align: left;
   pointer-events: auto;
-}
-
-.landing-info-glass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(12, 10, 15, 0.24);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  /* Crystal frosted glass border highlight */
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 20px;
-  padding: 24px 30px;
-  box-shadow:
-    0 16px 36px -8px rgba(0, 0, 0, 0.35),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 0 20px rgba(255, 255, 255, 0.03);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
-
-.landing-info-glass:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%), rgba(12, 10, 15, 0.28);
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow:
-    0 22px 45px -8px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 0 24px rgba(255, 255, 255, 0.05);
 }
 
 .landing-info-tag {

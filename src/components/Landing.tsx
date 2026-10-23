@@ -90,27 +90,25 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* Right Info Card: Glassmorphism Card with Looping Animated Roles */}
+          {/* Right Info: Looping Animated Roles without glassmorphism box */}
           <div className="landing-info">
-            <div className="landing-info-glass">
-              {/* Looping Animated Role Heading with Staggered Kinetic Slide */}
-              <h2
-                className="landing-info-h2 interactive-role-heading"
-                onClick={handleNextRole}
-                title="Klik untuk ganti profesi"
-              >
-                <div className={`landing-h2-anim-wrap anim-${animState}`}>
-                  <span className="landing-h2-line line-1">
-                    <span className="landing-h2-gradient">{line1.toUpperCase()}</span>
+            {/* Looping Animated Role Heading with Staggered Kinetic Slide */}
+            <h2
+              className="landing-info-h2 interactive-role-heading"
+              onClick={handleNextRole}
+              title="Klik untuk ganti profesi"
+            >
+              <div className={`landing-h2-anim-wrap anim-${animState}`}>
+                <span className="landing-h2-line line-1">
+                  <span className="landing-h2-gradient">{line1.toUpperCase()}</span>
+                </span>
+                {line2 && (
+                  <span className="landing-h2-line line-2">
+                    <span className="landing-h2-gradient">{line2.toUpperCase()}</span>
                   </span>
-                  {line2 && (
-                    <span className="landing-h2-line line-2">
-                      <span className="landing-h2-gradient">{line2.toUpperCase()}</span>
-                    </span>
-                  )}
-                </div>
-              </h2>
-            </div>
+                )}
+              </div>
+            </h2>
           </div>
         </div>
       </div>
