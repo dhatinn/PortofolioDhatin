@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiLock, FiEye, FiEyeOff, FiX, FiAlertCircle, FiArrowRight } from "react-icons/fi";
-import { usePortfolio } from "../../context/PortfolioContext";
+import { usePortfolio } from "../context/PortfolioContext";
 import "./styles/Admin.css";
 
 const LoginModal: React.FC = () => {

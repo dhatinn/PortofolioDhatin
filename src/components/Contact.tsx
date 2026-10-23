@@ -1,7 +1,6 @@
 import { MdArrowOutward, MdCopyright } from "react-icons/md";
 import "./styles/Contact.css";
 import { usePortfolio } from "../context/PortfolioContext";
-import { AdminTrigger } from "./Admin";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
@@ -109,7 +108,6 @@ const Contact = () => {
             <h5>
               <MdCopyright /> {new Date().getFullYear()}
             </h5>
-            <AdminTrigger />
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ const MyWorks = lazy(() => import("./pages/MyWorks"));
 const Play = lazy(() => import("./pages/Play"));
 import { LoadingProvider } from "./context/LoadingProvider";
 import { PortfolioProvider } from "./context/PortfolioContext";
-import { LoginModal, AdminDashboard } from "./components/Admin";
+import { LoginModal, AdminDashboard } from "./ghchgctydytceycj";
 
 import { usePortfolio } from "./context/PortfolioContext";
 import { useEffect } from "react";
@@ -49,7 +49,7 @@ const App = () => {
               </LoadingProvider>
             }
           />
-          <Route path="/admin" element={<AdminDirectRoute />} />
+          <Route path="/ghchgctydytceycj" element={<AdminDirectRoute />} />
           <Route
             path="/myworks"
             element={

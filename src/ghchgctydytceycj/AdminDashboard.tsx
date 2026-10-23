@@ -25,14 +25,14 @@ import {
   FiGrid,
   FiSearch,
 } from "react-icons/fi";
-import { usePortfolio } from "../../context/PortfolioContext";
-import { ProjectData, ExperienceData, ProfileData } from "../../types/portfolio";
-import { drawLanyardCard } from "../Lanyard/cardTexture";
+import { usePortfolio } from "../context/PortfolioContext";
+import { ProjectData, ExperienceData, ProfileData } from "../types/portfolio";
+import { drawLanyardCard } from "../components/Lanyard/cardTexture";
 import "./styles/Admin.css";
 
 type TabKey = "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
 
-import { uploadImageToSupabaseStorage } from "../../lib/supabase";
+import { uploadImageToSupabaseStorage } from "../lib/supabase";
 
 const ACCENT_COLORS = [
   { name: "Solar Orange (Hero)", value: "#ff7a00" },

@@ -1,6 +1,6 @@
 import React from "react";
 import { FiLock, FiSettings } from "react-icons/fi";
-import { usePortfolio } from "../../context/PortfolioContext";
+import { usePortfolio } from "../context/PortfolioContext";
 import "./styles/Admin.css";
 
 const AdminTrigger: React.FC = () => {
