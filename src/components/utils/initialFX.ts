@@ -1,4 +1,3 @@
-import { TextSplitter } from "../../utils/textSplitter";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { lenis } from "../Navbar";

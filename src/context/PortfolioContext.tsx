@@ -204,7 +204,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
 
   const testSupabase = useCallback(async (url?: string, key?: string) => {
     const res = await testSupabaseConnection(
-      url && key ? { url, anonKey: key, source: "custom" } : undefined
+      url && key ? { url, anonKey: key } : undefined
     );
     setIsSupabaseConnected(res.success);
     return res;
