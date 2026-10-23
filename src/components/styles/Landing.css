@@ -28,11 +28,12 @@
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    padding-top: 30px;
+    padding-top: 20px;
     margin-bottom: 15px;
     z-index: 10;
     width: 100% !important;
     max-width: 100% !important;
+    height: 140px !important;
     text-align: center;
     order: 1;
   }
@@ -336,11 +337,13 @@
   position: absolute;
   z-index: 10;
   top: 50%;
-  left: 0;
+  left: 2%;
   transform: translateY(-50%);
-  width: max-content;
-  max-width: 520px;
+  width: clamp(340px, 32vw, 520px);
+  height: clamp(140px, 18vh, 220px);
   pointer-events: auto;
+  display: flex;
+  align-items: center;
 }
 
 .landing-intro-glass {
@@ -669,8 +672,9 @@
     right: auto;
     bottom: auto;
     transform: translateY(-50%);
-    width: max-content;
-    max-width: 480px;
+    width: clamp(360px, 32vw, 500px);
+    height: clamp(150px, 18vh, 220px);
+    max-width: 500px;
   }
 
   .landing-info {
@@ -689,7 +693,9 @@
 @media screen and (min-width: 1440px) {
   .landing-intro {
     left: 3%;
-    max-width: 480px;
+    width: clamp(380px, 30vw, 520px);
+    height: clamp(160px, 18vh, 220px);
+    max-width: 520px;
   }
 
   .landing-info {
@@ -701,7 +707,9 @@
 @media screen and (min-width: 1680px) {
   .landing-intro {
     left: 4%;
-    max-width: 520px;
+    width: clamp(400px, 28vw, 560px);
+    height: clamp(170px, 18vh, 240px);
+    max-width: 560px;
   }
 
   .landing-info {
