@@ -405,7 +405,7 @@ const Play = () => {
     }
   }, []);
 
-  // Keyboard controls
+  // Keyboard & Touch gestures controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!gameStateRef.current.isPlaying) {
@@ -424,8 +424,48 @@ const Play = () => {
       }
     };
 
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!gameStateRef.current.isPlaying) return;
+      if (e.changedTouches.length === 0) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < -30) {
+          moveLeft();
+        } else if (dx > 30) {
+          moveRight();
+        }
+      } else {
+        if (dy < -30) {
+          jump();
+        }
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
   }, [startGame, moveLeft, moveRight, jump]);
 
   // Initialize Three.js on mount

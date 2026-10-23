@@ -41,17 +41,18 @@ const Navbar = () => {
     links.forEach((elem) => {
       const element = elem as HTMLAnchorElement;
       element.addEventListener("click", (e) => {
-        if (window.innerWidth > 1024) {
-          e.preventDefault();
-          const elem = e.currentTarget as HTMLAnchorElement;
-          const section = elem.getAttribute("data-href");
-          if (section && lenis) {
-            const target = document.querySelector(section) as HTMLElement;
-            if (target) {
+        const targetSection = (e.currentTarget as HTMLAnchorElement).getAttribute("data-href");
+        if (targetSection) {
+          const target = document.querySelector(targetSection) as HTMLElement;
+          if (target) {
+            e.preventDefault();
+            if (window.innerWidth > 1024 && lenis) {
               lenis.scrollTo(target, {
                 offset: 0,
                 duration: 0.9,
               });
+            } else {
+              target.scrollIntoView({ behavior: "smooth" });
             }
           }
         }

@@ -24,6 +24,7 @@
   perspective: 1000px;
   transform: translateZ(0);
   pointer-events: auto; /* allows dragging logos inside */
+  touch-action: pan-y;
 }
 
 /* Layer 1: Background Clean Image */

@@ -11,7 +11,12 @@ const WhatIDo = () => {
   };
   useEffect(() => {
     const containers = containerRef.current.slice();
-    if (ScrollTrigger.isTouch) {
+    const isTouch = Boolean(
+      ScrollTrigger.isTouch ||
+      (typeof window !== "undefined" &&
+        ("ontouchstart" in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 1024))
+    );
+    if (isTouch) {
       containers.forEach((container) => {
         if (container) {
           container.classList.remove("what-noTouch");

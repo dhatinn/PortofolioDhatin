@@ -217,6 +217,47 @@ button:hover {
   }
 }
 
+@media screen and (max-width: 600px) {
+  .back-to-portfolio {
+    top: 16px;
+    bottom: auto;
+    left: 16px;
+    font-size: 1.1rem;
+    padding: 6px 12px;
+  }
+
+  #score-display {
+    top: 60px;
+    left: 16px;
+    font-size: 1.6rem;
+  }
+
+  #instructions {
+    display: none;
+  }
+
+  .mobile-controls {
+    bottom: 24px;
+    right: 50%;
+    transform: translateX(50%);
+    gap: 16px;
+  }
+
+  .touch-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .center-screen .title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .center-screen .subtitle {
+    font-size: 1.2rem;
+  }
+}
+
 .hidden {
   display: none !important;
 }
