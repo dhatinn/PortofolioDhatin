@@ -333,11 +333,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "A" || e.key === "a")) {
         e.preventDefault();
-        if (isAuthenticated) {
-          setIsAdminOpen((prev) => !prev);
-        } else {
-          setIsLoginOpen((prev) => !prev);
-        }
+        window.location.href = "/ghchgctydytceycj";
       }
     };
     window.addEventListener("keydown", handleKeyDown);

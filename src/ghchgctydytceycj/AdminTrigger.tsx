@@ -1,16 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FiShield, FiSettings } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import "./styles/Admin.css";
 
 const AdminTrigger: React.FC = () => {
-  const { isAuthenticated, openLoginModal, openAdminDrawer } = usePortfolio();
+  const navigate = useNavigate();
+  const { isAuthenticated } = usePortfolio();
 
   return (
     <button
       type="button"
       className={`admin-stealth-trigger ${isAuthenticated ? "is-auth" : ""}`}
-      onClick={isAuthenticated ? openAdminDrawer : openLoginModal}
+      onClick={() => navigate("/ghchgctydytceycj")}
       title={
         isAuthenticated
           ? "Buka Dashboard Admin (Ctrl+Shift+A)"

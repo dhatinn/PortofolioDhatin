@@ -44,7 +44,14 @@ const ACCENT_COLORS = [
   { name: "Electric Blue", value: "#3b82f6" },
 ];
 
-const AdminDashboard: React.FC = () => {
+import { useNavigate, Link } from "react-router-dom";
+
+export interface AdminDashboardProps {
+  isStandalonePage?: boolean;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = false }) => {
+  const navigate = useNavigate();
   const {
     profile,
     projects,
@@ -224,7 +231,7 @@ const AdminDashboard: React.FC = () => {
   const [importJsonText, setImportJsonText] = useState("");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
-  if (!isAdminOpen) return null;
+  if (!isStandalonePage && !isAdminOpen) return null;
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -443,7 +450,7 @@ const AdminDashboard: React.FC = () => {
   });
 
   return (
-    <div className="admin-drawer-container">
+    <div className={`admin-drawer-container ${isStandalonePage ? "is-standalone" : ""}`}>
       {/* Topbar */}
       <div className="admin-topbar">
         <div className="admin-topbar-left">
@@ -489,8 +496,11 @@ const AdminDashboard: React.FC = () => {
           <button
             type="button"
             className="admin-btn-secondary"
-            onClick={closeAdminDrawer}
-            title="Tutup dashboard dan lihat portofolio langsung di browser"
+            onClick={() => {
+              if (isStandalonePage) navigate("/");
+              else closeAdminDrawer();
+            }}
+            title="Buka portofolio utama di browser"
           >
             <FiEye />
             <span>Lihat Website</span>
@@ -506,7 +516,10 @@ const AdminDashboard: React.FC = () => {
           <button
             type="button"
             className="admin-btn-danger"
-            onClick={logout}
+            onClick={() => {
+              logout();
+              if (isStandalonePage) navigate("/ghchgctydytceycj");
+            }}
             title="Keluar dari sesi admin"
           >
             <FiLogOut />
@@ -516,8 +529,11 @@ const AdminDashboard: React.FC = () => {
             type="button"
             className="admin-close-btn"
             style={{ position: "static" }}
-            onClick={closeAdminDrawer}
-            title="Tutup (Esc)"
+            onClick={() => {
+              if (isStandalonePage) navigate("/");
+              else closeAdminDrawer();
+            }}
+            title="Kembali ke Portofolio"
           >
             <FiX />
           </button>

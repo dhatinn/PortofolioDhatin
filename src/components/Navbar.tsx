@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { gsap } from "gsap";
 import Lenis from "lenis";
@@ -10,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 export let lenis: Lenis | null = null;
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const {
     config,
     theme,
@@ -17,8 +19,6 @@ const Navbar = () => {
     language,
     toggleLanguage,
     isAuthenticated,
-    openLoginModal,
-    openAdminDrawer,
   } = usePortfolio();
   useEffect(() => {
     // Initialize Lenis smooth scroll
@@ -65,8 +65,7 @@ const Navbar = () => {
           data-cursor="disable"
           onDoubleClick={(e) => {
             e.preventDefault();
-            if (isAuthenticated) openAdminDrawer();
-            else openLoginModal();
+            navigate("/ghchgctydytceycj");
           }}
           title={isAuthenticated ? "Dashboard Admin (Double click)" : "DN (Double click: Login Admin)"}
         >

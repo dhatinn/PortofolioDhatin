@@ -9,30 +9,7 @@ const MyWorks = lazy(() => import("./pages/MyWorks"));
 const Play = lazy(() => import("./pages/Play"));
 import { LoadingProvider } from "./context/LoadingProvider";
 import { PortfolioProvider } from "./context/PortfolioContext";
-import { LoginModal, AdminDashboard } from "./ghchgctydytceycj";
-
-import { usePortfolio } from "./context/PortfolioContext";
-import { useEffect } from "react";
-
-const AdminDirectRoute = () => {
-  const { isAuthenticated, openAdminDrawer, openLoginModal } = usePortfolio();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      openAdminDrawer();
-    } else {
-      openLoginModal();
-    }
-  }, [isAuthenticated, openAdminDrawer, openLoginModal]);
-
-  return (
-    <LoadingProvider>
-      <Suspense fallback={null}>
-        <MainContainer />
-      </Suspense>
-    </LoadingProvider>
-  );
-};
+import { AdminPage } from "./ghchgctydytceycj";
 
 const App = () => {
   return (
@@ -49,7 +26,14 @@ const App = () => {
               </LoadingProvider>
             }
           />
-          <Route path="/ghchgctydytceycj" element={<AdminDirectRoute />} />
+          <Route
+            path="/ghchgctydytceycj"
+            element={
+              <Suspense fallback={<div style={{ minHeight: "100vh", background: "#08060c", display: "flex", alignItems: "center", justifyContent: "center", color: "#ff7a00" }}>Memuat Control Center...</div>}>
+                <AdminPage />
+              </Suspense>
+            }
+          />
           <Route
             path="/myworks"
             element={
@@ -69,8 +53,6 @@ const App = () => {
         </Routes>
         <Analytics />
         <SpeedInsights />
-        <LoginModal />
-        <AdminDashboard />
       </BrowserRouter>
     </PortfolioProvider>
   );

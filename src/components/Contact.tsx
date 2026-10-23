@@ -1,4 +1,5 @@
 import { MdArrowOutward, MdCopyright } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import "./styles/Contact.css";
 import { usePortfolio } from "../context/PortfolioContext";
 import { AdminTrigger } from "../ghchgctydytceycj";
@@ -9,7 +10,8 @@ import { useEffect } from "react";
 gsap.registerPlugin(ScrollTrigger);
 
 const Contact = () => {
-  const { config, language, isAuthenticated, openLoginModal, openAdminDrawer } = usePortfolio();
+  const navigate = useNavigate();
+  const { config, language, isAuthenticated } = usePortfolio();
   useEffect(() => {
     const contactTimeline = gsap.timeline({
       scrollTrigger: {
@@ -116,7 +118,7 @@ const Contact = () => {
             </h2>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
               <h5
-                onClick={isAuthenticated ? openAdminDrawer : openLoginModal}
+                onClick={() => navigate("/ghchgctydytceycj")}
                 className="secret-copyright-trigger"
                 title={
                   isAuthenticated
