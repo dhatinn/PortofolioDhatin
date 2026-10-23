@@ -480,11 +480,23 @@
 .landing-info-tag {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   padding: 4px 12px;
   width: fit-content;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.landing-pulse-dot-small {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff851b;
+  box-shadow: 0 0 8px #ff851b;
+  animation: pulseDot 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 .landing-info-tag span {
@@ -495,14 +507,79 @@
   text-transform: uppercase;
 }
 
+.interactive-role-heading {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.interactive-role-heading:hover {
+  opacity: 0.92;
+}
+
 .landing-info-h2 {
   margin: 0;
   font-size: clamp(24px, 2.5vw, 38px);
-  line-height: 1.15;
+  line-height: 1.05;
   font-weight: 900;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Looping Animated Kinetic Wrap */
+.landing-h2-anim-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: clamp(56px, 5.8vw, 86px);
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.landing-h2-line {
+  display: block;
+  line-height: 1.05;
+  white-space: nowrap;
+  word-break: keep-all;
+  will-change: transform, opacity, filter;
+}
+
+.landing-h2-line.line-1 {
+  transition-delay: 0ms;
+}
+
+.landing-h2-line.line-2 {
+  transition-delay: 60ms;
+}
+
+/* Idle State: Sharp, fully visible */
+.anim-idle .landing-h2-line {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0px);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.45s ease,
+              filter 0.45s ease;
+}
+
+/* Exit State: Smooth slide-up & motion blur fade */
+.anim-exit .landing-h2-line {
+  opacity: 0;
+  transform: translateY(-26px);
+  filter: blur(6px);
+  transition: transform 0.26s cubic-bezier(0.4, 0, 1, 1),
+              opacity 0.24s ease,
+              filter 0.24s ease;
+}
+
+/* Enter State: Reset from bottom before transitioning to idle */
+.anim-enter .landing-h2-line {
+  opacity: 0;
+  transform: translateY(26px);
+  filter: blur(6px);
+  transition: none !important;
 }
 
 .landing-h2-gradient {
@@ -524,22 +601,49 @@
 .landing-role-pill {
   display: inline-flex;
   align-items: center;
-  padding: 6px 15px;
-  background: rgba(255, 255, 255, 0.06);
+  gap: 7px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 1px;
-  color: #f1f5f9;
+  color: #cbd5e1;
   text-transform: uppercase;
+  cursor: pointer;
   transition: all 0.25s ease;
+  font-family: inherit;
+  outline: none;
 }
 
 .landing-role-pill:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
   transform: translateY(-1px);
+}
+
+.landing-role-pill.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.role-pill-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.landing-role-pill.active .role-pill-indicator {
+  background: #ff851b;
+  box-shadow: 0 0 8px #ff851b;
+  transform: scale(1.25);
 }
 
 @media screen and (min-width: 500px) {
