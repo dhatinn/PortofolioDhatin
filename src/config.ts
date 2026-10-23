@@ -95,7 +95,10 @@ export const buildConfig = (
     contact: {
       email: p.email,
       phone: p.phone,
-      whatsapp: `https://wa.me/${p.whatsapp?.replace(/[^0-9]/g, "")}`,
+      whatsapp:
+        p.whatsapp && !p.whatsapp.includes("85142156672")
+          ? `https://wa.me/${p.whatsapp.replace(/[^0-9]/g, "")}`
+          : "",
       github: p.github,
       linkedin: p.linkedin,
     },

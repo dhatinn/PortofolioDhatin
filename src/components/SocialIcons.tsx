@@ -82,11 +82,13 @@ const SocialIcons = () => {
             <FaGithub />
           </a>
         </span>
-        <span>
-          <a href={config.contact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-            <FaWhatsapp />
-          </a>
-        </span>
+        {config.contact.whatsapp && !config.contact.whatsapp.includes("85142156672") && (
+          <span>
+            <a href={config.contact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+              <FaWhatsapp />
+            </a>
+          </span>
+        )}
         <span>
           <a href={`mailto:${config.contact.email}`} aria-label="Email">
             <FaEnvelope />

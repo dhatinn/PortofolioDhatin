@@ -10,7 +10,7 @@ export const profile: ProfileData = {
   },
   location: "Bandung, Indonesia",
   phone: "",
-  whatsapp: "6285142156672",
+  whatsapp: "",
   email: "dhatinsandy24@gmail.com",
   github: "https://github.com/dhatinn",
   linkedin: "https://linkedin.com/in/dhatin",

@@ -42,7 +42,7 @@ const CallToAction = () => {
           glow={1.2}
           style={{ fontWeight: 600 }}
           onClick={() => {
-            const target = config.contact.linkedin || config.contact.whatsapp || "#contact";
+            const target = config.contact.linkedin || `mailto:${config.contact.email}` || "#contact";
             window.open(target, "_blank", "noopener,noreferrer");
           }}
           data-cursor="disable"

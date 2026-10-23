@@ -80,7 +80,9 @@ const Contact = () => {
             <h4>{language === "id" ? "Media Sosial" : "Social"}</h4>
             {[
               { label: "Github", href: config.contact.github },
-              { label: "WhatsApp", href: config.contact.whatsapp },
+              ...(config.contact.whatsapp && !config.contact.whatsapp.includes("85142156672")
+                ? [{ label: "WhatsApp", href: config.contact.whatsapp }]
+                : []),
               { label: "Linkedin", href: config.contact.linkedin },
             ]
               .filter((s) => s.href)
