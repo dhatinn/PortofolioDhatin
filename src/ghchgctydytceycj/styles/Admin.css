@@ -169,14 +169,15 @@
 }
 
 .spacefox-logo {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.55em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   margin: 0;
-  line-height: 1;
-  text-indent: 0.55em;
+  line-height: 1.2;
+  text-indent: 0.32em;
+  white-space: nowrap;
 }
 
 .spacefox-error-alert {

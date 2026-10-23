@@ -56,7 +56,7 @@ const AdminPage: React.FC = () => {
         <div className="spacefox-orb-body">
           {/* Logo / Title */}
           <div className="spacefox-brand">
-            <h1 className="spacefox-logo">S P A C E F O X</h1>
+            <h1 className="spacefox-logo">WELCOME SANDY!</h1>
           </div>
 
           {error && (
