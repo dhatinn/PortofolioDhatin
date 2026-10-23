@@ -8,14 +8,14 @@
   width: var(--cWidth);
   max-width: 1920px;
   margin: auto;
-  z-index: 9;
+  z-index: 15;
   pointer-events: none;
 }
 
 .what-box {
   position: relative;
-  z-index: 12;
-  pointer-events: auto;
+  z-index: 16;
+  pointer-events: none;
 }
 
 .what-box:first-child {
@@ -41,6 +41,7 @@
   margin-right: 0;
   margin-bottom: 20px;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .hat-h2 {
@@ -58,6 +59,7 @@
   margin-right: 2vw;
   position: relative;
   display: flex;
+  pointer-events: auto;
 }
 
 .what-content {

@@ -152,6 +152,12 @@ export default function Band({
     return () => void (document.body.style.cursor = "auto");
   }, [hovered, dragged]);
 
+  useEffect(() => {
+    const handleGlobalPointerUp = () => drag(false);
+    window.addEventListener("pointerup", handleGlobalPointerUp);
+    return () => window.removeEventListener("pointerup", handleGlobalPointerUp);
+  }, []);
+
   useFrame((state, delta) => {
     if (
       !fixed.current ||
@@ -164,14 +170,22 @@ export default function Band({
       return;
 
     if (dragged) {
-      vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
-      dir.copy(vec).sub(state.camera.position).normalize();
-      vec.add(dir.multiplyScalar(state.camera.position.length()));
+      // Ray-plane intersection with z = 0 plane for exact, direct cursor tracking
+      dir.set(state.pointer.x, state.pointer.y, 0.5)
+        .unproject(state.camera)
+        .sub(state.camera.position)
+        .normalize();
+
+      const denom = Math.abs(dir.z) > 0.0001 ? dir.z : -0.0001;
+      const t = -state.camera.position.z / denom;
+      const hitX = state.camera.position.x + dir.x * t;
+      const hitY = state.camera.position.y + dir.y * t;
+
       [card, j1, j2, j3, fixed].forEach((ref) => ref.current?.wakeUp());
       card.current?.setNextKinematicTranslation({
-        x: vec.x - dragged.x,
-        y: vec.y - dragged.y,
-        z: vec.z - dragged.z,
+        x: hitX - dragged.x,
+        y: hitY - dragged.y,
+        z: 0,
       });
     }
 
@@ -232,8 +246,9 @@ export default function Band({
     // Transition from About Me into What I Do (unzoom & return to center)
     const toWhatIDoProgress = smoothstep(vHeight * 1.25, vHeight * 1.80, scrollY);
 
-    // Exit upwards after What I Do (scrollY from 2.45 * vHeight to 2.85 * vHeight)
-    const exitUpProgress = smoothstep(vHeight * 2.45, vHeight * 2.85, scrollY);
+    // Exit upwards after What I Do (scrollY from 2.95 * vHeight to 3.45 * vHeight)
+    // Stays 100% active and interactive throughout the entire What I Do section
+    const exitUpProgress = smoothstep(vHeight * 2.95, vHeight * 3.45, scrollY);
 
     // In About Me, aboutFactor = 1; in What I Do, whatIDoFactor = 1.
     const aboutFactor = toAboutProgress * (1 - toWhatIDoProgress);
@@ -284,11 +299,11 @@ export default function Band({
     // -------------------------------------------------------------
     if (whatIDoFactor > 0.15 && fixed.current && !dragged) {
       // Horizontal sway based on cursor pointer X (-1 on left to +1 on right)
-      const swayTargetX = THREE.MathUtils.clamp(state.pointer.x * 1.5, -1.25, 1.25) * whatIDoFactor;
+      const swayTargetX = THREE.MathUtils.clamp(state.pointer.x * 2.2, -1.8, 1.8) * whatIDoFactor;
       const curFixed = fixed.current.translation() as any;
       fixed.current.setTranslation(
         {
-          x: THREE.MathUtils.damp(curFixed.x, swayTargetX, 4.0, delta),
+          x: THREE.MathUtils.damp(curFixed.x, swayTargetX, 4.5, delta),
           y: 4.6,
           z: 0,
         },
@@ -300,7 +315,7 @@ export default function Band({
       if (Math.abs(curFixed.x) > 0.005) {
         fixed.current.setTranslation(
           {
-            x: THREE.MathUtils.damp(curFixed.x, 0, 4.0, delta),
+            x: THREE.MathUtils.damp(curFixed.x, 0, 4.5, delta),
             y: 4.6,
             z: 0,
           },
@@ -381,18 +396,23 @@ export default function Band({
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
             onPointerUp={(e) => {
-              (e.target as Element)?.releasePointerCapture(e.pointerId);
+              (e.nativeEvent.target as HTMLElement)?.releasePointerCapture?.(e.pointerId);
               drag(false);
             }}
             onPointerDown={(e) => {
-              (e.target as Element)?.setPointerCapture(e.pointerId);
+              e.stopPropagation();
+              (e.nativeEvent.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
               if (card.current) {
+                dir.set(e.pointer.x, e.pointer.y, 0.5)
+                  .unproject(e.camera)
+                  .sub(e.camera.position)
+                  .normalize();
+                const denom = Math.abs(dir.z) > 0.0001 ? dir.z : -0.0001;
+                const t = -e.camera.position.z / denom;
+                const hitX = e.camera.position.x + dir.x * t;
+                const hitY = e.camera.position.y + dir.y * t;
                 const trans: any = card.current.translation();
-                drag(
-                  new THREE.Vector3()
-                    .copy(e.point)
-                    .sub(vec.set(trans.x, trans.y, trans.z))
-                );
+                drag(new THREE.Vector3(hitX - trans.x, hitY - trans.y, 0));
               }
             }}
           >
