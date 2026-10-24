@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './SpecularButton.css';
 
 const PAD = 24;
@@ -11,7 +11,12 @@ void main() {
 }`;
 
 const FRAGMENT = `#version 300 es
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
+
 uniform vec2 uCenter;
 uniform vec2 uHalf;
 uniform float uRadius;
@@ -220,6 +225,8 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wakeRef = useRef<(() => void) | null>(null);
+  const [canvasReady, setCanvasReady] = useState(false);
+
   const settings = {
     radius: Math.max(0, radius),
     lineColor: String(lineColor),
@@ -242,16 +249,40 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
   useEffect(() => {
     const button = buttonRef.current;
     const canvas = canvasRef.current;
-    const gl = canvas?.getContext('webgl2', {
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      depth: false,
-      stencil: false
-    });
-    if (!button || !canvas || !gl) return undefined;
+    if (!button || !canvas) return undefined;
+
+    let gl: WebGL2RenderingContext | null = null;
+    try {
+      gl = canvas.getContext('webgl2', {
+        alpha: true,
+        premultipliedAlpha: true,
+        antialias: false,
+        depth: false,
+        stencil: false
+      });
+    } catch {
+      gl = null;
+    }
+
+    if (!gl) {
+      setCanvasReady(false);
+      return undefined;
+    }
+
     const program = link(gl);
-    if (!program) return undefined;
+    if (!program) {
+      setCanvasReady(false);
+      return undefined;
+    }
+
+    setCanvasReady(true);
+
+    const onContextLost = (e: Event) => {
+      e.preventDefault();
+      setCanvasReady(false);
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost);
+
     const uniforms: Record<string, WebGLUniformLocation | null> = {};
     for (const name of UNIFORMS) uniforms[name] = gl.getUniformLocation(program, name);
     const buffer = gl.createBuffer();
@@ -442,10 +473,12 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
       window.removeEventListener('pointercancel', onPointerEnd as EventListener);
       document.documentElement.removeEventListener('pointerleave', onPointerLeave as EventListener);
       button.removeEventListener('pointerdown', onPointerDown as EventListener);
-      gl.deleteBuffer(buffer);
-      gl.deleteVertexArray(vao);
-      gl.deleteProgram(program);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      canvas.removeEventListener('webglcontextlost', onContextLost);
+      if (gl) {
+        gl.deleteBuffer(buffer);
+        gl.deleteVertexArray(vao);
+        gl.deleteProgram(program);
+      }
     };
   }, []);
 
@@ -465,14 +498,22 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
           '--sb-radius': `${radius}px`,
           '--sb-tint': tint,
           '--sb-tint-opacity': tintOpacity,
+          '--sb-tint-opacity-pct': `${Math.round(tintOpacity * 100)}%`,
           '--sb-blur': `${blur}px`,
           '--sb-text-color': textColor,
+          '--sb-line-color': lineColor,
+          '--sb-base-color': baseColor,
         } as React.CSSProperties),
         ...style
       }}
       {...rest}
     >
-      <canvas ref={canvasRef} className="specular-button__light" aria-hidden="true" />
+      <canvas
+        ref={canvasRef}
+        className="specular-button__light"
+        style={{ display: canvasReady ? 'block' : 'none' }}
+        aria-hidden="true"
+      />
       <span className="specular-button__label">{children}</span>
     </button>
   );
