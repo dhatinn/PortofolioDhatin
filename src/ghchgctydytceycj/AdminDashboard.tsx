@@ -478,6 +478,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
               type="button"
               className="charcoal-action-pill"
               onClick={() => {
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("portfolio_loaded", "true");
+                }
                 if (isStandalonePage) navigate("/");
                 else closeAdminDrawer();
               }}
@@ -651,6 +654,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                 <div
                   className="bento-card bento-action-bar"
                   onClick={() => {
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem("portfolio_loaded", "true");
+                    }
                     if (isStandalonePage) navigate("/");
                     else closeAdminDrawer();
                   }}

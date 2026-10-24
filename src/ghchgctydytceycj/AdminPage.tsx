@@ -46,7 +46,16 @@ const AdminPage: React.FC = () => {
   return (
     <div className="spacefox-login-viewport">
       {/* Top Left Return Link */}
-      <Link to="/" className="spacefox-back-link" title="Return to portfolio">
+      <Link
+        to="/"
+        className="spacefox-back-link"
+        title="Return to portfolio"
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("portfolio_loaded", "true");
+          }
+        }}
+      >
         <FiArrowLeft />
         <span>WEBSITE</span>
       </Link>
