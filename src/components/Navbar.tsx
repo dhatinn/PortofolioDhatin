@@ -33,8 +33,9 @@ const Navbar = () => {
       infinite: false,
     });
 
-    // Start paused
-    lenis.stop();
+    // Start Lenis immediately so mouse scroll and wheel are active
+    lenis.start();
+    document.body.style.overflowY = "auto";
 
     // Connect Lenis with GSAP ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);

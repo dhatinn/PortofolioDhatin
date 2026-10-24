@@ -11,9 +11,14 @@ export function initialFX() {
   setAllTimeline();
   ScrollTrigger.refresh();
   setTimeout(() => {
+    document.body.style.overflowY = "auto";
+    if (lenis) {
+      lenis.start();
+      lenis.resize();
+    }
     ScrollTrigger.refresh();
   }, 400);
-  document.getElementsByTagName("main")[0].classList.add("main-active");
+  document.getElementsByTagName("main")[0]?.classList.add("main-active");
   gsap.to("body", {
     backgroundColor: "#0c0a09",
     duration: 0.5,

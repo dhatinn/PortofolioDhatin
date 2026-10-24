@@ -15,6 +15,7 @@ import setSplitText from "./utils/splitText";
 
 const MainContainer = () => {
   useEffect(() => {
+    document.body.style.overflowY = "auto";
     const resizeHandler = () => {
       setSplitText();
     };
