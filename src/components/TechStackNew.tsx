@@ -1,4 +1,5 @@
 import "./styles/TechStackNew.css";
+import ASCIIText from "./ASCIIText";
 
 interface TechItem {
   name: string;
@@ -59,7 +60,22 @@ const TechStackNew = () => {
 
       {/* Content */}
       <div className="techstack-content">
-        <h2>Tech Stack</h2>
+        <div className="techstack-title-container">
+          <h2 className="techstack-sr-title">TECH STACK</h2>
+          <ASCIIText
+            text="TECH STACK"
+            asciiFontSize={7}
+            textScale={1.15}
+            textColor="#ffffff"
+            colors={['#ffffff', '#ff9a3d', '#ff7a00']}
+            waves={0.8}
+            waveSpeed={0.8}
+            chroma={0.6}
+            tilt={0.8}
+            scramble={0.5}
+            blocks={0.85}
+          />
+        </div>
         
         <div className="techstack-pyramid">
           {techStack.map((row, rowIndex) => (
