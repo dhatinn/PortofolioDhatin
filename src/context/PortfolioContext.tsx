@@ -158,13 +158,23 @@ function loadProfileFromStorage(): ProfileData {
   };
 }
 
+function loadProjectsFromStorage(): ProjectData[] {
+  const loaded = loadFromStorage(STORAGE_KEYS.PROJECTS, defaultProjects as ProjectData[]);
+  return (loaded || []).map((p) => ({
+    ...p,
+    thumbnail:
+      p.thumbnail === "/images/mypicnbg.png" ||
+      p.thumbnail?.startsWith("/images/projects/")
+        ? ""
+        : (p.thumbnail || ""),
+  }));
+}
+
 export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [profile, setProfile] = useState<ProfileData>(loadProfileFromStorage);
-  const [projects, setProjects] = useState<ProjectData[]>(() =>
-    loadFromStorage(STORAGE_KEYS.PROJECTS, defaultProjects as ProjectData[])
-  );
+  const [projects, setProjects] = useState<ProjectData[]>(loadProjectsFromStorage);
   const [experience, setExperience] = useState<ExperienceData[]>(() =>
     loadFromStorage(STORAGE_KEYS.EXPERIENCE, defaultExperience as ExperienceData[])
   );

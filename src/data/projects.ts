@@ -13,7 +13,7 @@ export const projects = [
       impact: "Served hundreds of applicants during simultaneous registration periods.",
     },
     stack: ["PHP", "MySQL", "DOKU", "Bank Jateng API", "WhatsApp Gateway"],
-    thumbnail: "/images/projects/salut.jpg", // TODO
+    thumbnail: "", // Isi URL atau upload saat siap
     demo: "", // TODO: isi jika sudah live
     repo: "",
   },
@@ -25,7 +25,7 @@ export const projects = [
     description: "Modern school profile website and school-scale LMS with a frontend integrated with a Node.js backend and Supabase database.",
     caseStudy: null,
     stack: ["React.js", "TypeScript", "Node.js", "Supabase"],
-    thumbnail: "/images/projects/sma-pasundan.jpg", // TODO
+    thumbnail: "", // Isi URL atau upload saat siap
     demo: "",
     repo: "",
   },
@@ -37,7 +37,7 @@ export const projects = [
     description: "End-to-end food ordering app where orders are processed and menus are updated in real time.",
     caseStudy: null,
     stack: ["React.js", "Node.js", "Supabase"],
-    thumbnail: "/images/projects/restaurant.jpg", // TODO
+    thumbnail: "", // Isi URL atau upload saat siap
     demo: "",
     repo: "",
   },
@@ -49,7 +49,7 @@ export const projects = [
     description: "Custom, mobile-friendly portfolio website using Supabase as a lightweight CMS for the client.",
     caseStudy: null,
     stack: ["React.js", "Node.js", "Supabase"],
-    thumbnail: "/images/projects/portfolio-cms.jpg", // TODO
+    thumbnail: "", // Isi URL atau upload saat siap
     demo: "",
     repo: "",
   },

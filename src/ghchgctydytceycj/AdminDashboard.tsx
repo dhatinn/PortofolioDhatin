@@ -25,6 +25,7 @@ import {
   FiSearch,
   FiArrowLeft,
   FiLayers,
+  FiFolder,
 } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import { ProjectData, ExperienceData, ProfileData } from "../types/portfolio";
@@ -303,7 +304,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       category: "Web App",
       description: "",
       stack: ["React.js", "TypeScript"],
-      thumbnail: "/images/mypicnbg.png",
+      thumbnail: "",
       demo: "",
       repo: "",
     });
@@ -1787,14 +1788,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                 {filteredProjects.map((proj, idx) => (
                   <div className="admin-project-card" key={proj.slug || idx}>
                     <div className="admin-project-thumb">
-                      <img
-                        src={proj.thumbnail || "/images/mypicnbg.png"}
-                        alt={proj.title}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "/images/mypicnbg.png";
+                      {proj.thumbnail && proj.thumbnail !== "/images/mypicnbg.png" ? (
+                        <img
+                          src={proj.thumbnail}
+                          alt={proj.title}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            const placeholder = e.currentTarget.parentElement?.querySelector(".admin-project-thumb-placeholder");
+                            if (placeholder) {
+                              (placeholder as HTMLElement).style.display = "flex";
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="admin-project-thumb-placeholder"
+                        style={{
+                          display: proj.thumbnail && proj.thumbnail !== "/images/mypicnbg.png" ? "none" : "flex",
                         }}
-                      />
+                      >
+                        <FiFolder className="thumb-placeholder-icon" />
+                        <span className="thumb-placeholder-text">
+                          {proj.category || "Proyek"}
+                        </span>
+                      </div>
                       <span className="admin-project-category-badge">{proj.category}</span>
                       <span className="admin-project-year-badge">{proj.year}</span>
                     </div>
@@ -2637,7 +2654,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
               <div className="admin-form-group">
                 <label>Thumbnail / Cover Proyek</label>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "8px" }}>
-                  {projectForm.thumbnail && (
+                  {projectForm.thumbnail && projectForm.thumbnail !== "/images/mypicnbg.png" && (
                     <img
                       src={projectForm.thumbnail}
                       alt="Thumbnail Preview"
@@ -2647,6 +2664,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                         borderRadius: "8px",
                         objectFit: "cover",
                         border: "1px solid rgba(255,255,255,0.2)",
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
                       }}
                     />
                   )}
