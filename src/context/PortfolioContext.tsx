@@ -138,6 +138,62 @@ function loadFromStorage<T>(key: string, defaultValue: T): T {
   return defaultValue;
 }
 
+// ---------------------------------------------------------------------------
+// Safe localStorage writers (never throw, so the app can't crash on quota)
+// ---------------------------------------------------------------------------
+function safeSetItem(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.warn(`Gagal menyimpan "${key}" ke localStorage:`, err);
+    return false;
+  }
+}
+
+function safeRemoveItem(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
+// Replaces very large inline data URIs (e.g. base64 images) with an empty string.
+function stripLargeDataUris(_key: string, value: unknown): unknown {
+  if (
+    typeof value === "string" &&
+    value.startsWith("data:") &&
+    value.length > 1000
+  ) {
+    return "";
+  }
+  return value;
+}
+
+function persistJSON(key: string, data: unknown): void {
+  let json: string;
+  try {
+    json = JSON.stringify(data);
+  } catch (err) {
+    console.warn(`Gagal serialisasi "${key}":`, err);
+    return;
+  }
+  safeSetItem(key, json);
+}
+
+function persistProjects(projects: ProjectData[]): void {
+  // 1) Try saving everything as-is.
+  if (safeSetItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects))) return;
+
+  // 2) Too big: retry without large base64 images.
+  const slim = JSON.stringify(projects, stripLargeDataUris);
+  if (safeSetItem(STORAGE_KEYS.PROJECTS, slim)) return;
+
+  // 3) Still failing: drop the cached copy so we don't keep stale data.
+  safeRemoveItem(STORAGE_KEYS.PROJECTS);
+}
+
 function loadProfileFromStorage(): ProfileData {
   const loaded = loadFromStorage(STORAGE_KEYS.PROFILE, defaultProfile as ProfileData);
   return {
@@ -202,8 +258,8 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.removeItem("portfolio_admin_credentials_v2");
-    localStorage.removeItem("portfolio_admin_session_v2");
+    safeRemoveItem("portfolio_admin_credentials_v2");
+    safeRemoveItem("portfolio_admin_session_v2");
     let authRevision = 0;
     let active = true;
     const verificationTimers: number[] = [];
@@ -357,22 +413,22 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
 
   // Persist Profile
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+    persistJSON(STORAGE_KEYS.PROFILE, profile);
   }, [profile]);
 
   // Persist Projects
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+    persistProjects(projects);
   }, [projects]);
 
   // Persist Experience
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.EXPERIENCE, JSON.stringify(experience));
+    persistJSON(STORAGE_KEYS.EXPERIENCE, experience);
   }, [experience]);
 
   // Persist Skills
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
+    persistJSON(STORAGE_KEYS.SKILLS, skills);
   }, [skills]);
 
   // Theme state & persistence
@@ -398,9 +454,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.THEME, theme);
-    } catch { }
+    safeSetItem(STORAGE_KEYS.THEME, theme);
     document.documentElement.setAttribute("data-theme", theme);
     if (theme === "light") {
       document.body.classList.add("light-theme");
@@ -412,9 +466,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   }, [theme]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
-    } catch { }
+    safeSetItem(STORAGE_KEYS.LANGUAGE, language);
     document.documentElement.setAttribute("lang", language);
   }, [language]);
 
@@ -704,10 +756,10 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     setProjects(defaultProjects as ProjectData[]);
     setExperience(defaultExperience as ExperienceData[]);
     setSkills(defaultSkills as SkillCategoryData[]);
-    localStorage.removeItem(STORAGE_KEYS.PROFILE);
-    localStorage.removeItem(STORAGE_KEYS.PROJECTS);
-    localStorage.removeItem(STORAGE_KEYS.EXPERIENCE);
-    localStorage.removeItem(STORAGE_KEYS.SKILLS);
+    safeRemoveItem(STORAGE_KEYS.PROFILE);
+    safeRemoveItem(STORAGE_KEYS.PROJECTS);
+    safeRemoveItem(STORAGE_KEYS.EXPERIENCE);
+    safeRemoveItem(STORAGE_KEYS.SKILLS);
   }, []);
 
   // Export JSON
