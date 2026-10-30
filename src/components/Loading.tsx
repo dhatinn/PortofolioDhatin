@@ -120,9 +120,8 @@ const Loading = ({ percent }: { percent: number }) => {
       {/* Center Slit Line Animation */}
       {stage !== "counter" && (
         <div
-          className={`loading-center-slit ${
-            stage === "split" ? "slit-active" : "slit-expand"
-          }`}
+          className={`loading-center-slit ${stage === "split" ? "slit-active" : "slit-expand"
+            }`}
         />
       )}
 
@@ -145,18 +144,16 @@ const Loading = ({ percent }: { percent: number }) => {
 
           {/* Giant Embossed Background WELCOME */}
           <div
-            className={`welcome-bg-text ${
-              stage === "portfolio" || stage === "exit" ? "bg-dimmed" : ""
-            }`}
+            className={`welcome-bg-text ${stage === "portfolio" || stage === "exit" ? "bg-dimmed" : ""
+              }`}
           >
             WELCOME
           </div>
 
           {/* Foreground PortFOLIO. Lockup */}
           <div
-            className={`portfolio-lockup ${
-              stage === "portfolio" || stage === "exit" ? "lockup-visible" : ""
-            }`}
+            className={`portfolio-lockup ${stage === "portfolio" || stage === "exit" ? "lockup-visible" : ""
+              }`}
           >
             <div className="portfolio-lockup-inner">
               <div className="script-port">Port</div>
