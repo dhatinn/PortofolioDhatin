@@ -33,7 +33,6 @@ import {
   saveSupabaseConfig,
   clearSupabaseConfig,
   testSupabaseConnection,
-  getSupabaseSession,
   isPortfolioAdmin,
   onSupabaseAuthStateChange,
   signInAdmin,
@@ -41,6 +40,7 @@ import {
   updateAdminPassword,
   SupabaseConfigCredentials,
 } from "../lib/supabase";
+
 
 interface PortfolioContextType {
   profile: ProfileData;
