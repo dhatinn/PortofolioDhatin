@@ -36,7 +36,7 @@ const Loading = ({ percent }: { percent: number }) => {
   useEffect(() => {
     if (percent >= 100 && !hasTriggeredRef.current) {
       hasTriggeredRef.current = true;
-      const timers: NodeJS.Timeout[] = [];
+      const timers: ReturnType<typeof setTimeout>[] = [];
 
       timers.push(setTimeout(() => setLoaded(true), 100));
       timers.push(setTimeout(() => setClicked(true), 300));

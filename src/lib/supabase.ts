@@ -1,4 +1,10 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import {
+  AuthChangeEvent,
+  createClient,
+  Session,
+  SupabaseClient,
+  User,
+} from "@supabase/supabase-js";
 import {
   ProfileData,
   ProjectData,
@@ -55,13 +61,19 @@ export function getStoredSupabaseConfig(): SupabaseConfigCredentials {
 let activeClient: SupabaseClient | null = null;
 
 function validateConfig(url: string, key: string): boolean {
-  return (
-    typeof url === "string" &&
-    url.startsWith("https://") &&
-    url.includes("supabase.co") &&
-    typeof key === "string" &&
-    key.length > 20
-  );
+  if (typeof url !== "string" || typeof key !== "string") return false;
+  const trimmedUrl = url.trim();
+  // Must be HTTPS Supabase URL — reject javascript:, data:, http:, and non-supabase hosts
+  try {
+    const parsed = new URL(trimmedUrl);
+    if (parsed.protocol !== "https:") return false;
+    if (!parsed.hostname.endsWith(".supabase.co")) return false;
+  } catch {
+    return false;
+  }
+  // Anon key must look like a JWT (3 base64 segments separated by dots)
+  const jwtParts = key.trim().split(".");
+  return jwtParts.length === 3 && jwtParts.every((p) => p.length > 0);
 }
 
 export function isSupabaseConfigured(): boolean {
@@ -93,6 +105,83 @@ export function getSupabase(): SupabaseClient | null {
     initSupabaseClient();
   }
   return activeClient;
+}
+
+export async function getSupabaseSession(): Promise<Session | null> {
+  const client = getSupabase();
+  if (!client) return null;
+
+  const { data, error } = await client.auth.getSession();
+  if (error) throw error;
+  return data.session;
+}
+
+export async function isPortfolioAdmin(): Promise<boolean> {
+  const client = getSupabase();
+  if (!client) return false;
+
+  const { data, error } = await client.rpc("is_portfolio_admin");
+  if (error) throw error;
+  return data === true;
+}
+
+export function onSupabaseAuthStateChange(
+  callback: (event: AuthChangeEvent, session: Session | null) => void
+): (() => void) | null {
+  const client = getSupabase();
+  if (!client) return null;
+
+  const { data } = client.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+  return () => data.subscription.unsubscribe();
+}
+
+export async function signInAdmin(email: string, password: string): Promise<User> {
+  const client = getSupabase();
+  if (!client) throw new Error("Supabase belum dikonfigurasi.");
+
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+  if (error) throw error;
+
+  let isAdmin: boolean;
+  try {
+    isAdmin = await isPortfolioAdmin();
+  } catch (roleError) {
+    const { error: signOutError } = await client.auth.signOut();
+    if (signOutError) {
+      console.error("Gagal mengakhiri sesi akun non-admin:", signOutError);
+    }
+    throw roleError;
+  }
+  if (!isAdmin) {
+    const { error: signOutError } = await client.auth.signOut();
+    if (signOutError) {
+      console.error("Gagal mengakhiri sesi akun non-admin:", signOutError);
+    }
+    throw new Error("Akun ini belum diberi akses admin di Supabase.");
+  }
+
+  return data.user;
+}
+
+export async function signOutAdmin(): Promise<void> {
+  const client = getSupabase();
+  if (!client) throw new Error("Supabase belum dikonfigurasi.");
+
+  const { error } = await client.auth.signOut();
+  if (error) throw error;
+}
+
+export async function updateAdminPassword(password: string): Promise<void> {
+  const client = getSupabase();
+  if (!client) throw new Error("Supabase belum dikonfigurasi.");
+
+  const { error } = await client.auth.updateUser({ password });
+  if (error) throw error;
 }
 
 /**
@@ -331,7 +420,7 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
   try {
     for (let i = 0; i < projects.length; i++) {
       const p = projects[i];
-      await client.from("portfolio_projects").upsert(
+      const { error } = await client.from("portfolio_projects").upsert(
         {
           slug: p.slug,
           title: p.title,
@@ -346,6 +435,10 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
         },
         { onConflict: "slug" }
       );
+      if (error) {
+        console.error(`Gagal menyimpan proyek "${p.title}" ke Supabase:`, error);
+        return false;
+      }
     }
     return true;
   } catch (err) {
@@ -465,8 +558,8 @@ export async function syncAllToSupabase(
     }
 
     return {
-      success: true,
-      message: "Sinkronisasi selesai sebagian (beberapa tabel mungkin belum dibuat di Supabase).",
+      success: false,
+      message: "Sinkronisasi gagal pada satu atau beberapa tabel. Periksa RLS, akun admin, dan log error.",
     };
   } catch (err: any) {
     return {
@@ -479,27 +572,62 @@ export async function syncAllToSupabase(
 /**
  * Mengunggah file gambar ke Supabase Storage (bucket: portfolio-media)
  */
+// Allowed MIME types for portfolio media uploads
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+]);
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export async function uploadImageToSupabaseStorage(
   file: File,
   folder = "photos"
-): Promise<string | null> {
+): Promise<string> {
   const client = getSupabase();
-  if (!client) return null;
+  if (!client) throw new Error("Supabase belum dikonfigurasi.");
+
+  // Validate file type
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error(
+      `Tipe file tidak diizinkan. Gunakan: JPEG, PNG, WebP, GIF, atau SVG.`
+    );
+  }
+
+  // Validate file size
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(
+      `Ukuran file terlalu besar. Maksimal 5 MB.`
+    );
+  }
+
+  // Derive extension from MIME, not filename (prevents extension spoofing)
+  const mimeToExt: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/jpg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "image/svg+xml": "svg",
+  };
+  const fileExt = mimeToExt[file.type] || "jpg";
+  const fileName = `${folder}/${crypto.randomUUID()}.${fileExt}`;
 
   try {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-
     const { data, error } = await client.storage
       .from("portfolio-media")
       .upload(fileName, file, {
         cacheControl: "3600",
         upsert: true,
+        contentType: file.type,
       });
 
     if (error) {
       console.error("Upload ke Supabase storage gagal:", error);
-      return null;
+      throw new Error(`Upload gagal: ${error.message}`);
     }
 
     const { data: publicUrlData } = client.storage
@@ -509,13 +637,22 @@ export async function uploadImageToSupabaseStorage(
     return publicUrlData.publicUrl;
   } catch (err) {
     console.error("Supabase upload error:", err);
-    return null;
+    throw err;
   }
 }
 
 /**
  * Mengirim pesan kontak ke Supabase
  */
+function stripTags(str: string): string {
+  return str.replace(/<[^>]*>/g, "").trim();
+}
+
+function isValidEmail(email: string): boolean {
+  // RFC-5321-ish basic check
+  return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/.test(email);
+}
+
 export async function submitContactMessage(contact: {
   name: string;
   email: string;
@@ -524,8 +661,25 @@ export async function submitContactMessage(contact: {
   const client = getSupabase();
   if (!client) return false;
 
+  // Sanitize and validate
+  const name = stripTags(contact.name || "").slice(0, 100);
+  const email = (contact.email || "").trim().toLowerCase().slice(0, 254);
+  const message = stripTags(contact.message || "").slice(0, 3000);
+
+  if (!name || !email || !message) {
+    console.warn("submitContactMessage: field kosong setelah sanitasi");
+    return false;
+  }
+
+  if (!isValidEmail(email)) {
+    console.warn("submitContactMessage: email tidak valid");
+    return false;
+  }
+
   try {
-    const { error } = await client.from("portfolio_contacts").insert([contact]);
+    const { error } = await client
+      .from("portfolio_contacts")
+      .insert([{ name, email, message }]);
     if (error) {
       console.error("Gagal kirim pesan:", error);
       return false;

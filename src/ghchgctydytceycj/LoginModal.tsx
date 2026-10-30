@@ -5,27 +5,31 @@ import "./styles/Admin.css";
 
 const LoginModal: React.FC = () => {
   const { isLoginOpen, closeLoginModal, login } = usePortfolio();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isLoginOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!username.trim() || !password) {
-      setError("Masukkan username dan password");
+    if (!email.trim() || !password) {
+      setError("Masukkan email dan password akun Supabase Auth");
       return;
     }
 
-    const success = login(username, password);
-    if (!success) {
-      setError("Username atau password salah! Coba default: admin / admin123");
-    } else {
-      setUsername("");
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+      setEmail("");
       setPassword("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal masuk ke akun admin.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,14 +61,15 @@ const LoginModal: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="admin-form-group">
-            <label>Username / Email</label>
+            <label>Email</label>
             <div className="admin-input-wrap">
               <input
-                type="text"
+                type="email"
                 className="admin-input"
-                placeholder="Contoh: admin atau email Anda"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Email akun admin Supabase"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="username"
                 autoFocus
               />
             </div>
@@ -91,18 +96,14 @@ const LoginModal: React.FC = () => {
             </div>
           </div>
 
-          <button type="submit" className="admin-submit-btn">
-            <span>Masuk ke Dashboard</span>
+          <button type="submit" className="admin-submit-btn" disabled={isSubmitting}>
+            <span>{isSubmitting ? "Memverifikasi..." : "Masuk ke Dashboard"}</span>
             <FiArrowRight />
           </button>
         </form>
 
         <div className="admin-credentials-hint">
-          Akun default: <code>admin</code> &bull; Password: <code>admin123</code>
-          <br />
-          <span style={{ fontSize: "11px", opacity: 0.7 }}>
-            (Password dapat diubah setelah login)
-          </span>
+          Gunakan email dan password akun admin yang dibuat di Supabase.
         </div>
       </div>
     </div>

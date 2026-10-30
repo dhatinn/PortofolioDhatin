@@ -103,6 +103,34 @@
   user-select: none;
 }
 
+.spacefox-auth-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 122, 0, 0.22);
+  border-radius: 999px;
+  background: rgba(18, 18, 22, 0.88);
+  color: #f5f5f5;
+  font-size: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.spacefox-auth-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 122, 0, 0.25);
+  border-top-color: #ff7a00;
+  border-radius: 50%;
+  animation: spacefox-auth-spin 0.8s linear infinite;
+}
+
+@keyframes spacefox-auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .spacefox-back-link {
   position: absolute;
   top: 32px;

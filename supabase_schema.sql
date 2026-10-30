@@ -111,22 +111,60 @@ DROP POLICY IF EXISTS "Allow Write Projects" ON public.portfolio_projects;
 DROP POLICY IF EXISTS "Allow Write Experiences" ON public.portfolio_experiences;
 DROP POLICY IF EXISTS "Allow Write Skills" ON public.portfolio_skills;
 DROP POLICY IF EXISTS "Allow Read Contacts" ON public.portfolio_contacts;
+DROP POLICY IF EXISTS "Admin Manage Profile" ON public.portfolio_profile;
+DROP POLICY IF EXISTS "Admin Manage Projects" ON public.portfolio_projects;
+DROP POLICY IF EXISTS "Admin Manage Experiences" ON public.portfolio_experiences;
+DROP POLICY IF EXISTS "Admin Manage Skills" ON public.portfolio_skills;
+DROP POLICY IF EXISTS "Admin Manage Contacts" ON public.portfolio_contacts;
 
--- RLS Policies: Public Read Access (Anon can view portfolio)
+CREATE TABLE IF NOT EXISTS public.portfolio_admins (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+ALTER TABLE public.portfolio_admins ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.portfolio_admins FROM anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.is_portfolio_admin()
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM public.portfolio_admins
+        WHERE user_id = (SELECT auth.uid())
+    );
+$$;
+REVOKE ALL ON FUNCTION public.is_portfolio_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_portfolio_admin() TO authenticated;
+
+-- RLS Policies: Public read access for portfolio content.
 CREATE POLICY "Public Read Profile" ON public.portfolio_profile FOR SELECT USING (true);
 CREATE POLICY "Public Read Projects" ON public.portfolio_projects FOR SELECT USING (true);
 CREATE POLICY "Public Read Experiences" ON public.portfolio_experiences FOR SELECT USING (true);
 CREATE POLICY "Public Read Skills" ON public.portfolio_skills FOR SELECT USING (true);
 
--- RLS Policies: Write / Modify Access (Allows Portfolio Admin updates)
-CREATE POLICY "Allow Write Profile" ON public.portfolio_profile FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow Write Projects" ON public.portfolio_projects FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow Write Experiences" ON public.portfolio_experiences FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow Write Skills" ON public.portfolio_skills FOR ALL USING (true) WITH CHECK (true);
+-- Only users explicitly listed in portfolio_admins may change portfolio data.
+CREATE POLICY "Admin Manage Profile" ON public.portfolio_profile
+FOR ALL TO authenticated USING (public.is_portfolio_admin())
+WITH CHECK (public.is_portfolio_admin());
+CREATE POLICY "Admin Manage Projects" ON public.portfolio_projects
+FOR ALL TO authenticated USING (public.is_portfolio_admin())
+WITH CHECK (public.is_portfolio_admin());
+CREATE POLICY "Admin Manage Experiences" ON public.portfolio_experiences
+FOR ALL TO authenticated USING (public.is_portfolio_admin())
+WITH CHECK (public.is_portfolio_admin());
+CREATE POLICY "Admin Manage Skills" ON public.portfolio_skills
+FOR ALL TO authenticated USING (public.is_portfolio_admin())
+WITH CHECK (public.is_portfolio_admin());
 
--- Contact Message policies: Anyone can send message, admin can read/manage
+-- Anyone can submit a message; only admins can view or manage messages.
 CREATE POLICY "Public Insert Contacts" ON public.portfolio_contacts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Read Contacts" ON public.portfolio_contacts FOR SELECT USING (true);
+CREATE POLICY "Admin Manage Contacts" ON public.portfolio_contacts
+FOR ALL TO authenticated USING (public.is_portfolio_admin())
+WITH CHECK (public.is_portfolio_admin());
 
 -- ============================================================================
 -- 8. STORAGE BUCKET: portfolio-media
@@ -140,15 +178,25 @@ ON CONFLICT (id) DO UPDATE SET public = true;
 DROP POLICY IF EXISTS "Public Access Media" ON storage.objects;
 DROP POLICY IF EXISTS "Public Upload Media" ON storage.objects;
 DROP POLICY IF EXISTS "Public Update Media" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Upload Media" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Update Media" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Delete Media" ON storage.objects;
 
 CREATE POLICY "Public Access Media" ON storage.objects
 FOR SELECT USING (bucket_id = 'portfolio-media');
 
-CREATE POLICY "Public Upload Media" ON storage.objects
-FOR INSERT WITH CHECK (bucket_id = 'portfolio-media');
+CREATE POLICY "Admin Upload Media" ON storage.objects
+FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'portfolio-media' AND public.is_portfolio_admin());
 
-CREATE POLICY "Public Update Media" ON storage.objects
-FOR UPDATE USING (bucket_id = 'portfolio-media');
+CREATE POLICY "Admin Update Media" ON storage.objects
+FOR UPDATE TO authenticated
+USING (bucket_id = 'portfolio-media' AND public.is_portfolio_admin())
+WITH CHECK (bucket_id = 'portfolio-media' AND public.is_portfolio_admin());
+
+CREATE POLICY "Admin Delete Media" ON storage.objects
+FOR DELETE TO authenticated
+USING (bucket_id = 'portfolio-media' AND public.is_portfolio_admin());
 
 -- ============================================================================
 -- 9. SEED DATA AWAL (PORTFOLIO DHATIN NURIL ARSANDY)

@@ -1,44 +1,48 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FiEye, FiEyeOff, FiCheck, FiArrowLeft, FiAlertCircle } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiArrowLeft, FiAlertCircle } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import AdminDashboard from "./AdminDashboard";
 import "./styles/Admin.css";
 
 const AdminPage: React.FC = () => {
-  const { isAuthenticated, login } = usePortfolio();
+  const { isAuthenticated, isAuthLoading, authError, login } = usePortfolio();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!username.trim() || !password) {
-      setError("Please fill in both username and password");
+    if (!email.trim() || !password) {
+      setError("Please enter your Supabase admin email and password.");
       return;
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const ok = login(username, password);
+    try {
+      await login(email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to sign in.");
+    } finally {
       setIsSubmitting(false);
-      if (!ok) {
-        setError("Invalid username or password. (Default: admin / admin123)");
-      }
-    }, 200);
+    }
   };
 
-  const handleFillDefaults = () => {
-    setUsername("admin");
-    setPassword("admin123");
-    setError(null);
-  };
+  if (isAuthLoading) {
+    return (
+      <div className="spacefox-login-viewport">
+        <div className="spacefox-auth-status" role="status" aria-live="polite">
+          <span className="spacefox-auth-spinner" aria-hidden="true" />
+          <span>Memverifikasi sesi admin...</span>
+        </div>
+      </div>
+    );
+  }
 
-  // If already authenticated, show the standalone Admin Dashboard
   if (isAuthenticated) {
     return <AdminDashboard isStandalonePage={true} />;
   }
@@ -75,9 +79,16 @@ const AdminPage: React.FC = () => {
             </div>
           )}
 
+          {authError && !error && (
+            <div className="spacefox-error-alert" role="alert">
+              <FiAlertCircle />
+              <span>{authError}</span>
+            </div>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="spacefox-form">
-            {/* Email / Username field with floating underline */}
+            {/* Email field with floating underline */}
             <div className="spacefox-field">
               <label htmlFor="spacefox-email" className="spacefox-label">
                 Email address
@@ -85,11 +96,11 @@ const AdminPage: React.FC = () => {
               <div className="spacefox-input-wrap">
                 <input
                   id="spacefox-email"
-                  type="text"
+                  type="email"
                   className="spacefox-input"
-                  placeholder="admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="admin@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   autoComplete="username"
                   autoFocus
                 />
@@ -133,17 +144,7 @@ const AdminPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Bottom verified squircle button with glowing amber/coral rim */}
-          <div className="spacefox-bottom-widget">
-            <button
-              type="button"
-              className="spacefox-verified-btn"
-              onClick={handleFillDefaults}
-              title="Quick Auth Fill (admin / admin123)"
-            >
-              <FiCheck className="verified-check-icon" />
-            </button>
-          </div>
+          <p>Sign in with the admin account configured in Supabase.</p>
         </div>
       </div>
     </div>

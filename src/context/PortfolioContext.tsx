@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
   ReactNode,
 } from "react";
 import { profile as defaultProfile } from "../data/profile";
@@ -32,13 +33,14 @@ import {
   saveSupabaseConfig,
   clearSupabaseConfig,
   testSupabaseConnection,
+  getSupabaseSession,
+  isPortfolioAdmin,
+  onSupabaseAuthStateChange,
+  signInAdmin,
+  signOutAdmin,
+  updateAdminPassword,
   SupabaseConfigCredentials,
 } from "../lib/supabase";
-
-interface AdminCredentials {
-  username: string;
-  passwordHash: string; // Base64 or plain for local dev
-}
 
 interface PortfolioContextType {
   profile: ProfileData;
@@ -59,8 +61,8 @@ interface PortfolioContextType {
   updateProfile: (data: Partial<ProfileData>) => void;
 
   // Projects CRUD
-  addProject: (project: ProjectData) => void;
-  updateProject: (index: number, project: ProjectData) => void;
+  addProject: (project: ProjectData) => Promise<boolean>;
+  updateProject: (index: number, project: ProjectData) => Promise<boolean>;
   deleteProject: (index: number) => void;
   reorderProjects: (startIndex: number, endIndex: number) => void;
 
@@ -82,9 +84,11 @@ interface PortfolioContextType {
 
   // Auth
   isAuthenticated: boolean;
-  login: (user: string, pass: string) => boolean;
-  logout: () => void;
-  changeCredentials: (user: string, pass: string) => void;
+  isAuthLoading: boolean;
+  authError: string | null;
+  login: (email: string, pass: string) => Promise<void>;
+  logout: () => Promise<void>;
+  changePassword: (pass: string) => Promise<void>;
 
   // Modal / UI controls
   isLoginOpen: boolean;
@@ -108,16 +112,17 @@ const STORAGE_KEYS = {
   PROJECTS: "portfolio_projects_v2",
   EXPERIENCE: "portfolio_experience_v2",
   SKILLS: "portfolio_skills_v2",
-  CREDENTIALS: "portfolio_admin_credentials_v2",
-  AUTH_SESSION: "portfolio_admin_session_v2",
   THEME: "portfolio_theme_v1",
   LANGUAGE: "portfolio_language_v1",
 };
 
-const DEFAULT_CREDENTIALS: AdminCredentials = {
-  username: "admin",
-  passwordHash: "admin123",
-};
+// ---------------------------------------------------------------------------
+// Login brute-force protection (in-memory, resets on page reload)
+// ---------------------------------------------------------------------------
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+let loginAttemptCount = 0;
+let loginLockoutUntil = 0;
 
 const PortfolioContext = createContext<PortfolioContextType | null>(null);
 
@@ -142,7 +147,7 @@ function loadProfileFromStorage(): ProfileData {
     phone: loaded.phone && loaded.phone.includes("851-4215-6672") ? "" : (loaded.phone || ""),
     whatsapp:
       loaded.whatsapp &&
-      (loaded.whatsapp.includes("85142156672") || loaded.whatsapp.includes("851-4215-6672"))
+        (loaded.whatsapp.includes("85142156672") || loaded.whatsapp.includes("851-4215-6672"))
         ? ""
         : (loaded.whatsapp || ""),
     about: {
@@ -164,7 +169,7 @@ function loadProjectsFromStorage(): ProjectData[] {
     ...p,
     thumbnail:
       p.thumbnail === "/images/mypicnbg.png" ||
-      p.thumbnail?.startsWith("/images/projects/")
+        p.thumbnail?.startsWith("/images/projects/")
         ? ""
         : (p.thumbnail || ""),
   }));
@@ -182,13 +187,11 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     loadFromStorage(STORAGE_KEYS.SKILLS, defaultSkills as SkillCategoryData[])
   );
 
-  // Authentication State
-  const [credentials, setCredentials] = useState<AdminCredentials>(() =>
-    loadFromStorage(STORAGE_KEYS.CREDENTIALS, DEFAULT_CREDENTIALS)
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
-    loadFromStorage(STORAGE_KEYS.AUTH_SESSION, false)
-  );
+  // Authentication state is derived only from the Supabase Auth session.
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const isLoginInProgress = useRef(false);
 
   // Supabase Connection & Configuration State
   const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfigCredentials>(getStoredSupabaseConfig);
@@ -197,6 +200,108 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   // UI state for Modals
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.removeItem("portfolio_admin_credentials_v2");
+    localStorage.removeItem("portfolio_admin_session_v2");
+    let authRevision = 0;
+    let active = true;
+    const verificationTimers: number[] = [];
+
+    const verifyAdminSession = async (
+      hasUser: boolean,
+      revision: number
+    ): Promise<void> => {
+      if (!hasUser) {
+        if (!active || revision !== authRevision) return;
+        setIsAuthenticated(false);
+        setIsAdminOpen(false);
+        setAuthError(null);
+        setIsAuthLoading(false);
+        return;
+      }
+
+      try {
+        const isAdmin = await isPortfolioAdmin();
+        if (!active || revision !== authRevision) return;
+        if (!isAdmin) {
+          await signOutAdmin();
+          if (!active || revision !== authRevision) return;
+        }
+        setIsAuthenticated(isAdmin);
+        if (!isAdmin) setIsAdminOpen(false);
+        setAuthError(null);
+        setIsAuthLoading(false);
+      } catch (error) {
+        if (!active || revision !== authRevision) return;
+        console.error("Gagal memverifikasi sesi admin Supabase:", error);
+        setIsAuthenticated(false);
+        setAuthError(
+          error instanceof Error
+            ? `Tidak dapat memverifikasi sesi admin: ${error.message}`
+            : "Tidak dapat memverifikasi sesi admin."
+        );
+        setIsAuthLoading(false);
+      }
+    };
+
+    const unsubscribe = onSupabaseAuthStateChange((event, session) => {
+      if (!active) return;
+
+      // INITIAL_SESSION is the primary auth init event in Supabase v2
+      if (event === "INITIAL_SESSION") {
+        const revision = ++authRevision;
+        void verifyAdminSession(Boolean(session?.user), revision);
+        return;
+      }
+
+      if (event !== "SIGNED_OUT" && event !== "SIGNED_IN") return;
+      if (event === "SIGNED_IN" && isLoginInProgress.current) return;
+
+      if (event === "SIGNED_OUT") {
+        const revision = ++authRevision;
+        void verifyAdminSession(false, revision);
+        return;
+      }
+
+      if (session?.user) {
+        const revision = ++authRevision;
+        setIsAuthLoading(true);
+        setAuthError(null);
+        const timer = window.setTimeout(() => {
+          void verifyAdminSession(true, revision);
+        }, 0);
+        verificationTimers.push(timer);
+      }
+    });
+
+    if (!unsubscribe) {
+      // Supabase not configured — show login form immediately, no error
+      setIsAuthenticated(false);
+      setAuthError(null);
+      setIsAuthLoading(false);
+    } else {
+      // Safety timeout: prevent blank/stuck loading if auth never resolves
+      const safetyTimer = window.setTimeout(() => {
+        if (!active) return;
+        setIsAuthLoading((prev) => {
+          if (prev) {
+            console.warn("Auth loading timed out after 8s, resetting.");
+            setIsAuthenticated(false);
+          }
+          return false;
+        });
+      }, 8000);
+      verificationTimers.push(safetyTimer);
+    }
+
+    return () => {
+      active = false;
+      authRevision++;
+      verificationTimers.forEach((timer) => window.clearTimeout(timer));
+      unsubscribe?.();
+    };
+  }, []);
 
   // Initial Sync from Supabase if configured
   useEffect(() => {
@@ -270,16 +375,6 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
   }, [skills]);
 
-  // Persist Credentials
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
-  }, [credentials]);
-
-  // Persist Auth Session
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(isAuthenticated));
-  }, [isAuthenticated]);
-
   // Theme state & persistence
   const [theme, setThemeState] = useState<"dark" | "light">(() => {
     try {
@@ -305,7 +400,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.THEME, theme);
-    } catch {}
+    } catch { }
     document.documentElement.setAttribute("data-theme", theme);
     if (theme === "light") {
       document.body.classList.add("light-theme");
@@ -319,7 +414,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
-    } catch {}
+    } catch { }
     document.documentElement.setAttribute("lang", language);
   }, [language]);
 
@@ -357,35 +452,56 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   }, [isAuthenticated]);
 
   // Auth Handlers
-  const login = useCallback(
-    (user: string, pass: string): boolean => {
-      const cleanUser = user.trim().toLowerCase();
-      const validUser =
-        cleanUser === credentials.username.toLowerCase() ||
-        cleanUser === profile.email.toLowerCase();
-      const validPass = pass === credentials.passwordHash;
+  const login = useCallback(async (email: string, pass: string): Promise<void> => {
+    // Brute-force check
+    const now = Date.now();
+    if (now < loginLockoutUntil) {
+      const remainingMin = Math.ceil((loginLockoutUntil - now) / 60000);
+      setAuthError(
+        `Terlalu banyak percobaan login. Coba lagi dalam ${remainingMin} menit.`
+      );
+      return;
+    }
 
-      if (validUser && validPass) {
-        setIsAuthenticated(true);
-        setIsLoginOpen(false);
-        setIsAdminOpen(true);
-        return true;
+    isLoginInProgress.current = true;
+    setIsAuthLoading(true);
+    setAuthError(null);
+    try {
+      await signInAdmin(email, pass);
+      // Reset counter on successful login
+      loginAttemptCount = 0;
+      loginLockoutUntil = 0;
+      setIsAuthenticated(true);
+      setIsLoginOpen(false);
+      setIsAdminOpen(true);
+    } catch (err) {
+      loginAttemptCount++;
+      if (loginAttemptCount >= MAX_LOGIN_ATTEMPTS) {
+        loginLockoutUntil = Date.now() + LOCKOUT_DURATION_MS;
+        loginAttemptCount = 0;
+        setAuthError(
+          `Terlalu banyak percobaan. Login diblokir selama 10 menit.`
+        );
+      } else {
+        const message = err instanceof Error ? err.message : 'Login failed';
+        const remaining = MAX_LOGIN_ATTEMPTS - loginAttemptCount;
+        setAuthError(`${message} (${remaining} percobaan tersisa)`
+        );
       }
-      return false;
-    },
-    [credentials, profile.email]
-  );
+      setIsAuthenticated(false);
+    } finally {
+      isLoginInProgress.current = false;
+      setIsAuthLoading(false);
+    }
+  }, []);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
+  const logout = useCallback(async (): Promise<void> => {
+    await signOutAdmin();
     setIsAdminOpen(false);
   }, []);
 
-  const changeCredentials = useCallback((user: string, pass: string) => {
-    setCredentials({
-      username: user.trim() || "admin",
-      passwordHash: pass,
-    });
+  const changePassword = useCallback(async (pass: string): Promise<void> => {
+    await updateAdminPassword(pass);
   }, []);
 
   const openLoginModal = useCallback(() => {
@@ -427,35 +543,39 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Projects CRUD
-  const addProject = useCallback((project: ProjectData) => {
-    setProjects((prev) => {
-      const next = [
-        {
-          ...project,
-          id: Date.now(),
-          slug:
-            project.slug ||
-            project.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        },
-        ...prev,
-      ];
-      if (isSupabaseConfigured()) {
-        syncProjectsToSupabase(next);
-      }
-      return next;
-    });
-  }, []);
+  const addProject = useCallback(async (project: ProjectData): Promise<boolean> => {
+    const newProject = {
+      ...project,
+      id: Date.now(),
+      slug:
+        project.slug ||
+        project.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    };
+    const next = [newProject, ...projects];
 
-  const updateProject = useCallback((index: number, project: ProjectData) => {
-    setProjects((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], ...project };
-      if (isSupabaseConfigured()) {
-        syncProjectsToSupabase(copy);
-      }
-      return copy;
-    });
-  }, []);
+    if (isSupabaseConfigured() && !(await syncProjectsToSupabase(next))) {
+      return false;
+    }
+
+    setProjects(next);
+    return true;
+  }, [projects]);
+
+  const updateProject = useCallback(async (
+    index: number,
+    project: ProjectData
+  ): Promise<boolean> => {
+    if (!projects[index]) return false;
+
+    const next = [...projects];
+    next[index] = { ...next[index], ...project };
+    if (isSupabaseConfigured() && !(await syncProjectsToSupabase(next))) {
+      return false;
+    }
+
+    setProjects(next);
+    return true;
+  }, [projects]);
 
   const deleteProject = useCallback((index: number) => {
     setProjects((prev) => {
@@ -584,7 +704,6 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     setProjects(defaultProjects as ProjectData[]);
     setExperience(defaultExperience as ExperienceData[]);
     setSkills(defaultSkills as SkillCategoryData[]);
-    setCredentials(DEFAULT_CREDENTIALS);
     localStorage.removeItem(STORAGE_KEYS.PROFILE);
     localStorage.removeItem(STORAGE_KEYS.PROJECTS);
     localStorage.removeItem(STORAGE_KEYS.EXPERIENCE);
@@ -606,12 +725,44 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     );
   }, [profile, projects, experience, skills]);
 
-  // Import JSON
+  // Import JSON — with schema validation
   const importJSON = useCallback((jsonStr: string): boolean => {
     try {
       const data = JSON.parse(jsonStr);
-      if (data.profile) setProfile(data.profile);
-      if (Array.isArray(data.projects)) setProjects(data.projects);
+      if (typeof data !== "object" || data === null || Array.isArray(data)) {
+        console.error("importJSON: data bukan objek");
+        return false;
+      }
+
+      // Validate profile shape
+      if (data.profile !== undefined) {
+        if (typeof data.profile !== "object" || Array.isArray(data.profile)) {
+          console.error("importJSON: profile tidak valid");
+          return false;
+        }
+        setProfile(data.profile);
+      }
+
+      // Validate projects shape
+      if (data.projects !== undefined) {
+        if (!Array.isArray(data.projects)) {
+          console.error("importJSON: projects harus berupa array");
+          return false;
+        }
+        // Each project must have at minimum a title string
+        const valid = data.projects.every(
+          (p: unknown) =>
+            typeof p === "object" &&
+            p !== null &&
+            typeof (p as Record<string, unknown>).title === "string"
+        );
+        if (!valid) {
+          console.error("importJSON: projects berisi item tidak valid");
+          return false;
+        }
+        setProjects(data.projects);
+      }
+
       if (Array.isArray(data.experience)) setExperience(data.experience);
       if (Array.isArray(data.skills)) setSkills(data.skills);
       return true;
@@ -649,9 +800,11 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     exportJSON,
     importJSON,
     isAuthenticated,
+    isAuthLoading,
+    authError,
     login,
     logout,
-    changeCredentials,
+    changePassword,
     isLoginOpen,
     openLoginModal,
     closeLoginModal,
@@ -685,40 +838,42 @@ export const usePortfolio = (): PortfolioContextType => {
       isSupabaseConnected: false,
       supabaseConfig: { url: "", anonKey: "", source: "none" },
       saveSupabaseSettings: () => false,
-      clearSupabaseSettings: () => {},
+      clearSupabaseSettings: () => { },
       testSupabase: async () => ({ success: false, message: "" }),
       syncWithSupabase: async () => false,
-      updateProfile: () => {},
-      addProject: () => {},
-      updateProject: () => {},
-      deleteProject: () => {},
-      reorderProjects: () => {},
-      addExperience: () => {},
-      updateExperience: () => {},
-      deleteExperience: () => {},
-      addSkill: () => {},
-      removeSkill: () => {},
-      addSkillCategory: () => {},
-      removeSkillCategory: () => {},
-      resetToDefaults: () => {},
+      updateProfile: () => { },
+      addProject: async () => false,
+      updateProject: async () => false,
+      deleteProject: () => { },
+      reorderProjects: () => { },
+      addExperience: () => { },
+      updateExperience: () => { },
+      deleteExperience: () => { },
+      addSkill: () => { },
+      removeSkill: () => { },
+      addSkillCategory: () => { },
+      removeSkillCategory: () => { },
+      resetToDefaults: () => { },
       exportJSON: () => "{}",
       importJSON: () => false,
       isAuthenticated: false,
-      login: () => false,
-      logout: () => {},
-      changeCredentials: () => {},
+      isAuthLoading: false,
+      authError: null,
+      login: async () => { },
+      logout: async () => { },
+      changePassword: async () => { },
       isLoginOpen: false,
-      openLoginModal: () => {},
-      closeLoginModal: () => {},
+      openLoginModal: () => { },
+      closeLoginModal: () => { },
       isAdminOpen: false,
-      openAdminDrawer: () => {},
-      closeAdminDrawer: () => {},
+      openAdminDrawer: () => { },
+      closeAdminDrawer: () => { },
       theme: "dark",
-      toggleTheme: () => {},
-      setTheme: () => {},
+      toggleTheme: () => { },
+      setTheme: () => { },
       language: "id",
-      toggleLanguage: () => {},
-      setLanguage: () => {},
+      toggleLanguage: () => { },
+      setLanguage: () => { },
     };
   }
   return context;

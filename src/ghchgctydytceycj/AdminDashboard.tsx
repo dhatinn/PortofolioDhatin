@@ -34,7 +34,44 @@ import "./styles/Admin.css";
 
 type TabKey = "overview" | "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
 
-import { uploadImageToSupabaseStorage } from "../lib/supabase";
+import { isSupabaseConfigured, uploadImageToSupabaseStorage } from "../lib/supabase";
+
+async function prepareProjectThumbnail(file: File): Promise<File> {
+  let image: ImageBitmap;
+  try {
+    image = await createImageBitmap(file);
+  } catch {
+    throw new Error("Browser tidak dapat membaca gambar ini. Simpan ulang sebagai JPG, PNG, atau WebP lalu coba lagi.");
+  }
+
+  const maxDimension = 1600;
+  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+
+  try {
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Browser tidak dapat memproses gambar ini.");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  } finally {
+    image.close();
+  }
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/webp", 0.84)
+  );
+  if (!blob) throw new Error("Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP.");
+  if (blob.type !== "image/webp") {
+    throw new Error("Browser tidak mendukung pemrosesan WebP. Coba gunakan Chrome atau Edge versi terbaru.");
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "project-thumbnail";
+  return new File([blob], `${baseName}.webp`, {
+    type: "image/webp",
+    lastModified: Date.now(),
+  });
+}
 
 const ACCENT_COLORS = [
   { name: "Solar Orange (Hero)", value: "#ff7a00" },
@@ -81,7 +118,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     exportJSON,
     importJSON,
     logout,
-    changeCredentials,
+    changePassword,
     isAdminOpen,
     closeAdminDrawer,
   } = usePortfolio();
@@ -197,6 +234,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   const [projectCategoryFilter, setProjectCategoryFilter] = useState("All");
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isSavingProject, setIsSavingProject] = useState(false);
+  const [isUploadingProjectThumb, setIsUploadingProjectThumb] = useState(false);
   const [projectForm, setProjectForm] = useState<ProjectData>({
     slug: "",
     title: "",
@@ -229,7 +268,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   const [newCategoryId, setNewCategoryId] = useState("");
 
   // Settings State
-  const [newUsername, setNewUsername] = useState("admin");
   const [newPassword, setNewPassword] = useState("");
   const [importJsonText, setImportJsonText] = useState("");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -257,15 +295,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       return;
     }
 
-    if (isSupabaseConnected) {
-      showToast("Mengunggah foto ke Supabase Storage...");
-      const publicUrl = await uploadImageToSupabaseStorage(file);
-      if (publicUrl) {
+    if (isSupabaseConfigured()) {
+      try {
+        showToast("Mengunggah foto ke Supabase Storage...");
+        const publicUrl = await uploadImageToSupabaseStorage(file);
         setProfileForm((prev) => ({ ...prev, photo: publicUrl }));
         updateProfile({ ...profileForm, photo: publicUrl });
         showToast("Foto berhasil diunggah ke Supabase Storage & diterapkan!");
-        return;
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Upload foto ke Supabase gagal.");
       }
+      return;
     }
 
     const reader = new FileReader();
@@ -317,33 +357,75 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     setIsProjectModalOpen(true);
   };
 
-  const handleSaveProject = (e: React.FormEvent) => {
+  const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectForm.title.trim()) {
       showToast("Judul proyek tidak boleh kosong");
       return;
     }
 
-    if (editingProjectIndex !== null) {
-      updateProject(editingProjectIndex, projectForm);
-      showToast("Proyek berhasil diperbarui!");
-    } else {
-      addProject(projectForm);
-      showToast("Proyek baru berhasil ditambahkan!");
+    setIsSavingProject(true);
+    try {
+      const saved = editingProjectIndex !== null
+        ? await updateProject(editingProjectIndex, projectForm)
+        : await addProject(projectForm);
+      if (!saved) {
+        showToast("Proyek gagal disimpan ke Supabase. Periksa koneksi, akun admin, dan RLS.");
+        return;
+      }
+
+      showToast(editingProjectIndex !== null
+        ? "Proyek berhasil diperbarui!"
+        : "Proyek baru berhasil ditambahkan!");
+      setIsProjectModalOpen(false);
+    } catch (error) {
+      console.error("Gagal menyimpan proyek:", error);
+      showToast(error instanceof Error ? error.message : "Gagal menyimpan proyek.");
+    } finally {
+      setIsSavingProject(false);
     }
-    setIsProjectModalOpen(false);
   };
 
-  const handleProjectThumbUpload = (file?: File) => {
+  const handleProjectThumbUpload = async (file?: File) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setProjectForm((prev) => ({
-        ...prev,
-        thumbnail: ev.target?.result as string,
-      }));
-    };
-    reader.readAsDataURL(file);
+    if (!file.type.startsWith("image/")) {
+      showToast("Pilih file gambar untuk thumbnail.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      showToast("Ukuran gambar maksimal 8 MB.");
+      return;
+    }
+
+    setIsUploadingProjectThumb(true);
+    try {
+      const preparedFile = await prepareProjectThumbnail(file);
+      if (isSupabaseConfigured()) {
+        const thumbnail = await uploadImageToSupabaseStorage(preparedFile, "projects");
+        setProjectForm((prev) => ({ ...prev, thumbnail }));
+        showToast("Thumbnail berhasil diunggah ke Supabase Storage.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result;
+        if (typeof dataUrl !== "string") {
+          showToast("Gagal membaca file gambar.");
+          return;
+        }
+        setProjectForm((prev) => ({ ...prev, thumbnail: dataUrl }));
+        showToast("Thumbnail tersimpan di browser ini saja; hubungkan Supabase untuk menyimpannya di cloud.");
+      };
+      reader.onerror = () => showToast("Gagal membaca file gambar.");
+      reader.readAsDataURL(preparedFile);
+    } catch (error) {
+      console.error("Gagal memproses atau mengunggah thumbnail proyek:", error);
+      showToast(error instanceof Error ? error.message : "Upload thumbnail gagal.");
+    } finally {
+      setIsUploadingProjectThumb(false);
+    }
   };
 
   const handleAddStackTag = (tagToAdd?: string) => {
@@ -503,9 +585,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
             <button
               type="button"
               className="charcoal-action-pill danger"
-              onClick={() => {
-                logout();
-                if (isStandalonePage) navigate("/ghchgctydytceycj");
+              onClick={async () => {
+                try {
+                  await logout();
+                  if (isStandalonePage) navigate("/ghchgctydytceycj");
+                } catch (error) {
+                  showToast(error instanceof Error ? error.message : "Gagal keluar dari akun admin.");
+                }
               }}
               title="Keluar dari sesi admin"
             >
@@ -2362,12 +2448,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                       lineHeight: "1.7",
                     }}
                   >
-                    <li>Buat akun dan project baru secara gratis di <strong>supabase.com</strong>.</li>
-                    <li>Buka menu <strong>SQL Editor</strong> di dashboard Supabase Anda.</li>
-                    <li>Jalankan skrip <code>supabase_schema.sql</code> yang sudah disiapkan di root folder proyek ini.</li>
-                    <li>Salin <strong>Project URL</strong> dan <strong>Anon Public Key</strong> dari menu <em>Project Settings → API</em>.</li>
-                    <li>Tempelkan ke form input di atas dan klik <strong>Simpan Kredensial Supabase</strong>.</li>
+                    <li>Buat akun admin di <strong>Authentication → Users</strong> pada dashboard Supabase.</li>
+                    <li>Jalankan <code>supabase_schema.sql</code> di menu <strong>SQL Editor</strong>.</li>
+                    <li>Salin UUID akun dari daftar Users, lalu daftarkan sebagai admin dengan SQL: <code>INSERT INTO public.portfolio_admins (user_id) VALUES ('UUID-AKUN');</code></li>
+                    <li>Salin <strong>Project URL</strong> dan <strong>anon/public key</strong> dari <em>Project Settings → API</em>.</li>
+                    <li>Masukkan URL dan anon key ke <code>.env</code> sebagai <code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code>, lalu restart server.</li>
                   </ol>
+                  <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#fca5a5" }}>
+                    Jangan pernah memasukkan service-role key ke frontend. Hanya akun yang terdaftar di portfolio_admins yang dapat mengubah data.
+                  </p>
                 </div>
               </div>
 
@@ -2464,45 +2553,42 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                 </button>
               </div>
 
-              {/* Credentials */}
+              {/* Admin account */}
               <div className="admin-card">
                 <div className="admin-card-title">
                   <FiSettings style={{ color: "#10b981" }} />
-                  Kredensial Login Admin
+                  Keamanan Akun Admin
                 </div>
-                <div className="admin-grid-2">
-                  <div className="admin-form-group">
-                    <label>Username Baru</label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={newUsername}
-                      onChange={(e) => setNewUsername(e.target.value)}
-                    />
-                  </div>
-                  <div className="admin-form-group">
-                    <label>Password Baru</label>
-                    <input
-                      type="password"
-                      className="admin-input"
-                      placeholder="Masukkan password baru"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                  </div>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "16px" }}>
+                  Ubah email melalui Supabase Authentication. Password akun dapat diperbarui di bawah.
+                </p>
+                <div className="admin-form-group">
+                  <label>Password Baru</label>
+                  <input
+                    type="password"
+                    className="admin-input"
+                    placeholder="Masukkan password baru"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                 </div>
 
                 <button
                   type="button"
                   className="admin-btn-primary"
-                  onClick={() => {
-                    if (!newUsername.trim() || !newPassword) {
-                      showToast("Username dan password tidak boleh kosong");
+                  onClick={async () => {
+                    if (!newPassword) {
+                      showToast("Masukkan password baru.");
                       return;
                     }
-                    changeCredentials(newUsername, newPassword);
-                    setNewPassword("");
-                    showToast("Kredensial admin berhasil diperbarui!");
+                    try {
+                      await changePassword(newPassword);
+                      setNewPassword("");
+                      showToast("Password akun admin berhasil diperbarui.");
+                    } catch (error) {
+                      showToast(error instanceof Error ? error.message : "Gagal memperbarui password.");
+                    }
                   }}
                 >
                   <FiSave />
@@ -2687,17 +2773,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                   />
                   <label
                     className="admin-btn-secondary"
-                    style={{ cursor: "pointer", flexShrink: 0 }}
+                    style={{
+                      cursor: isUploadingProjectThumb ? "wait" : "pointer",
+                      flexShrink: 0,
+                      opacity: isUploadingProjectThumb ? 0.6 : 1,
+                    }}
                   >
                     <FiUpload />
-                    <span>Upload</span>
+                    <span>{isUploadingProjectThumb ? "Mengunggah..." : "Upload"}</span>
                     <input
                       type="file"
                       accept="image/*"
                       style={{ display: "none" }}
+                      disabled={isUploadingProjectThumb || isSavingProject}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleProjectThumbUpload(file);
+                        e.currentTarget.value = "";
                       }}
                     />
                   </label>
@@ -2805,13 +2897,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
               </div>
 
               <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-                <button type="submit" className="admin-btn-primary" style={{ flex: 1 }}>
+                <button
+                  type="submit"
+                  className="admin-btn-primary"
+                  style={{ flex: 1 }}
+                  disabled={isSavingProject || isUploadingProjectThumb}
+                >
                   <FiCheck />
-                  <span>Simpan Proyek</span>
+                  <span>{isSavingProject ? "Menyimpan..." : "Simpan Proyek"}</span>
                 </button>
                 <button
                   type="button"
                   className="admin-btn-secondary"
+                  disabled={isSavingProject || isUploadingProjectThumb}
                   onClick={() => setIsProjectModalOpen(false)}
                 >
                   Batal

@@ -20,7 +20,23 @@ const App = () => {
             path="/"
             element={
               <LoadingProvider>
-                <Suspense fallback={null}>
+                <Suspense
+                  fallback={
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      style={{
+                        minHeight: "100vh",
+                        background: "#08060c",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "#ff7a00",
+                      }}
+                    >
+                      Memuat portofolio...
+                    </div>
+                  }
+                >
                   <MainContainer />
                 </Suspense>
               </LoadingProvider>
