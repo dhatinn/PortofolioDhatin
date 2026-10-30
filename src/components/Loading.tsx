@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
 
-import Marquee from "react-fast-marquee";
+import MarqueeImport from "react-fast-marquee";
 import { config } from "../config";
+const Marquee = (MarqueeImport as any).default ?? MarqueeImport;
 
 const Loading = ({ percent }: { percent: number }) => {
   const { setIsLoading } = useLoading();
