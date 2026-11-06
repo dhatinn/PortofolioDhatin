@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./App.css";
 
 const MainContainer = lazy(() => import("./components/MainContainer"));
-const MyWorks = lazy(() => import("./pages/MyWorks"));
+const ProjectPortfolio = lazy(() => import("./pages/ProjectPortfolio"));
 const Play = lazy(() => import("./pages/Play"));
 import { LoadingProvider } from "./context/LoadingProvider";
 import { PortfolioProvider } from "./context/PortfolioContext";
@@ -51,10 +51,46 @@ const App = () => {
             }
           />
           <Route
+            path="/projectportofolio"
+            element={
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight: "100vh",
+                      background: "#0c0a09",
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#ff7a00",
+                    }}
+                  >
+                    Memuat Portofolio...
+                  </div>
+                }
+              >
+                <ProjectPortfolio />
+              </Suspense>
+            }
+          />
+          <Route
             path="/myworks"
             element={
-              <Suspense fallback={<div>Loading...</div>}>
-                <MyWorks />
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight: "100vh",
+                      background: "#0c0a09",
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#ff7a00",
+                    }}
+                  >
+                    Memuat Portofolio...
+                  </div>
+                }
+              >
+                <ProjectPortfolio />
               </Suspense>
             }
           />

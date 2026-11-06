@@ -431,16 +431,8 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     persistJSON(STORAGE_KEYS.SKILLS, skills);
   }, [skills]);
 
-  // Theme state & persistence
-  const [theme, setThemeState] = useState<"dark" | "light">(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-      if (saved === "light" || saved === "dark") return saved;
-      return "dark";
-    } catch {
-      return "dark";
-    }
-  });
+  // Theme locked to dark mode per user request
+  const [theme, setThemeState] = useState<"dark" | "light">("dark");
 
   // Language state & persistence
   const [language, setLanguageState] = useState<"id" | "en">(() => {
@@ -454,16 +446,11 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   });
 
   useEffect(() => {
-    safeSetItem(STORAGE_KEYS.THEME, theme);
-    document.documentElement.setAttribute("data-theme", theme);
-    if (theme === "light") {
-      document.body.classList.add("light-theme");
-      document.body.classList.remove("dark-theme");
-    } else {
-      document.body.classList.add("dark-theme");
-      document.body.classList.remove("light-theme");
-    }
-  }, [theme]);
+    safeSetItem(STORAGE_KEYS.THEME, "dark");
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.body.classList.add("dark-theme");
+    document.body.classList.remove("light-theme");
+  }, []);
 
   useEffect(() => {
     safeSetItem(STORAGE_KEYS.LANGUAGE, language);

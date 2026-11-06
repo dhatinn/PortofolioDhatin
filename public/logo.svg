@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="dn-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9429" />
+      <stop offset="100%" stop-color="#ff7a00" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="46" fill="#120f18" stroke="url(#dn-grad)" stroke-width="4"/>
+  <text x="50" y="59" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="33" fill="#ffffff" letter-spacing="1">
+    D<tspan fill="url(#dn-grad)">N</tspan>
+  </text>
+</svg>
+

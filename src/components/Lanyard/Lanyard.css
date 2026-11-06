@@ -23,22 +23,9 @@
   pointer-events: auto;
 }
 
-/* On smaller screens / tablets */
+/* Hide Lanyard 3D Canvas completely on mobile & tablets to prevent empty space / pushing Hero down */
 @media only screen and (max-width: 1024px) {
   .lanyard-wrapper {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: 100%;
-    max-width: 500px;
-    height: 480px;
-    margin: 0 auto;
-    z-index: 5;
-  }
-}
-
-@media only screen and (max-width: 600px) {
-  .lanyard-wrapper {
-    height: 380px;
+    display: none !important;
   }
 }

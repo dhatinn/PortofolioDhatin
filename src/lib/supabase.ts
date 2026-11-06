@@ -642,6 +642,58 @@ export async function uploadImageToSupabaseStorage(
 }
 
 /**
+ * Mengunggah file PDF (CV/Resume) ke Supabase Storage (bucket: portfolio-media)
+ */
+export async function uploadCvPdfToSupabaseStorage(
+  file: File,
+  folder = "documents"
+): Promise<string> {
+  const client = getSupabase();
+  if (!client) throw new Error("Supabase belum dikonfigurasi.");
+
+  // Validasi tipe file PDF
+  const isPdf =
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf");
+
+  if (!isPdf) {
+    throw new Error("Tipe file tidak valid. Harap pilih file berekstensi .pdf.");
+  }
+
+  // Maksimal ukuran PDF (15 MB)
+  const MAX_PDF_SIZE_BYTES = 15 * 1024 * 1024;
+  if (file.size > MAX_PDF_SIZE_BYTES) {
+    throw new Error("Ukuran file PDF terlalu besar. Maksimal 15 MB.");
+  }
+
+  const fileName = `${folder}/cv_${crypto.randomUUID()}.pdf`;
+
+  try {
+    const { data, error } = await client.storage
+      .from("portfolio-media")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: "application/pdf",
+      });
+
+    if (error) {
+      console.error("Upload CV PDF ke Supabase storage gagal:", error);
+      throw new Error(`Upload CV gagal: ${error.message}`);
+    }
+
+    const { data: publicUrlData } = client.storage
+      .from("portfolio-media")
+      .getPublicUrl(data.path);
+
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error("Supabase CV upload error:", err);
+    throw err;
+  }
+}
+
+/**
  * Mengirim pesan kontak ke Supabase
  */
 function stripTags(str: string): string {

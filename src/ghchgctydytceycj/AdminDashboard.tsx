@@ -26,6 +26,7 @@ import {
   FiArrowLeft,
   FiLayers,
   FiFolder,
+  FiFileText,
 } from "react-icons/fi";
 import { usePortfolio } from "../context/PortfolioContext";
 import { ProjectData, ExperienceData, ProfileData } from "../types/portfolio";
@@ -34,7 +35,7 @@ import "./styles/Admin.css";
 
 type TabKey = "overview" | "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
 
-import { isSupabaseConfigured, uploadImageToSupabaseStorage } from "../lib/supabase";
+import { isSupabaseConfigured, uploadImageToSupabaseStorage, uploadCvPdfToSupabaseStorage } from "../lib/supabase";
 
 async function prepareProjectThumbnail(file: File): Promise<File> {
   let image: ImageBitmap;
@@ -236,6 +237,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isUploadingProjectThumb, setIsUploadingProjectThumb] = useState(false);
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
   const [projectForm, setProjectForm] = useState<ProjectData>({
     slug: "",
     title: "",
@@ -314,6 +317,54 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       setProfileForm((prev) => ({ ...prev, photo: dataUrl }));
       updateProfile({ ...profileForm, photo: dataUrl });
       showToast("Foto baru berhasil dimuat & langsung diterapkan!");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCvPdfUpload = async (file?: File) => {
+    if (!file) return;
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      showToast("Harap pilih file dengan format PDF (.pdf)");
+      return;
+    }
+
+    setIsUploadingCv(true);
+
+    if (isSupabaseConfigured()) {
+      try {
+        showToast("Mengunggah CV PDF ke Supabase Storage...");
+        const publicUrl = await uploadCvPdfToSupabaseStorage(file);
+        setProfileForm((prev) => ({ ...prev, cv: publicUrl }));
+        updateProfile({ ...profileForm, cv: publicUrl });
+        showToast("File CV PDF berhasil diunggah & langsung diterapkan ke tombol resume!");
+      } catch (error) {
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Upload file CV ke Supabase gagal."
+        );
+      } finally {
+        setIsUploadingCv(false);
+      }
+      return;
+    }
+
+    // Local fallback: read as data URL
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setProfileForm((prev) => ({ ...prev, cv: dataUrl }));
+      updateProfile({ ...profileForm, cv: dataUrl });
+      setIsUploadingCv(false);
+      showToast("File CV berhasil dimuat & diterapkan ke tombol resume!");
+    };
+    reader.onerror = () => {
+      setIsUploadingCv(false);
+      showToast("Gagal membaca file CV.");
     };
     reader.readAsDataURL(file);
   };
@@ -1603,16 +1654,90 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                         }
                       />
                     </div>
-                    <div className="admin-form-group">
-                      <label>Path / URL File CV PDF</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={profileForm.cv || ""}
-                        onChange={(e) =>
-                          setProfileForm({ ...profileForm, cv: e.target.value })
-                        }
-                      />
+                    <div className="admin-form-group" style={{ gridColumn: "1 / -1" }}>
+                      <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>File CV / Resume (PDF)</span>
+                        {profileForm.cv && (
+                          <span style={{ fontSize: "11px", color: "#22c55e", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <FiCheck /> CV Aktif
+                          </span>
+                        )}
+                      </label>
+
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginTop: "6px" }}>
+                        <input
+                          type="file"
+                          ref={cvFileInputRef}
+                          accept="application/pdf,.pdf"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleCvPdfUpload(file);
+                          }}
+                        />
+
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "10px 16px",
+                            background: "rgba(255, 122, 0, 0.15)",
+                            borderColor: "rgba(255, 122, 0, 0.4)",
+                            color: "#ff8c1a",
+                            fontWeight: 600,
+                            borderRadius: "10px",
+                            cursor: "pointer"
+                          }}
+                          disabled={isUploadingCv}
+                          onClick={() => cvFileInputRef.current?.click()}
+                        >
+                          <FiUpload />
+                          <span>{isUploadingCv ? "Mengunggah PDF..." : "Upload File PDF CV"}</span>
+                        </button>
+
+                        {profileForm.cv && (
+                          <a
+                            href={profileForm.cv}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="admin-btn-secondary"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              padding: "10px 16px",
+                              borderRadius: "10px",
+                              textDecoration: "none",
+                              color: "#f4f4f5",
+                              background: "rgba(255, 255, 255, 0.08)",
+                              borderColor: "rgba(255, 255, 255, 0.15)"
+                            }}
+                            title="Buka file PDF CV saat ini di tab baru"
+                          >
+                            <FiFileText />
+                            <span>Buka / Pratinjau PDF CV</span>
+                            <FiExternalLink style={{ fontSize: "12px", opacity: 0.7 }} />
+                          </a>
+                        )}
+                      </div>
+
+                      <div style={{ marginTop: "10px" }}>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          placeholder="https://... atau /cv.pdf (Otomatis terisi setelah upload)"
+                          value={profileForm.cv || ""}
+                          onChange={(e) =>
+                            setProfileForm({ ...profileForm, cv: e.target.value })
+                          }
+                        />
+                        <p style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.5)", marginTop: "6px" }}>
+                          Unggah file PDF CV di atas (maks. 15MB). File ini akan otomatis terbuka saat pengunjung mengklik tombol <strong>RESUME</strong> di portofolio Anda.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

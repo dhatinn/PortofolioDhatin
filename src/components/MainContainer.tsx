@@ -33,16 +33,14 @@ const MainContainer = () => {
       <SocialIcons />
       {/* 3D Lanyard ID Badge: mounted at background layer (z-index: 4) under Hero */}
       <LanyardCanvas />
-      <div className="container-main">
-        <Landing />
-        <About />
-        <WhatIDo />
-        <Career />
-        <Work />
-        <TechStackNew />
-        <CallToAction />
-        <Contact />
-      </div>
+      <Landing />
+      <About />
+      <WhatIDo />
+      <Career />
+      <Work />
+      <TechStackNew />
+      <CallToAction />
+      <Contact />
     </div>
   );
 };

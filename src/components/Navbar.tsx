@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { gsap } from "gsap";
 import Lenis from "lenis";
-import { FiSun, FiMoon } from "react-icons/fi";
 import "./styles/Navbar.css";
 import { usePortfolio } from "../context/PortfolioContext";
 
@@ -14,8 +13,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const {
     config,
-    theme,
-    toggleTheme,
     language,
     toggleLanguage,
     isAuthenticated,
@@ -80,31 +77,8 @@ const Navbar = () => {
           {config.contact.email}
         </a>
         
-        {/* Theme Mode & Circular Flag Language Controls */}
+        {/* Language Controls with Flag */}
         <div className="header-actions">
-          {/* Logo Pilihan Mode Terang & Gelap */}
-          <button
-            type="button"
-            className={`nav-action-btn nav-theme-btn ${theme === "light" ? "is-light" : "is-dark"}`}
-            onClick={toggleTheme}
-            title={
-              theme === "dark"
-                ? language === "id"
-                  ? "Beralih ke Mode Terang (Light Mode)"
-                  : "Switch to Light Mode"
-                : language === "id"
-                ? "Beralih ke Mode Gelap (Dark Mode)"
-                : "Switch to Dark Mode"
-            }
-            aria-label="Toggle Light/Dark Theme"
-          >
-            {theme === "dark" ? (
-              <FiSun className="theme-icon sun-icon" />
-            ) : (
-              <FiMoon className="theme-icon moon-icon" />
-            )}
-          </button>
-
           {/* Logo Pilihan Bahasa dengan Bendera di dalam Lingkaran */}
           <button
             type="button"

@@ -106,7 +106,7 @@ const Work = () => {
                   ? "Jelajahi seluruh proyek dan kreasi saya"
                   : "Explore all of my projects and creations"}
               </p>
-              <Link to="/myworks" className="see-all-btn" data-cursor="disable">
+              <Link to="/projectportofolio" className="see-all-btn" data-cursor="disable">
                 {language === "id" ? "Lihat Semua Karya →" : "See All Works →"}
               </Link>
             </div>
