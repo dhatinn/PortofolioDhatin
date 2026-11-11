@@ -81,17 +81,30 @@ export const buildConfig = (
       responsibilities: e.highlights || [],
       technologies: e.tags || [],
     })),
-    projects: (proj || []).map((project, index) => ({
-      id: project.id ?? index + 1,
-      slug: project.slug,
-      title: project.title,
-      year: project.year,
-      category: project.category,
-      technologies: (project.stack || []).join(", "),
-      image: project.thumbnail || PLACEHOLDER_IMAGE,
-      description: project.description,
-      link: project.demo || project.repo || "",
-    })),
+    projects: (proj || []).map((project, index) => {
+      const thumb = project.thumbnail || PLACEHOLDER_IMAGE;
+      // Build a de-duped ordered list: thumbnail first, then extra images
+      const allImages = [
+        thumb,
+        ...((project.images || []).filter((img) => img && img !== thumb)),
+      ];
+      return {
+        id: project.id ?? index + 1,
+        slug: project.slug,
+        title: project.title,
+        year: project.year,
+        category: project.category,
+        technologies: (project.stack || []).join(", "),
+        image: thumb,
+        images: allImages,
+        description: project.description,
+        link: project.demo || project.repo || "",
+        demo: project.demo || "",
+        repo: project.repo || "",
+        stack: project.stack || [],
+        caseStudy: project.caseStudy || null,
+      };
+    }),
     contact: {
       email: p.email,
       phone: p.phone,

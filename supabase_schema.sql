@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS public.portfolio_projects (
     description TEXT,
     stack JSONB DEFAULT '[]'::jsonb,
     thumbnail TEXT DEFAULT '/images/mypicnbg.png',
+    images JSONB DEFAULT '[]'::jsonb,
     demo TEXT DEFAULT '',
     repo TEXT DEFAULT '',
     display_order INT DEFAULT 0,

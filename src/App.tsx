@@ -6,6 +6,7 @@ import "./App.css";
 
 const MainContainer = lazy(() => import("./components/MainContainer"));
 const ProjectPortfolio = lazy(() => import("./pages/ProjectPortfolio"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const Play = lazy(() => import("./pages/Play"));
 import { LoadingProvider } from "./context/LoadingProvider";
 import { PortfolioProvider } from "./context/PortfolioContext";
@@ -73,6 +74,28 @@ const App = () => {
             }
           />
           <Route
+            path="/projectportofolio/:slug"
+            element={
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight: "100vh",
+                      background: "#0c0a09",
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#ff7a00",
+                    }}
+                  >
+                    Memuat Detail Proyek...
+                  </div>
+                }
+              >
+                <ProjectDetail />
+              </Suspense>
+            }
+          />
+          <Route
             path="/myworks"
             element={
               <Suspense
@@ -91,6 +114,28 @@ const App = () => {
                 }
               >
                 <ProjectPortfolio />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/myworks/:slug"
+            element={
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight: "100vh",
+                      background: "#0c0a09",
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#ff7a00",
+                    }}
+                  >
+                    Memuat Detail Proyek...
+                  </div>
+                }
+              >
+                <ProjectDetail />
               </Suspense>
             }
           />

@@ -68,6 +68,7 @@ export interface ProjectData {
   } | null;
   stack: string[];
   thumbnail: string;
+  images?: string[]; // multiple images for slideshow
   demo: string;
   repo: string;
 }
@@ -127,9 +128,19 @@ export interface PortfolioConfig {
     year: number;
     category: string;
     technologies: string;
+    stack?: string[];
     image: string;
+    images: string[]; // all images for slideshow
     description: string;
     link: string;
+    demo?: string;
+    repo?: string;
+    caseStudy?: {
+      problem?: string;
+      solution?: string;
+      role?: string;
+      impact?: string;
+    } | null;
   }>;
   contact: {
     email: string;

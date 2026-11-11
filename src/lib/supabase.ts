@@ -336,6 +336,7 @@ export async function fetchPortfolioFromSupabase(): Promise<{
         description: p.description,
         stack: p.stack || [],
         thumbnail: p.thumbnail,
+        images: Array.isArray(p.images) ? p.images : [],
         demo: p.demo,
         repo: p.repo,
       }));
@@ -429,6 +430,7 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
           description: p.description,
           stack: p.stack,
           thumbnail: p.thumbnail,
+          images: p.images || [],
           demo: p.demo,
           repo: p.repo,
           display_order: i + 1,

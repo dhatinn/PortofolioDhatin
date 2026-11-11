@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePortfolio } from "../context/PortfolioContext";
 import PillNav from "../components/PillNav/PillNav";
+import CircularCarousel, { CircularCarouselItem } from "../components/CircularCarousel";
+import SplitText from "../components/SplitText";
 import logo from "../assets/logo.svg";
-import { FiCode, FiVideo, FiExternalLink, FiArrowLeft } from "react-icons/fi";
+import { FiCode, FiVideo, FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import "./ProjectPortfolio.css";
 
 const ProjectPortfolio: React.FC = () => {
@@ -23,6 +25,19 @@ const ProjectPortfolio: React.FC = () => {
   const developerProjects = config.projects.filter(
     (project) => !multimediaProjects.includes(project)
   );
+
+  // Extract all images and captions from projects for CircularCarousel
+  const carouselItems: CircularCarouselItem[] = config.projects.flatMap((project) => {
+    const list = project.images && project.images.length > 0 ? project.images : [project.image];
+    return list
+      .filter((imgSrc) => imgSrc && imgSrc !== config.placeholderImage)
+      .map((imgSrc, imgIdx) => ({
+        src: imgSrc,
+        alt: project.title,
+        title: project.title,
+        subtitle: `${project.category}${list.length > 1 ? ` • ${imgIdx + 1}/${list.length}` : ""}`,
+      }));
+  });
 
   const navItems = [
     { label: language === "id" ? "Beranda" : "Home", href: "/" },
@@ -55,14 +70,22 @@ const ProjectPortfolio: React.FC = () => {
     }
   };
 
+  const handleAnimationComplete = () => {
+    console.log("All letters have animated!");
+  };
+
   const renderProjectCard = (project: typeof config.projects[0], index: number) => {
-    const isInternal = Boolean(project.link?.startsWith("/"));
     const CardInner = (
       <>
         <div className="portfolio-card-number">
           {String(index + 1).padStart(2, "0")}
         </div>
         <div className="portfolio-card-thumb">
+          <div
+            className="portfolio-card-blur-bg"
+            style={{ backgroundImage: `url(${project.image})` }}
+            aria-hidden="true"
+          />
           <img
             src={project.image}
             alt={project.title}
@@ -75,7 +98,7 @@ const ProjectPortfolio: React.FC = () => {
           />
           <div className="portfolio-card-overlay">
             <span className="portfolio-card-view-btn">
-              {language === "id" ? "Buka Proyek" : "View Project"} <FiExternalLink />
+              {language === "id" ? "Buka Detail" : "View Details"} <FiArrowRight />
             </span>
           </div>
         </div>
@@ -97,30 +120,17 @@ const ProjectPortfolio: React.FC = () => {
       </>
     );
 
-    if (isInternal && project.link) {
-      return (
-        <Link
-          key={project.id}
-          to={project.link}
-          className="portfolio-card"
-          data-cursor="disable"
-        >
-          {CardInner}
-        </Link>
-      );
-    }
+    const detailUrl = `/projectportofolio/${project.slug || `project0${index + 1}`}`;
 
     return (
-      <a
-        key={project.id}
-        href={project.link || "#"}
-        target={project.link ? "_blank" : undefined}
-        rel={project.link ? "noopener noreferrer" : undefined}
+      <Link
+        key={project.id ?? index}
+        to={detailUrl}
         className="portfolio-card"
         data-cursor="disable"
       >
         {CardInner}
-      </a>
+      </Link>
     );
   };
 
@@ -151,15 +161,45 @@ const ProjectPortfolio: React.FC = () => {
       <section className="portfolio-hero" id="all">
         <div className="portfolio-hero-container">
           <h1 className="portfolio-hero-title">
-            {language === "id" ? (
-              <>
-                Koleksi <span>Portofolio</span>
-              </>
-            ) : (
-              <>
-                Curated <span>Portfolio</span>
-              </>
-            )}
+            <SplitText
+              text={language === "id" ? "Koleksi" : "Curated"}
+              className="portfolio-hero-title-main"
+              tag="span"
+              effect="blur"
+              splitType="chars"
+              delay={45}
+              duration={1.4}
+              staggerFrom="start"
+              trigger="click"
+              hoverEffect="wave"
+              loop={false}
+              loopDelay={1.5}
+              mask={false}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="center"
+              onLetterAnimationComplete={handleAnimationComplete}
+            />
+            <SplitText
+              text={language === "id" ? "Portofolio" : "Portfolio"}
+              className="portfolio-hero-title-accent"
+              color="#ff7a00"
+              tag="span"
+              effect="blur"
+              splitType="chars"
+              delay={45}
+              duration={1.4}
+              staggerFrom="start"
+              trigger="click"
+              hoverEffect="wave"
+              loop={false}
+              loopDelay={1.5}
+              mask={false}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="center"
+              onLetterAnimationComplete={handleAnimationComplete}
+            />
           </h1>
           <p className="portfolio-hero-subtitle">
             {language === "id"
@@ -167,6 +207,30 @@ const ProjectPortfolio: React.FC = () => {
               : "Explore all of my featured works categorized into Web & Software Development and Multimedia & Creative Design."}
           </p>
         </div>
+
+        {/* Circular Carousel Showcase */}
+        {carouselItems.length > 0 && (
+          <div style={{ width: '100%', height: '560px', position: 'relative', marginTop: '10px' }}>
+            <CircularCarousel
+              items={carouselItems}
+              preset="panorama"
+              intro="rise"
+              cardWidth={220}
+              aspectRatio={1}
+              speed={14}
+              captions
+              tilt={0}
+              perspective={1800}
+              autoplay="step"
+              momentum={0.86}
+              snap={false}
+              focusOnClick={false}
+              parallax={0.22}
+              stretch={0.27}
+              depthFade={1}
+            />
+          </div>
+        )}
       </section>
 
       {/* Main Content Sections */}

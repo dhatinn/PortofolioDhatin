@@ -38,40 +38,99 @@ type TabKey = "overview" | "lanyard" | "profile" | "services" | "projects" | "ex
 import { isSupabaseConfigured, uploadImageToSupabaseStorage, uploadCvPdfToSupabaseStorage } from "../lib/supabase";
 
 async function prepareProjectThumbnail(file: File): Promise<File> {
-  let image: ImageBitmap;
+  // If file is already small (under 1.5MB) and valid format, just use it directly
+  if (file.size <= 1.5 * 1024 * 1024 && /image\/(webp|jpeg|png)/i.test(file.type)) {
+    return file;
+  }
+
+  // Helper to load image via HTMLImageElement (universal mobile support including iOS Safari)
+  const loadImage = (): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Gagal membaca file gambar"));
+      };
+      img.src = url;
+    });
+
   try {
-    image = await createImageBitmap(file);
-  } catch {
-    throw new Error("Browser tidak dapat membaca gambar ini. Simpan ulang sebagai JPG, PNG, atau WebP lalu coba lagi.");
+    let width = 0;
+    let height = 0;
+    let drawSource: CanvasImageSource;
+
+    // Try modern createImageBitmap first, fallback to standard <img>
+    if (typeof createImageBitmap === "function") {
+      try {
+        const bmp = await createImageBitmap(file);
+        width = bmp.width;
+        height = bmp.height;
+        drawSource = bmp;
+      } catch {
+        const img = await loadImage();
+        width = img.naturalWidth || img.width;
+        height = img.naturalHeight || img.height;
+        drawSource = img;
+      }
+    } else {
+      const img = await loadImage();
+      width = img.naturalWidth || img.width;
+      height = img.naturalHeight || img.height;
+      drawSource = img;
+    }
+
+    if (!width || !height) {
+      // If we can't determine dimensions, just return original file
+      return file;
+    }
+
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(width, height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(drawSource, 0, 0, canvas.width, canvas.height);
+
+    if ("close" in drawSource && typeof (drawSource as ImageBitmap).close === "function") {
+      (drawSource as ImageBitmap).close();
+    }
+
+    // Try WebP first; if mobile browser falls back to PNG/JPEG, accept it!
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(
+        (b) => {
+          if (b) resolve(b);
+          else {
+            // Fallback to JPEG if WebP unsupported on mobile (e.g., iOS older Safari)
+            canvas.toBlob((bJpeg) => resolve(bJpeg), "image/jpeg", 0.85);
+          }
+        },
+        "image/webp",
+        0.84
+      );
+    });
+
+    if (!blob) return file; // graceful fallback to original
+
+    const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "project-image";
+    return new File([blob], `${baseName}.${ext}`, {
+      type: blob.type,
+      lastModified: Date.now(),
+    });
+  } catch (err) {
+    // CRITICAL: Never fail completely — fallback to original file so upload ALWAYS works
+    console.warn("Image optimization fallback to original file:", err);
+    return file;
   }
-
-  const maxDimension = 1600;
-  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-
-  try {
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("Browser tidak dapat memproses gambar ini.");
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  } finally {
-    image.close();
-  }
-
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.84)
-  );
-  if (!blob) throw new Error("Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP.");
-  if (blob.type !== "image/webp") {
-    throw new Error("Browser tidak mendukung pemrosesan WebP. Coba gunakan Chrome atau Edge versi terbaru.");
-  }
-
-  const baseName = file.name.replace(/\.[^.]+$/, "") || "project-thumbnail";
-  return new File([blob], `${baseName}.webp`, {
-    type: "image/webp",
-    lastModified: Date.now(),
-  });
 }
 
 const ACCENT_COLORS = [
@@ -237,6 +296,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isUploadingProjectThumb, setIsUploadingProjectThumb] = useState(false);
+  const [isUploadingExtraImg, setIsUploadingExtraImg] = useState(false);
+  const [isThumbDragging, setIsThumbDragging] = useState(false);
+  const [isExtraDragging, setIsExtraDragging] = useState(false);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const cvFileInputRef = useRef<HTMLInputElement>(null);
   const [projectForm, setProjectForm] = useState<ProjectData>({
@@ -247,6 +309,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     description: "",
     stack: [],
     thumbnail: "",
+    images: [],
     demo: "",
     repo: "",
   });
@@ -396,6 +459,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       description: "",
       stack: ["React.js", "TypeScript"],
       thumbnail: "",
+      images: [],
       demo: "",
       repo: "",
     });
@@ -415,11 +479,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       return;
     }
 
+    const hasImage = Boolean(
+      (projectForm.thumbnail && projectForm.thumbnail.trim()) ||
+      (projectForm.images && projectForm.images.length > 0)
+    );
+    if (!hasImage) {
+      showToast("Minimal wajib unggah 1 foto sampul proyek!");
+      return;
+    }
+
+    // Auto-fill thumbnail jika kosong tapi ada images
+    const payload = { ...projectForm };
+    if (!payload.thumbnail && payload.images && payload.images.length > 0) {
+      payload.thumbnail = payload.images[0];
+    }
+    if ((!payload.images || payload.images.length === 0) && payload.thumbnail) {
+      payload.images = [payload.thumbnail];
+    }
+
     setIsSavingProject(true);
     try {
       const saved = editingProjectIndex !== null
-        ? await updateProject(editingProjectIndex, projectForm)
-        : await addProject(projectForm);
+        ? await updateProject(editingProjectIndex, payload)
+        : await addProject(payload);
       if (!saved) {
         showToast("Proyek gagal disimpan ke Supabase. Periksa koneksi, akun admin, dan RLS.");
         return;
@@ -477,6 +559,56 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     } finally {
       setIsUploadingProjectThumb(false);
     }
+  };
+
+  const handleAddExtraImage = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Pilih file gambar (JPG, PNG, WebP).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      showToast("Ukuran gambar maksimal 8 MB.");
+      return;
+    }
+
+    setIsUploadingExtraImg(true);
+    try {
+      const preparedFile = await prepareProjectThumbnail(file);
+      if (isSupabaseConfigured()) {
+        const url = await uploadImageToSupabaseStorage(preparedFile, "projects");
+        setProjectForm((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), url],
+        }));
+        showToast("Foto tambahan berhasil diunggah ke Supabase Storage.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result;
+        if (typeof dataUrl !== "string") { showToast("Gagal membaca file."); return; }
+        setProjectForm((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), dataUrl],
+        }));
+        showToast("Foto tersimpan di browser saja; hubungkan Supabase untuk cloud.");
+      };
+      reader.onerror = () => showToast("Gagal membaca file gambar.");
+      reader.readAsDataURL(preparedFile);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Upload gambar gagal.");
+    } finally {
+      setIsUploadingExtraImg(false);
+    }
+  };
+
+  const handleRemoveExtraImage = (idx: number) => {
+    setProjectForm((prev) => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== idx),
+    }));
   };
 
   const handleAddStackTag = (tagToAdd?: string) => {
@@ -2867,57 +2999,252 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                 </div>
               </div>
 
-              {/* Thumbnail with Upload & Preview */}
+              {/* Thumbnail with Drag & Drop + URL Input */}
               <div className="admin-form-group">
-                <label>Thumbnail / Cover Proyek</label>
-                <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "8px" }}>
-                  {projectForm.thumbnail && projectForm.thumbnail !== "/images/mypicnbg.png" && (
+                <label>Thumbnail / Cover Proyek <span style={{ fontWeight: 400, opacity: 0.6, fontSize: "12px" }}>(Foto Utama)</span></label>
+                
+                {/* Dropzone area */}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsThumbDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsThumbDragging(false);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsThumbDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleProjectThumbUpload(file);
+                  }}
+                  style={{
+                    border: isThumbDragging
+                      ? "2px dashed var(--accentColor, #ff7a00)"
+                      : "1px dashed rgba(255, 255, 255, 0.25)",
+                    background: isThumbDragging
+                      ? "rgba(255, 122, 0, 0.08)"
+                      : "rgba(255, 255, 255, 0.03)",
+                    borderRadius: "10px",
+                    padding: "16px",
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                    transition: "all 0.2s ease",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    const el = document.getElementById("thumb-file-input");
+                    if (el) el.click();
+                  }}
+                >
+                  {projectForm.thumbnail ? (
                     <img
                       src={projectForm.thumbnail}
                       alt="Thumbnail Preview"
                       style={{
-                        width: "60px",
-                        height: "45px",
+                        width: "80px",
+                        height: "56px",
                         borderRadius: "8px",
                         objectFit: "cover",
                         border: "1px solid rgba(255,255,255,0.2)",
+                        flexShrink: 0,
                       }}
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}
                     />
+                  ) : (
+                    <div
+                      style={{
+                        width: "80px",
+                        height: "56px",
+                        borderRadius: "8px",
+                        background: "rgba(255,255,255,0.06)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        fontSize: "22px",
+                        color: "rgba(255,255,255,0.4)",
+                      }}
+                    >
+                      <FiImage />
+                    </div>
                   )}
-                  <input
-                    type="text"
-                    className="admin-input"
-                    placeholder="URL gambar atau /images/..."
-                    value={projectForm.thumbnail}
-                    onChange={(e) =>
-                      setProjectForm({ ...projectForm, thumbnail: e.target.value })
-                    }
-                  />
-                  <label
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff", marginBottom: "3px" }}>
+                      {isUploadingProjectThumb
+                        ? "Sedang mengunggah..."
+                        : isThumbDragging
+                        ? "Lepaskan foto di sini!"
+                        : "Tarik & lepas foto ke sini, atau klik untuk memilih"}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)" }}>
+                      Format JPG, PNG, WebP (maks. 8 MB). Otomatis dioptimalkan untuk mobile.
+                    </div>
+                  </div>
+
+                  <span
                     className="admin-btn-secondary"
                     style={{
-                      cursor: isUploadingProjectThumb ? "wait" : "pointer",
+                      padding: "6px 14px",
+                      fontSize: "12px",
                       flexShrink: 0,
-                      opacity: isUploadingProjectThumb ? 0.6 : 1,
+                      pointerEvents: "none",
                     }}
                   >
-                    <FiUpload />
-                    <span>{isUploadingProjectThumb ? "Mengunggah..." : "Upload"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      disabled={isUploadingProjectThumb || isSavingProject}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleProjectThumbUpload(file);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
+                    <FiUpload /> {isUploadingProjectThumb ? "..." : "Pilih File"}
+                  </span>
+
+                  <input
+                    id="thumb-file-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    disabled={isUploadingProjectThumb || isSavingProject}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleProjectThumbUpload(file);
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                </div>
+
+                {/* Optional URL input fallback */}
+                <input
+                  type="text"
+                  className="admin-input"
+                  placeholder="Atau masukkan URL gambar langsung (https://...)"
+                  value={projectForm.thumbnail}
+                  onChange={(e) =>
+                    setProjectForm({ ...projectForm, thumbnail: e.target.value })
+                  }
+                  style={{ fontSize: "12px" }}
+                />
+              </div>
+
+              {/* Extra Slideshow Images with Drag & Drop */}
+              <div className="admin-form-group">
+                <label>Foto Tambahan Slideshow <span style={{ fontWeight: 400, opacity: 0.6, fontSize: "12px" }}>(opsional — bisa multiple)</span></label>
+                
+                {/* Thumbnails of existing extra images */}
+                {(projectForm.images || []).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
+                    {(projectForm.images || []).map((imgUrl, idx) => (
+                      <div key={idx} style={{ position: "relative", display: "inline-flex" }}>
+                        <img
+                          src={imgUrl}
+                          alt={`Slide ${idx + 1}`}
+                          style={{
+                            width: "72px",
+                            height: "54px",
+                            borderRadius: "8px",
+                            objectFit: "cover",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                          }}
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExtraImage(idx)}
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            right: "-6px",
+                            background: "#e53e3e",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+                          }}
+                          title="Hapus foto ini"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dropzone for extra images */}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsExtraDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsExtraDragging(false);
+                  }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsExtraDragging(false);
+                    const files = Array.from(e.dataTransfer.files || []);
+                    for (const f of files) {
+                      await handleAddExtraImage(f);
+                    }
+                  }}
+                  onClick={() => {
+                    const el = document.getElementById("extra-images-file-input");
+                    if (el) el.click();
+                  }}
+                  style={{
+                    border: isExtraDragging
+                      ? "2px dashed var(--accentColor, #ff7a00)"
+                      : "1px dashed rgba(255, 255, 255, 0.2)",
+                    background: isExtraDragging
+                      ? "rgba(255, 122, 0, 0.08)"
+                      : "rgba(255, 255, 255, 0.02)",
+                    borderRadius: "10px",
+                    padding: "14px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff", marginBottom: "3px" }}>
+                    {isUploadingExtraImg
+                      ? "Sedang mengunggah foto tambahan..."
+                      : isExtraDragging
+                      ? "Lepaskan semua foto di sini!"
+                      : "+ Tarik & lepas banyak foto sekaligus ke sini, atau klik"}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                    Bisa pilih banyak foto sekaligus dari galeri/explorer untuk slideshow
+                  </div>
+
+                  <input
+                    id="extra-images-file-input"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    disabled={isUploadingExtraImg || isSavingProject}
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      for (const f of files) {
+                        await handleAddExtraImage(f);
+                      }
+                      e.currentTarget.value = "";
+                    }}
+                  />
                 </div>
               </div>
 

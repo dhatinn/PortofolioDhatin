@@ -81,7 +81,15 @@ const Work = () => {
                   <h3>0{index + 1}</h3>
 
                   <div>
-                    <h4>{project.title}</h4>
+                    <h4>
+                      <Link
+                        to={`/projectportofolio/${project.slug || `project0${index + 1}`}`}
+                        style={{ color: "inherit", textDecoration: "none" }}
+                        data-cursor="disable"
+                      >
+                        {project.title}
+                      </Link>
+                    </h4>
                     <p>{project.category}</p>
                   </div>
                 </div>
@@ -90,7 +98,12 @@ const Work = () => {
                 </h4>
                 <p>{project.technologies}</p>
               </div>
-              <WorkImage image={project.image} alt={project.title} link={project.link} />
+              <WorkImage
+                image={project.image}
+                images={project.images}
+                alt={project.title}
+                link={`/projectportofolio/${project.slug || `project0${index + 1}`}`}
+              />
             </div>
           ))}
           {/* See All Works Button */}
