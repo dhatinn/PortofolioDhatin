@@ -421,7 +421,7 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
   try {
     for (let i = 0; i < projects.length; i++) {
       const p = projects[i];
-      const { error } = await client.from("portfolio_projects").upsert(
+      let { error } = await client.from("portfolio_projects").upsert(
         {
           slug: p.slug,
           title: p.title,
@@ -437,6 +437,28 @@ export async function syncProjectsToSupabase(projects: ProjectData[]): Promise<b
         },
         { onConflict: "slug" }
       );
+
+      // Fallback jika kolom 'images' belum dibuat di database Supabase (error 42703)
+      if (error && (error.code === "42703" || error.message?.toLowerCase().includes("images"))) {
+        console.warn(`Kolom 'images' belum ada di Supabase. Menyimpan proyek "${p.title}" tanpa kolom images...`);
+        const fallbackRes = await client.from("portfolio_projects").upsert(
+          {
+            slug: p.slug,
+            title: p.title,
+            year: p.year,
+            category: p.category,
+            description: p.description,
+            stack: p.stack,
+            thumbnail: p.thumbnail,
+            demo: p.demo,
+            repo: p.repo,
+            display_order: i + 1,
+          },
+          { onConflict: "slug" }
+        );
+        error = fallbackRes.error;
+      }
+
       if (error) {
         console.error(`Gagal menyimpan proyek "${p.title}" ke Supabase:`, error);
         return false;

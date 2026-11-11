@@ -185,7 +185,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
 
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [searchQuery, setSearchQuery] = useState("");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   // Supabase Configuration Local State
   const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseConfig.url || "");
@@ -340,11 +340,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
 
   if (!isStandalonePage && !isAdminOpen) return null;
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMessage({ msg, type });
     setTimeout(() => {
       setToastMessage(null);
-    }, 3200);
+    }, 3800);
   };
 
   // --- Profile Handlers ---
@@ -503,7 +503,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
         ? await updateProject(editingProjectIndex, payload)
         : await addProject(payload);
       if (!saved) {
-        showToast("Proyek gagal disimpan ke Supabase. Periksa koneksi, akun admin, dan RLS.");
+        showToast("Proyek gagal disimpan ke Supabase. Periksa koneksi atau jalankan query kolom 'images' di Supabase.", "error");
         return;
       }
 
@@ -3551,9 +3551,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="admin-toast success">
-          <FiCheck />
-          <span>{toastMessage}</span>
+        <div className={`admin-toast ${toastMessage.type}`}>
+          {toastMessage.type === "success" ? <FiCheck /> : <FiAlertTriangle />}
+          <span>{toastMessage.msg}</span>
         </div>
       )}
     </div>
