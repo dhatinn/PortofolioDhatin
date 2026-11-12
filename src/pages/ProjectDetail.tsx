@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePortfolio } from "../context/PortfolioContext";
 import TiltedCard, { TiltedCardLayer } from "../components/TiltedCard";
+import CircularGallery, { GalleryItem } from "../components/CircularGallery";
 import {
   FiArrowLeft,
   FiExternalLink,
@@ -9,8 +10,6 @@ import {
   FiCalendar,
   FiLayers,
   FiCheckCircle,
-  FiChevronLeft,
-  FiChevronRight,
   FiHome,
 } from "react-icons/fi";
 import "./ProjectDetail.css";
@@ -36,12 +35,9 @@ const ProjectDetail: React.FC = () => {
     ? [project.image]
     : [config.placeholderImage];
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-
   // Scroll to top on load or when slug changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setActiveImageIndex(0);
   }, [slug]);
 
   if (!project) {
@@ -67,16 +63,14 @@ const ProjectDetail: React.FC = () => {
   const prevProject = currentIndex > 0 ? config.projects[currentIndex - 1] : null;
   const nextProject = currentIndex < config.projects.length - 1 ? config.projects[currentIndex + 1] : null;
 
-  const currentImageSrc = images[activeImageIndex] || config.placeholderImage;
+  const currentImageSrc = images[0] || config.placeholderImage;
   const hasMultipleImages = images.length > 1;
 
-  const handlePrevImage = () => {
-    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  const handleNextImage = () => {
-    setActiveImageIndex((prev) => (prev + 1) % images.length);
-  };
+  const galleryItems: GalleryItem[] = images.map((imgSrc, idx) => ({
+    image: imgSrc,
+    text: `${project.title} #${idx + 1}`,
+    alt: `${project.title} ${idx + 1}`,
+  }));
 
   const directDemoLink = project.demo || project.link;
   const directRepoLink = project.repo;
@@ -114,87 +108,66 @@ const ProjectDetail: React.FC = () => {
         </header>
 
         {/* ============================================================
-            TiltedCard 3D Showcase (Multi-Image Support)
+            Project Showcase (CircularGallery for multi-image, TiltedCard for single image)
             ============================================================ */}
         <section className="project-detail-showcase">
           <div className="project-detail-showcase-glow" />
 
-          <div className="project-detail-card-wrapper">
-            <TiltedCard
-              imageSrc={currentImageSrc}
-              altText={project.title}
-              captionText={project.title}
-              containerHeight="440px"
-              containerWidth="100%"
-              imageHeight="440px"
-              imageWidth="100%"
-              objectFit="contain"
-              blurBackground
-              rotateAmplitude={18}
-              scaleOnHover={1.03}
-              glare={0.4}
-              shadow={0.55}
-              backContent={
-                <div className="project-detail-backcontent">
-                  <h4>{project.title}</h4>
-                  <p>{project.description || "Detail karya portofolio."}</p>
-                  {project.technologies && (
-                    <div className="project-detail-backcontent-tech">
-                      {project.technologies}
-                    </div>
-                  )}
-                  <span className="project-detail-flip-hint">
-                    {language === "id" ? "✦ Klik lagi untuk membalik ke foto" : "✦ Click again to flip back to photo"}
-                  </span>
-                </div>
-              }
-            >
-              <TiltedCardLayer depth={30}>
-                <div className="project-detail-floating-badge">
-                  <span className="badge-cat">{project.category}</span>
-                </div>
-              </TiltedCardLayer>
-            </TiltedCard>
-          </div>
-
-          {/* Multi-Image Controls / Selector if project has > 1 image */}
-          {hasMultipleImages && (
-            <div className="project-detail-slide-controls">
-              <div className="project-detail-thumbs-row">
-                {images.map((imgSrc, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`project-detail-thumb-btn ${idx === activeImageIndex ? "active" : ""}`}
-                    onClick={() => setActiveImageIndex(idx)}
-                    title={`Lihat foto ${idx + 1}`}
-                  >
-                    <img src={imgSrc} alt={`${project.title} ${idx + 1}`} />
-                  </button>
-                ))}
-              </div>
-
-              <div className="project-detail-nav-buttons">
-                <button
-                  type="button"
-                  className="project-detail-arrow-btn"
-                  onClick={handlePrevImage}
-                  aria-label="Foto sebelumnya"
-                >
-                  <FiChevronLeft />
-                </button>
-                <span className="project-detail-counter">
-                  {activeImageIndex + 1} / {images.length}
-                </span>
-                <button
-                  type="button"
-                  className="project-detail-arrow-btn"
-                  onClick={handleNextImage}
-                  aria-label="Foto berikutnya"
-                >
-                  <FiChevronRight />
-                </button>
-              </div>
+          {hasMultipleImages ? (
+            <div style={{ height: "600px", position: "relative", width: "100%", overflow: "hidden", borderRadius: "16px" }}>
+              <CircularGallery
+                items={galleryItems}
+                bend={0}
+                textColor="#ffffff"
+                borderRadius={0.05}
+                scrollEase={0.05}
+                onItemClick={(item, index) => console.log(item.text, index)}
+                itemAspect={1}
+                gap={0.18}
+                wave={0}
+                fadeEdges={0.17}
+                autoScroll={0.8}
+                snap={false}
+                showTitles={false}
+              />
+            </div>
+          ) : (
+            <div className="project-detail-card-wrapper">
+              <TiltedCard
+                imageSrc={currentImageSrc}
+                altText={project.title}
+                captionText={project.title}
+                containerHeight="440px"
+                containerWidth="100%"
+                imageHeight="440px"
+                imageWidth="100%"
+                objectFit="contain"
+                blurBackground
+                rotateAmplitude={18}
+                scaleOnHover={1.03}
+                glare={0.4}
+                shadow={0.55}
+                backContent={
+                  <div className="project-detail-backcontent">
+                    <h4>{project.title}</h4>
+                    <p>{project.description || "Detail karya portofolio."}</p>
+                    {project.technologies && (
+                      <div className="project-detail-backcontent-tech">
+                        {project.technologies}
+                      </div>
+                    )}
+                    <span className="project-detail-flip-hint">
+                      {language === "id" ? "✦ Klik lagi untuk membalik ke foto" : "✦ Click again to flip back to photo"}
+                    </span>
+                  </div>
+                }
+              >
+                <TiltedCardLayer depth={30}>
+                  <div className="project-detail-floating-badge">
+                    <span className="badge-cat">{project.category}</span>
+                  </div>
+                </TiltedCardLayer>
+              </TiltedCard>
             </div>
           )}
 
