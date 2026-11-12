@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePortfolio } from "../context/PortfolioContext";
-import TiltedCard, { TiltedCardLayer } from "../components/TiltedCard";
-import CircularGallery, { GalleryItem } from "../components/CircularGallery";
 import {
   FiArrowLeft,
   FiExternalLink,
@@ -11,6 +9,8 @@ import {
   FiLayers,
   FiCheckCircle,
   FiHome,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import "./ProjectDetail.css";
 
@@ -35,10 +35,64 @@ const ProjectDetail: React.FC = () => {
     ? [project.image]
     : [config.placeholderImage];
 
-  // Scroll to top on load or when slug changes
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Scroll to top on load or when slug changes & reset active slide
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setActiveImageIndex(0);
   }, [slug]);
+
+  const prevProject = currentIndex > 0 ? config.projects[currentIndex - 1] : null;
+  const nextProject = currentIndex < config.projects.length - 1 ? config.projects[currentIndex + 1] : null;
+
+  const hasMultipleImages = images.length > 1;
+  const currentImageSrc = images[activeImageIndex] || images[0] || config.placeholderImage;
+
+  const handlePrevImage = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const handleNextImage = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  // Keyboard navigation for slides
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        handlePrevImage();
+      } else if (e.key === "ArrowRight") {
+        handleNextImage();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [hasMultipleImages, handlePrevImage, handleNextImage]);
+
+  // Touch swipe support for mobile
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || !hasMultipleImages) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        handleNextImage();
+      } else {
+        handlePrevImage();
+      }
+    }
+    setTouchStartX(null);
+  };
 
   if (!project) {
     return (
@@ -59,18 +113,6 @@ const ProjectDetail: React.FC = () => {
       </div>
     );
   }
-
-  const prevProject = currentIndex > 0 ? config.projects[currentIndex - 1] : null;
-  const nextProject = currentIndex < config.projects.length - 1 ? config.projects[currentIndex + 1] : null;
-
-  const currentImageSrc = images[0] || config.placeholderImage;
-  const hasMultipleImages = images.length > 1;
-
-  const galleryItems: GalleryItem[] = images.map((imgSrc, idx) => ({
-    image: imgSrc,
-    text: `${project.title} #${idx + 1}`,
-    alt: `${project.title} ${idx + 1}`,
-  }));
 
   const directDemoLink = project.demo || project.link;
   const directRepoLink = project.repo;
@@ -108,66 +150,108 @@ const ProjectDetail: React.FC = () => {
         </header>
 
         {/* ============================================================
-            Project Showcase (CircularGallery for multi-image, TiltedCard for single image)
+            Slideshow Showcase Section (Arrows kiri/kanan & Dots di tengah)
             ============================================================ */}
         <section className="project-detail-showcase">
           <div className="project-detail-showcase-glow" />
 
-          {hasMultipleImages ? (
-            <div style={{ height: "600px", position: "relative", width: "100%", overflow: "hidden", borderRadius: "16px" }}>
-              <CircularGallery
-                items={galleryItems}
-                bend={0}
-                textColor="#ffffff"
-                borderRadius={0.05}
-                scrollEase={0.05}
-                onItemClick={(item, index) => console.log(item.text, index)}
-                itemAspect={1}
-                gap={0.18}
-                wave={0}
-                fadeEdges={0.17}
-                autoScroll={0.8}
-                snap={false}
-                showTitles={false}
+          {/* Slide Card Container */}
+          <div
+            className="project-detail-slide-card"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Blur background behind image so no aspect ratio is cut off */}
+            <div
+              className="project-detail-slide-blur-bg"
+              style={{ backgroundImage: `url(${currentImageSrc})` }}
+              aria-hidden="true"
+            />
+
+            {/* Main active photo */}
+            <div className="project-detail-slide-img-box">
+              <img
+                key={activeImageIndex}
+                src={currentImageSrc}
+                alt={`${project.title} - ${activeImageIndex + 1}`}
+                className="project-detail-slide-img"
+                loading="eager"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = config.placeholderImage;
+                }}
               />
             </div>
-          ) : (
-            <div className="project-detail-card-wrapper">
-              <TiltedCard
-                imageSrc={currentImageSrc}
-                altText={project.title}
-                captionText={project.title}
-                containerHeight="440px"
-                containerWidth="100%"
-                imageHeight="440px"
-                imageWidth="100%"
-                objectFit="contain"
-                blurBackground
-                rotateAmplitude={18}
-                scaleOnHover={1.03}
-                glare={0.4}
-                shadow={0.55}
-                backContent={
-                  <div className="project-detail-backcontent">
-                    <h4>{project.title}</h4>
-                    <p>{project.description || "Detail karya portofolio."}</p>
-                    {project.technologies && (
-                      <div className="project-detail-backcontent-tech">
-                        {project.technologies}
-                      </div>
-                    )}
-                    <span className="project-detail-flip-hint">
-                      {language === "id" ? "✦ Klik lagi untuk membalik ke foto" : "✦ Click again to flip back to photo"}
-                    </span>
-                  </div>
-                }
-              >
-                <TiltedCardLayer depth={30}>
-                  <div className="project-detail-floating-badge">
-                    <span className="badge-cat">{project.category}</span>
-                  </div>
-                </TiltedCardLayer>
-              </TiltedCard>
+
+            {/* Category Badge top left */}
+            <div className="project-detail-slide-badge">
+              <span className="badge-cat">{project.category}</span>
+            </div>
+
+            {/* Counter Badge top right */}
+            {hasMultipleImages && (
+              <div className="project-detail-slide-counter">
+                <span>{String(activeImageIndex + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}</span>
+              </div>
+            )}
+
+            {/* Arrow Navigation (Kiri & Kanan) */}
+            {hasMultipleImages && (
+              <>
+                <button
+                  type="button"
+                  className="project-detail-slide-arrow prev"
+                  onClick={handlePrevImage}
+                  aria-label="Foto sebelumnya"
+                  title="Foto sebelumnya (Panah Kiri)"
+                >
+                  <FiChevronLeft />
+                </button>
+                <button
+                  type="button"
+                  className="project-detail-slide-arrow next"
+                  onClick={handleNextImage}
+                  aria-label="Foto berikutnya"
+                  title="Foto berikutnya (Panah Kanan)"
+                >
+                  <FiChevronRight />
+                </button>
+              </>
+            )}
+
+            {/* Centered Dots Indicator (Dot di tengahnya) */}
+            {hasMultipleImages && (
+              <div className="project-detail-slide-dots-bar">
+                <div className="project-detail-slide-dots">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`project-detail-slide-dot ${idx === activeImageIndex ? "active" : ""}`}
+                      onClick={() => setActiveImageIndex(idx)}
+                      aria-label={`Pindah ke foto ${idx + 1}`}
+                      title={`Foto ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnail Strip for quick jumping when multiple images */}
+          {hasMultipleImages && (
+            <div className="project-detail-thumbs-scroll">
+              {images.map((imgSrc, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`project-detail-thumb-item ${idx === activeImageIndex ? "active" : ""}`}
+                  onClick={() => setActiveImageIndex(idx)}
+                  title={`Foto ${idx + 1}`}
+                >
+                  <img src={imgSrc} alt={`${project.title} ${idx + 1}`} loading="lazy" />
+                </button>
+              ))}
             </div>
           )}
 
