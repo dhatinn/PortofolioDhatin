@@ -1,0 +1,372 @@
+/* ===== src/components/ShowcaseCarousel.css ===== */
+
+.showcase-carousel-root {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 10px auto 30px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y; /* Memastikan scroll vertikal di layar mobile lancar tanpa tertahan */
+}
+
+/* 3-Card Stage Area */
+.showcase-carousel-stage {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+/* Arrow Navigation Buttons (Kiri & Kanan) */
+.showcase-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(18, 16, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 25;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-nav-arrow.prev {
+  left: 18px;
+}
+
+.showcase-nav-arrow.next {
+  right: 18px;
+}
+
+.showcase-nav-arrow:hover {
+  background: #ff7a00;
+  color: #000000;
+  border-color: #ff7a00;
+  box-shadow: 0 0 24px rgba(255, 122, 0, 0.7);
+  transform: translateY(-50%) scale(1.12);
+}
+
+.showcase-nav-arrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+/* Track of 3 Visible Cards */
+.showcase-cards-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+}
+
+/* Individual Card */
+.showcase-card {
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #110e14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.45s ease,
+    filter 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+/* Center Highlight Card: Besar, Terang, Glowing Accent */
+.showcase-card.center {
+  transform: translateX(0) scale(1.12);
+  z-index: 10;
+  opacity: 1;
+  filter: brightness(1);
+  border-color: rgba(255, 122, 0, 0.75);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.8),
+    0 0 32px rgba(255, 122, 0, 0.35);
+  cursor: default;
+}
+
+/* Left Card (Wing Kiri) */
+.showcase-card.left {
+  transform: translateX(calc(-100% - 24px)) scale(0.84);
+  z-index: 4;
+  opacity: 0.45;
+  filter: brightness(0.65) blur(0.5px);
+}
+
+.showcase-card.left:hover {
+  opacity: 0.75;
+  filter: brightness(0.9);
+}
+
+/* Right Card (Wing Kanan) */
+.showcase-card.right {
+  transform: translateX(calc(100% + 24px)) scale(0.84);
+  z-index: 4;
+  opacity: 0.45;
+  filter: brightness(0.65) blur(0.5px);
+}
+
+.showcase-card.right:hover {
+  opacity: 0.75;
+  filter: brightness(0.9);
+}
+
+/* Blur Letterbox Background */
+.showcase-card-blur-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.38) saturate(1.2);
+  transform: scale(1.15);
+  z-index: 0;
+}
+
+/* Image Container */
+.showcase-card-img-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.showcase-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Category Badge on Card */
+.showcase-card-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 8;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(12, 10, 9, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ff8c1a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Center Card Detail Link */
+.showcase-card-center-link {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff7a00 0%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(255, 122, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.25s ease;
+}
+
+.showcase-card-center-link:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 122, 0, 0.7);
+  filter: brightness(1.1);
+}
+
+/* Caption and Meta Below the Stage */
+.showcase-carousel-caption {
+  text-align: center;
+  margin-top: 24px;
+  padding: 0 20px;
+}
+
+.showcase-caption-title {
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.showcase-title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.showcase-title-link:hover {
+  color: #ff7a00;
+}
+
+.showcase-caption-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(234, 229, 236, 0.65);
+}
+
+.showcase-caption-sub {
+  color: #ff8c1a;
+  font-weight: 600;
+}
+
+.showcase-caption-counter {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Dots Bar */
+.showcase-dots-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.showcase-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.showcase-dot:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1.2);
+}
+
+.showcase-dot.active {
+  width: 20px;
+  background: #ff7a00;
+  box-shadow: 0 0 10px rgba(255, 122, 0, 0.65);
+}
+
+/* ============================================================
+   Responsive Layout (Mobile & Tablet)
+   ============================================================ */
+@media (max-width: 768px) {
+  .showcase-carousel-stage {
+    height: 330px;
+  }
+
+  .showcase-card {
+    width: 270px;
+    height: 270px;
+    border-radius: 16px;
+  }
+
+  .showcase-card.center {
+    transform: translateX(0) scale(1.08);
+  }
+
+  .showcase-card.left {
+    transform: translateX(calc(-100% - 14px)) scale(0.8);
+    opacity: 0.38;
+  }
+
+  .showcase-card.right {
+    transform: translateX(calc(100% + 14px)) scale(0.8);
+    opacity: 0.38;
+  }
+
+  .showcase-nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .showcase-nav-arrow.prev {
+    left: 8px;
+  }
+
+  .showcase-nav-arrow.next {
+    right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .showcase-carousel-stage {
+    height: 290px;
+  }
+
+  .showcase-card {
+    width: 230px;
+    height: 230px;
+  }
+
+  .showcase-card.center {
+    transform: translateX(0) scale(1.05);
+  }
+
+  .showcase-card.left {
+    transform: translateX(calc(-92% - 8px)) scale(0.74);
+    opacity: 0.3;
+  }
+
+  .showcase-card.right {
+    transform: translateX(calc(92% + 8px)) scale(0.74);
+    opacity: 0.3;
+  }
+
+  .showcase-nav-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .showcase-nav-arrow.prev {
+    left: 4px;
+  }
+
+  .showcase-nav-arrow.next {
+    right: 4px;
+  }
+}

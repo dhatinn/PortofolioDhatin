@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePortfolio } from "../context/PortfolioContext";
 import PillNav from "../components/PillNav/PillNav";
-import CircularCarousel, { CircularCarouselItem } from "../components/CircularCarousel";
+import ShowcaseCarousel, { ShowcaseItem } from "../components/ShowcaseCarousel";
 import SplitText from "../components/SplitText";
 import PulseHeart from "../components/PulseHeart";
 import { getProjectLikes, isProjectLiked, toggleProjectLike } from "../utils/likesManager";
@@ -103,16 +103,20 @@ const ProjectPortfolio: React.FC = () => {
   const sortedDeveloperProjects = sortProjectList(developerProjects);
   const sortedMultimediaProjects = sortProjectList(multimediaProjects);
 
-  // Extract all images and captions from projects for CircularCarousel
-  const carouselItems: CircularCarouselItem[] = config.projects.flatMap((project) => {
+  // Extract all projects and images for 3-card Highlight ShowcaseCarousel
+  const showcaseItems: ShowcaseItem[] = config.projects.flatMap((project) => {
     const list = project.images && project.images.length > 0 ? project.images : [project.image];
     return list
       .filter((imgSrc) => imgSrc && imgSrc !== config.placeholderImage)
       .map((imgSrc, imgIdx) => ({
+        id: project.id,
+        slug: project.slug,
         src: imgSrc,
         alt: project.title,
         title: project.title,
         subtitle: `${project.category}${list.length > 1 ? ` • ${imgIdx + 1}/${list.length}` : ""}`,
+        category: project.category,
+        year: project.year,
       }));
   });
 
@@ -321,28 +325,13 @@ const ProjectPortfolio: React.FC = () => {
           </p>
         </div>
 
-        {/* Circular Carousel Showcase */}
-        {carouselItems.length > 0 && (
-          <div style={{ width: '100%', height: '560px', position: 'relative', marginTop: '10px' }}>
-            <CircularCarousel
-              items={carouselItems}
-              preset="panorama"
-              intro="rise"
-              cardWidth={220}
-              aspectRatio={1}
-              speed={14}
-              captions
-              tilt={0}
-              perspective={1800}
-              autoplay="step"
-              momentum={0.86}
-              snap={false}
-              focusOnClick={false}
-              parallax={0.22}
-              stretch={0.27}
-              depthFade={1}
-            />
-          </div>
+        {/* 3-Card Spotlight Showcase Carousel */}
+        {showcaseItems.length > 0 && (
+          <ShowcaseCarousel
+            items={showcaseItems}
+            placeholderImage={config.placeholderImage}
+            language={language}
+          />
         )}
       </section>
 
