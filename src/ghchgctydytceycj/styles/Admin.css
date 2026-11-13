@@ -2491,3 +2491,68 @@
     padding: 20px 16px;
   }
 }
+
+/* ============================================================
+   DRAFT QUEUE BADGE — badge merah pada tombol Simpan
+   ============================================================ */
+.draft-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff4d6d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 5px;
+  animation: draftPulse 1.5s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+@keyframes draftPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+/* ============================================================
+   ADMIN LIKE EDITOR — input angka like di kartu proyek admin
+   ============================================================ */
+.admin-project-like-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 77, 109, 0.09);
+  border: 1px solid rgba(255, 77, 109, 0.28);
+  border-radius: 8px;
+  padding: 3px 8px 3px 7px;
+  margin-right: auto; /* dorong ke kiri agar edit/delete tetap di kanan */
+}
+
+.admin-like-input {
+  width: 54px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+  -moz-appearance: textfield;
+}
+
+.admin-like-input::-webkit-inner-spin-button,
+.admin-like-input::-webkit-outer-spin-button {
+  opacity: 0.45;
+}
+
+/* Pastikan admin-project-actions punya flex gap yang cukup */
+.admin-project-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}

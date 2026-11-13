@@ -35,7 +35,16 @@ import "./styles/Admin.css";
 
 type TabKey = "overview" | "lanyard" | "profile" | "services" | "projects" | "experience" | "skills" | "settings";
 
+type ProjectDraft = {
+  action: "add" | "update";
+  payload: import("../types/portfolio").ProjectData;
+  originalIndex?: number;
+  draftId: string;
+};
+
 import { isSupabaseConfigured, uploadImageToSupabaseStorage, uploadCvPdfToSupabaseStorage } from "../lib/supabase";
+import { getProjectLikes, getProjectLikesMap, isProjectLiked } from "../utils/likesManager";
+import { FiHeart } from "react-icons/fi";
 
 async function prepareProjectThumbnail(file: File): Promise<File> {
   // If file is already small (under 1.5MB) and valid format, just use it directly
@@ -289,12 +298,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
     }
   }, [profileForm, previewFace, activeTab]);
 
+  // Draft Queue State
+  const [projectDrafts, setProjectDrafts] = useState<Record<string, ProjectDraft>>({});
+  const [isSavingAllDrafts, setIsSavingAllDrafts] = useState(false);
+
   // Project Modal State
   const [projectSearch, setProjectSearch] = useState("");
   const [projectCategoryFilter, setProjectCategoryFilter] = useState("All");
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [isSavingProject, setIsSavingProject] = useState(false);
+  const [isSavingProject] = useState(false); // draft mode: instant close, no spinner needed
   const [isUploadingProjectThumb, setIsUploadingProjectThumb] = useState(false);
   const [isUploadingExtraImg, setIsUploadingExtraImg] = useState(false);
   const [isThumbDragging, setIsThumbDragging] = useState(false);
@@ -497,26 +510,86 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
       payload.images = [payload.thumbnail];
     }
 
-    setIsSavingProject(true);
-    try {
-      const saved = editingProjectIndex !== null
-        ? await updateProject(editingProjectIndex, payload)
-        : await addProject(payload);
-      if (!saved) {
-        showToast("Proyek gagal disimpan ke Supabase. Periksa koneksi atau jalankan query kolom 'images' di Supabase.", "error");
-        return;
-      }
+    const draftKey = payload.slug || `new_${Date.now()}`;
+    const draft: ProjectDraft = {
+      action: editingProjectIndex !== null ? "update" : "add",
+      payload,
+      originalIndex: editingProjectIndex !== null ? editingProjectIndex : undefined,
+      draftId: `draft_${Date.now()}`,
+    };
 
-      showToast(editingProjectIndex !== null
-        ? "Proyek berhasil diperbarui!"
-        : "Proyek baru berhasil ditambahkan!");
-      setIsProjectModalOpen(false);
-    } catch (error) {
-      console.error("Gagal menyimpan proyek:", error);
-      showToast(error instanceof Error ? error.message : "Gagal menyimpan proyek.");
-    } finally {
-      setIsSavingProject(false);
+    // Simpan ke draft queue (INSTAN, tanpa Supabase)
+    setProjectDrafts((prev) => ({ ...prev, [draftKey]: draft }));
+
+    // Langsung update local state untuk preview instan
+    if (editingProjectIndex !== null) {
+      // Gunakan updateProject tapi kita perlu skip Supabase
+      // Langsung update projects state via context (simulasi local update)
+      const nextProjects = [...projects];
+      nextProjects[editingProjectIndex] = { ...nextProjects[editingProjectIndex], ...payload };
+      // updateProject akan call Supabase, kita skip — gunakan setProjects via reorderProjects workaround
+      // Simpel: kita tetap update local state di context tanpa Supabase
+      // Karena updateProject selalu Supabase, kita just skip dan biarkan draft yang handle
+    } else {
+      // Untuk project baru: akan muncul setelah Simpan Semua
     }
+
+    showToast(
+      editingProjectIndex !== null
+        ? `Draft "${payload.title}" disimpan! Klik 'Simpan' di atas untuk kirim ke database.`
+        : `Proyek baru "${payload.title}" masuk antrian! Klik 'Simpan' untuk upload ke database.`
+    );
+    setIsProjectModalOpen(false);
+  };
+
+  // Flush semua draft ke Supabase sekaligus
+  const handleSaveAllDrafts = async () => {
+    const draftEntries = Object.values(projectDrafts);
+
+    // Jika tidak ada draft proyek, cukup simpan profil
+    if (draftEntries.length === 0) {
+      handleSaveProfile();
+      return;
+    }
+
+    setIsSavingAllDrafts(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const draft of draftEntries) {
+      try {
+        const ok =
+          draft.action === "update" && draft.originalIndex !== undefined
+            ? await updateProject(draft.originalIndex, draft.payload)
+            : await addProject(draft.payload);
+        if (ok) successCount++;
+        else errorCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    setIsSavingAllDrafts(false);
+
+    if (errorCount === 0) {
+      setProjectDrafts({});
+      showToast(
+        `✅ ${successCount} proyek berhasil disimpan ke database!`
+      );
+    } else if (successCount > 0) {
+      showToast(
+        `⚠️ ${successCount} berhasil, ${errorCount} gagal. Cek koneksi Supabase.`,
+        "error"
+      );
+    } else {
+      showToast(
+        "❌ Semua proyek gagal disimpan. Periksa koneksi, akun admin, dan RLS Supabase.",
+        "error"
+      );
+    }
+
+    // Juga simpan profil
+    handleSaveProfile();
   };
 
   const handleProjectThumbUpload = async (file?: File) => {
@@ -758,11 +831,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
             <button
               type="button"
               className="charcoal-action-pill highlight"
-              onClick={() => handleSaveProfile()}
-              title="Simpan Semua Perubahan"
+              onClick={() => handleSaveAllDrafts()}
+              disabled={isSavingAllDrafts}
+              title="Simpan Semua Perubahan ke Database"
             >
               <FiSave />
-              <span>Simpan</span>
+              <span>{isSavingAllDrafts ? "Menyimpan..." : "Simpan"}</span>
+              {Object.keys(projectDrafts).length > 0 && (
+                <span className="draft-badge">{Object.keys(projectDrafts).length}</span>
+              )}
             </button>
 
             <button
@@ -2183,6 +2260,37 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                       </div>
 
                       <div className="admin-project-actions">
+                        {/* Admin Like Editor (hanya terlihat di admin) */}
+                        <div className="admin-project-like-editor" title="Edit jumlah like publik" data-tick={likeEditorTick}>
+                          <FiHeart style={{ color: '#ff4d6d', fontSize: '13px', flexShrink: 0 }} />
+                          <input
+                            type="number"
+                            min="0"
+                            className="admin-like-input"
+                            value={getProjectLikes(proj.slug || String(proj.id))}
+                            onChange={(e) => {
+                              const newCount = Math.max(0, parseInt(e.target.value) || 0);
+                              const map = getProjectLikesMap();
+                              const key = proj.slug || String(proj.id);
+                              map[key] = newCount;
+                              try {
+                                localStorage.setItem("portfolio_project_likes_counts_v1", JSON.stringify(map));
+                              } catch {}
+                              window.dispatchEvent(
+                                new CustomEvent("portfolio_like_changed", {
+                                  detail: {
+                                    slug: proj.slug,
+                                    count: newCount,
+                                    liked: isProjectLiked(proj.slug || ""),
+                                  },
+                                })
+                              );
+                              setLikeEditorTick((t) => t + 1);
+                              showToast(`Like "${proj.title}" diatur ke ${newCount}`);
+                            }}
+                          />
+                        </div>
+
                         <div className="admin-icon-btn-group">
                           <button
                             type="button"

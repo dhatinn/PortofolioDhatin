@@ -128,8 +128,8 @@ const ShowcaseCarousel: React.FC<ShowcaseCarouselProps> = ({
                   isLeft
                     ? language === "id" ? "Klik untuk geser ke kiri" : "Click to view previous"
                     : isRight
-                    ? language === "id" ? "Klik untuk geser ke kanan" : "Click to view next"
-                    : item.title
+                      ? language === "id" ? "Klik untuk geser ke kanan" : "Click to view next"
+                      : item.title
                 }
               >
                 {/* Blur Letterbox Background so aspect ratios are NEVER cut off */}
@@ -232,3 +232,4 @@ const ShowcaseCarousel: React.FC<ShowcaseCarouselProps> = ({
 };
 
 export default ShowcaseCarousel;
+

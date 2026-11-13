@@ -7,7 +7,8 @@
   margin: 10px auto 30px;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y; /* Memastikan scroll vertikal di layar mobile lancar tanpa tertahan */
+  touch-action: pan-y;
+  /* Memastikan scroll vertikal di layar mobile lancar tanpa tertahan */
 }
 
 /* 3-Card Stage Area */
