@@ -302,7 +302,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   const [projectDrafts, setProjectDrafts] = useState<Record<string, ProjectDraft>>({});
   const [isSavingAllDrafts, setIsSavingAllDrafts] = useState(false);
   // Re-render trigger so like editor input refreshes after localStorage write
-  const [likeEditorTick, setLikeEditorTick] = useState(0);
+  const [likeEditorTick, setLikeEditorTick] = useState<number>(0);
 
   // Project Modal State
   const [projectSearch, setProjectSearch] = useState("");
@@ -1189,8 +1189,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                           {isTestingSupabase
                             ? "Testing..."
                             : isSupabaseConnected
-                            ? "Terkoneksi"
-                            : "Uji Koneksi"}
+                              ? "Terkoneksi"
+                              : "Uji Koneksi"}
                         </span>
                       </button>
                     </div>
@@ -1518,11 +1518,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                         {ACCENT_COLORS.map((item) => (
                           <div
                             key={item.value}
-                            className={`admin-color-swatch ${
-                              (profileForm.badge?.accentColor || "#ff7a00") === item.value
-                                ? "active"
-                                : ""
-                            }`}
+                            className={`admin-color-swatch ${(profileForm.badge?.accentColor || "#ff7a00") === item.value
+                              ? "active"
+                              : ""
+                              }`}
                             style={{ backgroundColor: item.value }}
                             title={item.name}
                             onClick={() => {
@@ -2189,9 +2188,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                       <button
                         key={cat}
                         type="button"
-                        className={`admin-btn-secondary ${
-                          projectCategoryFilter === cat ? "active" : ""
-                        }`}
+                        className={`admin-btn-secondary ${projectCategoryFilter === cat ? "active" : ""
+                          }`}
                         style={{
                           background:
                             projectCategoryFilter === cat
@@ -2281,7 +2279,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                               map[key] = newCount;
                               try {
                                 localStorage.setItem("portfolio_project_likes_counts_v1", JSON.stringify(map));
-                              } catch {}
+                              } catch { }
                               window.dispatchEvent(
                                 new CustomEvent("portfolio_like_changed", {
                                   detail: {
@@ -2291,7 +2289,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                                   },
                                 })
                               );
-                              setLikeEditorTick((t) => t + 1);
+                              setLikeEditorTick((t: number) => t + 1);
                               showToast(`Like "${proj.title}" diatur ke ${newCount}`);
                             }}
                           />
@@ -2688,11 +2686,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                         background: supabaseTestMsg.success
                           ? "rgba(16, 185, 129, 0.15)"
                           : "rgba(239, 68, 68, 0.15)",
-                        border: `1px solid ${
-                          supabaseTestMsg.success
-                            ? "rgba(16, 185, 129, 0.3)"
-                            : "rgba(239, 68, 68, 0.3)"
-                        }`,
+                        border: `1px solid ${supabaseTestMsg.success
+                          ? "rgba(16, 185, 129, 0.3)"
+                          : "rgba(239, 68, 68, 0.3)"
+                          }`,
                         color: supabaseTestMsg.success ? "#6ee7b7" : "#fca5a5",
                       }}
                     >
@@ -3116,7 +3113,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
               {/* Thumbnail with Drag & Drop + URL Input */}
               <div className="admin-form-group">
                 <label>Thumbnail / Cover Proyek <span style={{ fontWeight: 400, opacity: 0.6, fontSize: "12px" }}>(Foto Utama)</span></label>
-                
+
                 {/* Dropzone area */}
                 <div
                   onDragOver={(e) => {
@@ -3197,8 +3194,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                       {isUploadingProjectThumb
                         ? "Sedang mengunggah..."
                         : isThumbDragging
-                        ? "Lepaskan foto di sini!"
-                        : "Tarik & lepas foto ke sini, atau klik untuk memilih"}
+                          ? "Lepaskan foto di sini!"
+                          : "Tarik & lepas foto ke sini, atau klik untuk memilih"}
                     </div>
                     <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)" }}>
                       Format JPG, PNG, WebP (maks. 8 MB). Otomatis dioptimalkan untuk mobile.
@@ -3247,7 +3244,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
               {/* Extra Slideshow Images with Drag & Drop */}
               <div className="admin-form-group">
                 <label>Foto Tambahan Slideshow <span style={{ fontWeight: 400, opacity: 0.6, fontSize: "12px" }}>(opsional — bisa multiple)</span></label>
-                
+
                 {/* Thumbnails of existing extra images */}
                 {(projectForm.images || []).length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
@@ -3337,8 +3334,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
                     {isUploadingExtraImg
                       ? "Sedang mengunggah foto tambahan..."
                       : isExtraDragging
-                      ? "Lepaskan semua foto di sini!"
-                      : "+ Tarik & lepas banyak foto sekaligus ke sini, atau klik"}
+                        ? "Lepaskan semua foto di sini!"
+                        : "+ Tarik & lepas banyak foto sekaligus ke sini, atau klik"}
                   </div>
                   <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
                     Bisa pilih banyak foto sekaligus dari galeri/explorer untuk slideshow
