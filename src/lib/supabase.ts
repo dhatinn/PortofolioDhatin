@@ -339,6 +339,7 @@ export async function fetchPortfolioFromSupabase(): Promise<{
         images: Array.isArray(p.images) ? p.images : [],
         demo: p.demo,
         repo: p.repo,
+        likes: typeof p.likes === "number" ? p.likes : 0,
       }));
     }
 

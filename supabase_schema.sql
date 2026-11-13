@@ -47,9 +47,13 @@ CREATE TABLE IF NOT EXISTS public.portfolio_projects (
     images JSONB DEFAULT '[]'::jsonb,
     demo TEXT DEFAULT '',
     repo TEXT DEFAULT '',
+    likes INT DEFAULT 0,
     display_order INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Migration jika tabel sudah pernah dibuat sebelumnya:
+ALTER TABLE public.portfolio_projects ADD COLUMN IF NOT EXISTS likes INT DEFAULT 0;
 
 -- ============================================================================
 -- 4. TABEL: portfolio_experiences

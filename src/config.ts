@@ -103,6 +103,7 @@ export const buildConfig = (
         repo: project.repo || "",
         stack: project.stack || [],
         caseStudy: project.caseStudy || null,
+        likes: project.likes || 0,
       };
     }),
     contact: {

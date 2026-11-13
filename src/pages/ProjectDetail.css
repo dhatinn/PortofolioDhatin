@@ -594,6 +594,17 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.project-detail-like-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-detail-like-wrapper:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
 /* ============================================================
    Detailed Overview & Case Study
    ============================================================ */

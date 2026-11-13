@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePortfolio } from "../context/PortfolioContext";
+import PulseHeart from "../components/PulseHeart";
+import { getProjectLikes, isProjectLiked, toggleProjectLike } from "../utils/likesManager";
 import {
   FiArrowLeft,
   FiExternalLink,
@@ -27,6 +29,28 @@ const ProjectDetail: React.FC = () => {
   );
 
   const project = currentIndex !== -1 ? config.projects[currentIndex] : null;
+
+  // Like state management with likesManager
+  const projectKey = project?.slug || String(project?.id || "");
+  const [isLiked, setIsLiked] = useState<boolean>(() => (projectKey ? isProjectLiked(projectKey) : false));
+  const [likesCount, setLikesCount] = useState<number>(() => (projectKey ? getProjectLikes(projectKey, project?.likes) : 0));
+
+  useEffect(() => {
+    if (!projectKey) return;
+    setIsLiked(isProjectLiked(projectKey));
+    setLikesCount(getProjectLikes(projectKey, project?.likes));
+
+    const handleLikeChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.slug === projectKey) {
+        setIsLiked(detail.liked);
+        setLikesCount(detail.count);
+      }
+    };
+
+    window.addEventListener("portfolio_like_changed", handleLikeChanged);
+    return () => window.removeEventListener("portfolio_like_changed", handleLikeChanged);
+  }, [projectKey, project?.likes]);
 
   // Multi-image list (at least 1 image)
   const images = project?.images && project.images.length > 0
@@ -299,6 +323,36 @@ const ProjectDetail: React.FC = () => {
                 </span>
               </div>
             )}
+
+            {/* Tombol Like PulseHeart */}
+            <div
+              className="project-detail-like-wrapper"
+              title={language === "id" ? "Sukai proyek ini" : "Like this project"}
+            >
+              <PulseHeart
+                liked={isLiked}
+                count={likesCount}
+                onChange={(_liked, _cnt) => {
+                  const res = toggleProjectLike(projectKey, likesCount);
+                  setIsLiked(res.liked);
+                  setLikesCount(res.count);
+                }}
+                showCount
+                icon="heart"
+                idleOutline
+                size={40}
+                corner={32}
+                likedColor="#ff4d6d"
+                idleColor="#8b8b93"
+                pillColor="#232326"
+                textColor="#f5f5f5"
+                duration={560}
+                dotSize={0.3}
+                overshoot={1.7}
+                beat={3}
+                rollDuration={350}
+              />
+            </div>
           </div>
         </section>
 

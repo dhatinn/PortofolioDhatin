@@ -71,6 +71,7 @@ export interface ProjectData {
   images?: string[]; // multiple images for slideshow
   demo: string;
   repo: string;
+  likes?: number;
 }
 
 export interface ExperienceData {
@@ -141,6 +142,7 @@ export interface PortfolioConfig {
       role?: string;
       impact?: string;
     } | null;
+    likes?: number;
   }>;
   contact: {
     email: string;
