@@ -301,6 +301,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
   // Draft Queue State
   const [projectDrafts, setProjectDrafts] = useState<Record<string, ProjectDraft>>({});
   const [isSavingAllDrafts, setIsSavingAllDrafts] = useState(false);
+  // Re-render trigger so like editor input refreshes after localStorage write
+  const [likeEditorTick, setLikeEditorTick] = useState(0);
 
   // Project Modal State
   const [projectSearch, setProjectSearch] = useState("");
@@ -2261,7 +2263,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalonePage = fals
 
                       <div className="admin-project-actions">
                         {/* Admin Like Editor (hanya terlihat di admin) */}
-                        <div className="admin-project-like-editor" title="Edit jumlah like publik" data-tick={likeEditorTick}>
+                        <div
+                          className="admin-project-like-editor"
+                          title="Edit jumlah like publik"
+                          data-tick={likeEditorTick}
+                        >
                           <FiHeart style={{ color: '#ff4d6d', fontSize: '13px', flexShrink: 0 }} />
                           <input
                             type="number"
